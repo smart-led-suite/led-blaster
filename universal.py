@@ -2,24 +2,27 @@
 import os
 import sys
 
-pin=17   # pin of the white leds
-pin_r = 17 # red leds
-pin_g = 18 # green leds
-pin_b = 22 # blue leds
+pins = [27, 17, 18, 22] # white, red, green, blue pins
 
 speedfactor=2
 
 actualLuminance=0
-targetLuminance=1000
 printLuminance=0
 
 linear=0
 experimental=0
 exp2factor=3
 
-fade=0
 
-schrittweite=1
+args = sys.argv # get the arguments php gave us when calling the script
+fade = args[1] 
+
+# targeted luminance: white,  red,    green,    blue
+targetLuminances = {} # empty dictionary, will be filled right next:
+for i in range(0, len(pins)):
+	targetLuminances[pins[i]] = args[i + 2] # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
+
+
 steps=1000
 stepwidth=1
 
@@ -32,6 +35,7 @@ def switch_leds(pin, pwm_value):
 	print str(pin) + "=" + str(pwm_value)
 	sys.stdout = standard_output # set stdout to the original value so that we can debug
 
+
 if fade:
 	while actualLuminance < targetLuminance:
 		if experimental==1:
@@ -43,4 +47,25 @@ if fade:
 		switch_leds(pin, printLuminance)
 		actualLuminance = nextLuminance
 
-print str(pin) + "=" + str(float(targetLuminance)/steps)
+
+
+# turn all leds off
+for pinNr in range(len(pins)):
+	switch_leds(pins[pinNr], 0)
+
+
+for color in range(0, len(pins)):
+	if fade:
+		colorPin = pins[color] # pin for the current color
+		print colorPin
+		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
+		actualLuminance = 0
+		while actualLuminance < colorTargetLuminance:
+			if experimental==1:
+				stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
+			if experimental==2:
+				stepwidth = float(steps) / ((colorTargetLuminance - actualLuminance)*exp2factor)		
+			nextLuminance = actualLuminance + stepwidth	
+			printLuminance = float(nextLuminance)/steps
+			switch_leds(colorPin, printLuminance)
+			actualLuminance = nextLuminance
