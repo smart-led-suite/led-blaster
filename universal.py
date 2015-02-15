@@ -11,7 +11,7 @@ pins_white = [27]
 pins = [] # pins list to work with later
 
 
-white = 0 # set to 1 for only white, to 0 for only rgb and to 2 for both
+white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
 
 if(white == 1):
 	pins = pins_white
@@ -20,7 +20,8 @@ elif(white == 0):
 elif(white == 2):
 	pins = pins_white
 	pins.extend(pins_rgb)
-	
+
+print "pins: "	
 print pins
 
 speedfactor=2
@@ -49,6 +50,7 @@ targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
 	targetLuminances[pins[i]] = (int(args[i + 2]) * 10) # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
 
+print "fade: "
 print fade
 steps=1000
 stepwidth=1
@@ -65,15 +67,17 @@ def switch_leds(pin, pwm_value):
 # turn all leds off
 #for pinNr in range(len(pins)):
 #	switch_leds(pins[pinNr], 0)
-
+print "currentLuminances: "
 print currentLuminances
 
 for color in range(0, len(pins)):
 	if fade:
 		colorPin = pins[color] # pin for the current color
+		print "colorPin: "
 		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
 		currentLuminance = currentLuminances[colorPin]
+		print "currentLuminance: "
 		print currentLuminance
 		if currentLuminance < colorTargetLuminance:
 			while currentLuminance < colorTargetLuminance:
@@ -99,4 +103,5 @@ for color in range(0, len(pins)):
 			continue
 		currentLuminances[colorPin] = currentLuminance # update currentLuminance
 		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
-
+		print "targetLuminance: "
+		print colorTargetLuminance
