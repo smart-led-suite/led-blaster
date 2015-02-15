@@ -10,7 +10,7 @@
 <?php
 	echo "Hello World";
 ?>
-<form actian="index.php" method="GET">
+<form action="index.php" method="GET">
 <table>
 	<tr>
 		<td><input type="radio" value="an" name="r">Rot an

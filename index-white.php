@@ -12,15 +12,16 @@ Licht an und ausschalten:
 <form action="index-white.php" method="get">
   targetLuminance eingeben: 0 bis 100: 
   <input type="number" name="targetLuminance" min="0" max="100">
+  <br>
+  <input type="radio" name="fade" value="0" checked>kein Fade
+  <br>
+  <input type="radio" name="fade" value="1" checked>Fade
+  <br>
   <input type="submit">
 </form>
 <br>
 
- <form>
-<input type="radio" name="fade" value="0" checked>kein Fade
-<br>
-<input type="radio" name="fade" value="1" checked>Fade
-</form> 
+
 
 
 immer erst ausschalten, wenn 'Licht ist an' dasteht und umgekehrt! <br>
@@ -30,6 +31,7 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <?php
 
 $fade=$_GET('fade');
+echo "HEllo world";
 echo $fade;
 
 if(isset($_GET['w_on'])) {
