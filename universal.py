@@ -3,8 +3,7 @@
 import os
 import sys
 import time
-import pickle# as pickle
-
+import pickle
 
 #           r    g   b
 pins_rgb = [17, 18, 22] # red, green, blue pins
@@ -29,8 +28,10 @@ currentLuminances = {}
 filename = ".luminances.p"
 try:
 	currentLuminances = pickle.load(open(filename, "rb"))
+	if(len(currentLuminances) == 0)
+		raise Exception("currentLuminances must have at least one value")
 except Exception:
-	for pin in range(len(pins)):
+	for pin in range(len(pins)): # create file if it doesn't exist
 		currentLuminances[pins[pin]] = 0
 	pickle.dump(currentLuminances, open(filename, "wb"))
 printLuminance=0
