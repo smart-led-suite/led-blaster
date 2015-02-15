@@ -29,10 +29,9 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <br> <br>
 
 <?php
-
-$fade=$_GET('fade');
-echo "wert von fade: ";
-echo $fade;
+echo "hello world1";
+$fade=$_GET['fade'];
+echo "Hello World2";
 
 if(isset($_GET['w_on'])) {
 $val = trim(@shell_exec("./universal.py 1 100 0 0 0 ")); 
