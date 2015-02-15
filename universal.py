@@ -10,6 +10,7 @@ pins_rgb = [17, 18, 22] # red, green, blue pins
 pins_white = [27]
 pins = [] # pins list to work with later
 
+
 white = 0 # set to 1 for only white, to 0 for only rgb and to 2 for both
 
 if(white == 1):
