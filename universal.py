@@ -10,7 +10,7 @@ pins_rgb = [17, 18, 22] # red, green, blue pins
 pins_white = [27]
 pins = [] # pins list to work with later
 
-white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
+white = 0 # set to 1 for only white, to 0 for only rgb and to 2 for both
 
 if(white == 1):
 	pins = pins_white
@@ -74,9 +74,8 @@ for color in range(0, len(pins)):
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
 		currentLuminance = currentLuminances[colorPin]
 		print currentLuminance
-		if currentLuminance <= colorTargetLuminance:
+		if currentLuminance < colorTargetLuminance:
 			while currentLuminance < colorTargetLuminance:
-
 				if experimental==1:
 					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
 				if experimental==2:
@@ -93,9 +92,10 @@ for color in range(0, len(pins)):
 					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
 				nextLuminance = currentLuminance - stepwidth	
 				printLuminance = float(nextLuminance)/steps
-				print printLuminance
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
+		else:
+			continue
 		currentLuminances[colorPin] = currentLuminance # update currentLuminance
 		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
 
