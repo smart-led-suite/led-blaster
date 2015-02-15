@@ -31,6 +31,7 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <?php
 
 $fade=$_GET('fade');
+echo "HEllo world";
 echo $fade;
 
 if(isset($_GET['w_on'])) {
