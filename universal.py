@@ -12,9 +12,9 @@ pins = [] # pins list to work with later
 
 white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
 
-if(white == 0):
+if(white == 1):
 	pins = pins_white
-elif(white == 1):
+elif(white == 0):
 	pins = pins_rgb
 elif(white == 2):
 	pins = pins_white
