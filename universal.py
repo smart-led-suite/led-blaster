@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-
 import os
 import sys
+
+
 #i="Hallo"
 #print i
-pin=27
+pin=17
 
 speedfactor=2
 
@@ -22,11 +23,12 @@ schrittweite=1
 steps=1000
 stepwidth=1
 
+
 fh = open("/dev/pi-blaster", "w")
 sys.stdout = fh
 
 
-if fade:
+if fade == 1:
 	while actualLuminance < targetLuminance:
 		if experimental==1:
 			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
@@ -36,7 +38,7 @@ if fade:
 #		nextLuminance = actualLuminance + stepwidth			
 		nextLuminance = actualLuminance + stepwidth	
 		printLuminance = float(nextLuminance)/steps
-		print  + str(pin) + "=" + str(printLuminance) + "  > /dev/pi-blaster")
+		print str(pin) + "=" + str(printLuminance)
 		actualLuminance = nextLuminance
 		#print stepwidth
 
