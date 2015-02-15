@@ -36,7 +36,7 @@ if fade:
 #		nextLuminance = actualLuminance + stepwidth			
 		nextLuminance = actualLuminance + stepwidth	
 		printLuminance = float(nextLuminance)/steps
-		print "echo " + str(pin) + "=" + str(printLuminance) + "  > /dev/pi-blaster"
+		print  + str(pin) + "=" + str(printLuminance) + "  > /dev/pi-blaster")
 		actualLuminance = nextLuminance
 		#print stepwidth
 
