@@ -25,7 +25,7 @@ targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
 	targetLuminances[pins[i]] = (int(args[i + 2]) * 10) # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
 
-
+print fade
 steps=1000
 stepwidth=1
 
@@ -64,7 +64,7 @@ for color in range(0, len(pins)):
 		colorPin = pins[color] # pin for the current color
 #		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-		actualLuminance = 0
+#		actualLuminance = 0
 		if actualLuminance < colorTargetLuminance:
 			while actualLuminance < colorTargetLuminance:
 				if experimental==1:
@@ -86,3 +86,4 @@ for color in range(0, len(pins)):
 				print printLuminance
 				switch_leds(colorPin, printLuminance)
 				actualLuminance = nextLuminance
+	switch_leds(colorPin, colorTargetLuminance/steps)
