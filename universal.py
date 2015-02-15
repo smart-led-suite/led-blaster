@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import sys
 import time
+import cPickle as pickle
+
 #       w    r   g   b
 pins = [27, 17, 18, 22] # white, red, green, blue pins
 
 speedfactor=2
 
-actualLuminance=0
+actualLuminances = {}
+pickle.load(open(".luminances.p", "rb"))
+
+actualLuminance = 0
 printLuminance=0
 
 linear=0
@@ -19,7 +23,6 @@ exp2factor=3
 
 args = sys.argv # get the arguments php gave us when calling the script
 fade = args[1] 
-# -*- coding: utf-8 -*-
 # targeted luminance: white,  red,    green,    blue
 targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
