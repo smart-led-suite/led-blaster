@@ -5,7 +5,7 @@ import sys
 
 #i="Hallo"
 #print i
-pin=17
+pin=27
 
 speedfactor=2
 
@@ -14,10 +14,10 @@ targetLuminance=1000
 printLuminance=0
 
 linear=0
-experimental=2
+experimental=0
 exp2factor=3
 
-fade=1
+fade=0
 
 schrittweite=1
 steps=1000
@@ -41,7 +41,7 @@ if fade == 1:
 		print str(pin) + "=" + str(printLuminance)
 		actualLuminance = nextLuminance
 		#print stepwidth
-
+print str(pin) + "=" + str(float(targetLuminance)/steps)
 	#for i in range(steps/2,steps,schrittweite*4)	
 #		luminance = float(i)/steps
 #		test = os.system("echo 27=" + str(luminance) + " > /dev/pi-blaster")
