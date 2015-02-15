@@ -5,7 +5,7 @@
 </head>
 <body>
 Licht an und ausschalten:
-<form method="get" action="phppython.php">
+<form method="get" action="index-white.php">
 <input type="submit" value="Licht ein" name="Lichtein">
 <input type="submit" value="Licht aus" name="Lichtaus">
 </form>
