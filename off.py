@@ -2,7 +2,7 @@
 import os
 #i="Hallo"
 #print i
-fade=1
+fade=0
 luminance=float(100.0)
 steps=500
 if fade:
