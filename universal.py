@@ -5,8 +5,21 @@ import sys
 import time
 import cPickle as pickle
 
-#       w    r   g   b
-pins = [27, 17, 18, 22] # white, red, green, blue pins
+
+#           r    g   b
+pins_rgb = [17, 18, 22] # red, green, blue pins
+pins_white = [27]
+pins = [] # pins list to work with later
+
+white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
+
+if(white == 0):
+	pins = pins_white
+elif(white == 1):
+	pins = pins_rgb
+elif(white == 2):
+	pins = pins_white
+	pins.extend(pins_rgb)
 
 speedfactor=2
 
@@ -61,8 +74,11 @@ for pinNr in range(len(pins)):
 
 
 for color in range(0, len(pins)):
+<<<<<<< Updated upstream
 #	if(color == 0): # weiß überspringen
 #		continue
+=======
+>>>>>>> Stashed changes
 	if fade:
 		colorPin = pins[color] # pin for the current color
 #		print colorPin
