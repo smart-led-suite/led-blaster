@@ -28,7 +28,7 @@ currentLuminances = {}
 filename = ".luminances.p"
 try:
 	currentLuminances = pickle.load(open(filename, "rb"))
-	if(len(currentLuminances) == 0)
+	if(len(currentLuminances) == 0):
 		raise Exception("currentLuminances must have at least one value")
 except Exception:
 	for pin in range(len(pins)): # create file if it doesn't exist
