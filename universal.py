@@ -1,15 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import sys
 import time
-#       w    r   g   b
-pins = [27, 17, 18, 22] # white, red, green, blue pins
+import pickle# as pickle
+
+
+#           r    g   b
+pins_rgb = [17, 18, 22] # red, green, blue pins
+pins_white = [27]
+pins = [] # pins list to work with later
+
+white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
+
+if(white == 0):
+	pins = pins_white
+elif(white == 1):
+	pins = pins_rgb
+elif(white == 2):
+	pins = pins_white
+	pins.extend(pins_rgb)
+	
+print pins
 
 speedfactor=2
 
-actualLuminance=0
+currentLuminances = {}
+filename = ".luminances.p"
+try:
+	currentLuminances = pickle.load(open(filename, "rb"))
+except Exception:
+	for pin in range(len(pins)):
+		currentLuminances[pins[pin]] = 0
+	pickle.dump(currentLuminances, open(filename, "wb"))
 printLuminance=0
 
 linear=0
@@ -19,7 +42,6 @@ exp2factor=3
 
 args = sys.argv # get the arguments php gave us when calling the script
 fade = args[1] 
-# -*- coding: utf-8 -*-
 # targeted luminance: white,  red,    green,    blue
 targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
@@ -38,52 +60,41 @@ def switch_leds(pin, pwm_value):
 	print str(pin) + "=" + str(pwm_value)
 	sys.stdout = standard_output # set stdout to the original value so that we can debug
 
-
-#if fade:
-#	while actualLuminance < targetLuminance:
-#		if experimental==1:
-#			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
-#		if experimental==2:
-#			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)		
-#		nextLuminance = actualLuminance + stepwidth	
-#		printLuminance = float(nextLuminance)/steps
-#		switch_leds(pin, printLuminance)
-#		actualLuminance = nextLuminance
-
-
-
 # turn all leds off
-for pinNr in range(len(pins)):
-	switch_leds(pins[pinNr], 0)
+#for pinNr in range(len(pins)):
+#	switch_leds(pins[pinNr], 0)
 
+print currentLuminances
 
 for color in range(0, len(pins)):
-#	if(color == 0): # weiß überspringen
-#		continue
 	if fade:
 		colorPin = pins[color] # pin for the current color
-#		print colorPin
+		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-#		actualLuminance = 0
-		if actualLuminance < colorTargetLuminance:
-			while actualLuminance < colorTargetLuminance:
+		currentLuminance = currentLuminances[colorPin]
+		print currentLuminance
+		if currentLuminance <= colorTargetLuminance:
+			while currentLuminance < colorTargetLuminance:
+
 				if experimental==1:
-					stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
+					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
 				if experimental==2:
-					stepwidth = float(steps) / ((colorTargetLuminance - actualLuminance)*exp2factor)		
-				nextLuminance = actualLuminance + stepwidth	
+					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
+				nextLuminance = currentLuminance + stepwidth	
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
-				actualLuminance = nextLuminance
-		elif actualLuminance > colorTargetLuminance:
-			while actualLuminance > colorTargetLuminance:
+				currentLuminance = nextLuminance
+		elif currentLuminance > colorTargetLuminance:
+			while currentLuminance > colorTargetLuminance:
 				if experimental==1:
-					stepwidth = float(steps) / (actualLuminance - colorTargetLuminance)	
+					stepwidth = float(steps) / (currentLuminance - colorTargetLuminance)	
 				if experimental==2:
-					stepwidth = float(steps) / ((actualLuminance - colorTargetLuminance)*exp2factor)		
-				nextLuminance = actualLuminance - stepwidth	
+					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
+				nextLuminance = currentLuminance - stepwidth	
 				printLuminance = float(nextLuminance)/steps
 				print printLuminance
 				switch_leds(colorPin, printLuminance)
-				actualLuminance = nextLuminance
-	switch_leds(colorPin, colorTargetLuminance/steps)
+				currentLuminance = nextLuminance
+		currentLuminances[colorPin] = currentLuminance # update currentLuminance
+		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+
