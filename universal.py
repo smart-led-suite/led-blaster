@@ -24,8 +24,13 @@ elif(white == 2):
 speedfactor=2
 
 actualLuminances = {}
-pickle.load(open(".luminances.p", "rb"))
-
+filename = ".luminances.p"
+try:
+	pickle.load(open(filename, "rb"))
+except Exception:
+	for pin in range(len(pins)):
+		actualLuminances[pins[pin]] = 0
+	pickle.dump(actualLuminances, open(filename, "wb")
 actualLuminance = 0
 printLuminance=0
 
@@ -74,11 +79,6 @@ for pinNr in range(len(pins)):
 
 
 for color in range(0, len(pins)):
-<<<<<<< Updated upstream
-#	if(color == 0): # weiß überspringen
-#		continue
-=======
->>>>>>> Stashed changes
 	if fade:
 		colorPin = pins[color] # pin for the current color
 #		print colorPin
