@@ -2,10 +2,10 @@
 import os
 import sys
 
-
-#i="Hallo"
-#print i
-pin=17
+pin=17   # pin of the white leds
+pin_r = 17 # red leds
+pin_g = 18 # green leds
+pin_b = 22 # blue leds
 
 speedfactor=2
 
@@ -23,26 +23,22 @@ schrittweite=1
 steps=1000
 stepwidth=1
 
+standard_output = sys.stdout
 
-fh = open("/dev/pi-blaster", "w")
-sys.stdout = fh
+piblaster = open("/dev/pi-blaster", "w")
 
+def switch_leds(pin, pwm_value):
+	sys.stdout = piblaster # set stdout so that the command is sent to /dev/pi-blaster
+	print str(pin) + "=" + str(pwm_value)
+	sys.stdout = standard_output # set stdout to the original value so that we can debug
 
-if fade == 1:
+if fade:
 	while actualLuminance < targetLuminance:
 		if experimental==1:
 			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
 		if experimental==2:
-			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)
-#		stepwidth = stepwidth * speedfactor
-#		nextLuminance = actualLuminance + stepwidth			
+			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)		
 		nextLuminance = actualLuminance + stepwidth	
 		printLuminance = float(nextLuminance)/steps
-		print str(pin) + "=" + str(printLuminance)
+		switch_leds(pin, printLuminance)
 		actualLuminance = nextLuminance
-		#print stepwidth
-
-	#for i in range(steps/2,steps,schrittweite*4)	
-#		luminance = float(i)/steps
-#		test = os.system("echo 27=" + str(luminance) + " > /dev/pi-blaster")
-#	test = os.system("echo " "27=1" "  > /dev/pi-blaster")
