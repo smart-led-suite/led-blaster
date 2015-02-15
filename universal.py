@@ -25,14 +25,14 @@ print pins
 
 speedfactor=2
 
-actualLuminances = {}
+currentLuminances = {}
 filename = ".luminances.p"
 try:
-	actualLuminances = pickle.load(open(filename, "rb"))
+	currentLuminances = pickle.load(open(filename, "rb"))
 except Exception:
 	for pin in range(len(pins)):
-		actualLuminances[pins[pin]] = 0
-	pickle.dump(actualLuminances, open(filename, "wb"))
+		currentLuminances[pins[pin]] = 0
+	pickle.dump(currentLuminances, open(filename, "wb"))
 printLuminance=0
 
 linear=0
@@ -64,35 +64,35 @@ def switch_leds(pin, pwm_value):
 #for pinNr in range(len(pins)):
 #	switch_leds(pins[pinNr], 0)
 
-print actualLuminances
+print currentLuminances
 
 for color in range(0, len(pins)):
 	if fade:
 		colorPin = pins[color] # pin for the current color
 		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-		actualLuminance = actualLuminances[colorPin]
-		print actualLuminance
-		if actualLuminance <= colorTargetLuminance:
-			while actualLuminance < colorTargetLuminance:
+		currentLuminance = currentLuminances[colorPin]
+		print currentLuminance
+		if currentLuminance <= colorTargetLuminance:
+			while currentLuminance < colorTargetLuminance:
 				if experimental==1:
-					stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
+					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
 				if experimental==2:
-					stepwidth = float(steps) / ((colorTargetLuminance - actualLuminance)*exp2factor)		
-				nextLuminance = actualLuminance + stepwidth	
+					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
+				nextLuminance = currentLuminance + stepwidth	
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
-				actualLuminance = nextLuminance
-		elif actualLuminance > colorTargetLuminance:
-			while actualLuminance > colorTargetLuminance:
+				currentLuminance = nextLuminance
+		elif currentLuminance > colorTargetLuminance:
+			while currentLuminance > colorTargetLuminance:
 				if experimental==1:
-					stepwidth = float(steps) / (actualLuminance - colorTargetLuminance)	
+					stepwidth = float(steps) / (currentLuminance - colorTargetLuminance)	
 				if experimental==2:
-					stepwidth = float(steps) / ((actualLuminance - colorTargetLuminance)*exp2factor)		
-				nextLuminance = actualLuminance - stepwidth	
+					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
+				nextLuminance = currentLuminance - stepwidth	
 				printLuminance = float(nextLuminance)/steps
 				print printLuminance
 				switch_leds(colorPin, printLuminance)
-				actualLuminance = nextLuminance
-		actualLuminances[colorPin] = actualLuminance # update actualLuminance
-		pickle.dump(actualLuminances, open(filename, "wb")) # and dump them
+				currentLuminance = nextLuminance
+		currentLuminances[colorPin] = currentLuminance # update currentLuminance
+		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
