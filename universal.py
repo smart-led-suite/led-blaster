@@ -9,7 +9,7 @@ pins = [27, 17, 18, 22] # white, red, green, blue pins
 
 speedfactor=2
 
-actualLuminance=1000
+actualLuminance=0
 printLuminance=0
 
 linear=0
@@ -39,16 +39,16 @@ def switch_leds(pin, pwm_value):
 	sys.stdout = standard_output # set stdout to the original value so that we can debug
 
 
-if fade:
-	while actualLuminance < targetLuminance:
-		if experimental==1:
-			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
-		if experimental==2:
-			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)		
-		nextLuminance = actualLuminance + stepwidth	
-		printLuminance = float(nextLuminance)/steps
-		switch_leds(pin, printLuminance)
-		actualLuminance = nextLuminance
+#if fade:
+#	while actualLuminance < targetLuminance:
+#		if experimental==1:
+#			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
+#		if experimental==2:
+#			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)		
+#		nextLuminance = actualLuminance + stepwidth	
+#		printLuminance = float(nextLuminance)/steps
+#		switch_leds(pin, printLuminance)
+#		actualLuminance = nextLuminance
 
 
 
@@ -58,13 +58,13 @@ for pinNr in range(len(pins)):
 
 
 for color in range(0, len(pins)):
-	if(color == 0): # weiß überspringen
-		continue
+#	if(color == 0): # weiß überspringen
+#		continue
 	if fade:
 		colorPin = pins[color] # pin for the current color
 #		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-		actualLuminance = 1000
+		actualLuminance = 0
 		if actualLuminance < colorTargetLuminance:
 			while actualLuminance < colorTargetLuminance:
 				if experimental==1:

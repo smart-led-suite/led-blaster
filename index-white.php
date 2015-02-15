@@ -26,13 +26,18 @@ Licht an und ausschalten:
 immer erst ausschalten, wenn 'Licht ist an' dasteht und umgekehrt! <br>
 nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebnis 'Licht ist aus/an' angezeigt wird!
 <br> <br>
+
 <?php
+
+$fade=$_GET('fade');
+echo $fade;
+
 if(isset($_GET['w_on'])) {
-$val = trim(@shell_exec("./universal.py $fade 1 ")); 
+$val = trim(@shell_exec("./universal.py 1 100 0 0 0 ")); 
 echo "Licht ist an";
 }
 else if (isset($_GET['w_off'])) {
-$val = trim(@shell_exec("./universal.py $fade 0  " ));
+$val = trim(@shell_exec("./universal.py 1 0 0 0 0 " ));
 echo "Licht ist aus";
 }
 ?>
