@@ -3,7 +3,7 @@
 import os
 import sys
 import time
-import cPickle as pickle
+import pickle# as pickle
 
 
 #           r    g   b
@@ -20,18 +20,19 @@ elif(white == 1):
 elif(white == 2):
 	pins = pins_white
 	pins.extend(pins_rgb)
+	
+print pins
 
 speedfactor=2
 
 actualLuminances = {}
 filename = ".luminances.p"
 try:
-	pickle.load(open(filename, "rb"))
+	actualLuminances = pickle.load(open(filename, "rb"))
 except Exception:
 	for pin in range(len(pins)):
 		actualLuminances[pins[pin]] = 0
-	pickle.dump(actualLuminances, open(filename, "wb")
-actualLuminance = 0
+	pickle.dump(actualLuminances, open(filename, "wb"))
 printLuminance=0
 
 linear=0
@@ -59,32 +60,20 @@ def switch_leds(pin, pwm_value):
 	print str(pin) + "=" + str(pwm_value)
 	sys.stdout = standard_output # set stdout to the original value so that we can debug
 
-
-#if fade:
-#	while actualLuminance < targetLuminance:
-#		if experimental==1:
-#			stepwidth = float(steps) / (targetLuminance - actualLuminance)	
-#		if experimental==2:
-#			stepwidth = float(steps) / ((targetLuminance - actualLuminance)*exp2factor)		
-#		nextLuminance = actualLuminance + stepwidth	
-#		printLuminance = float(nextLuminance)/steps
-#		switch_leds(pin, printLuminance)
-#		actualLuminance = nextLuminance
-
-
-
 # turn all leds off
-for pinNr in range(len(pins)):
-	switch_leds(pins[pinNr], 0)
+#for pinNr in range(len(pins)):
+#	switch_leds(pins[pinNr], 0)
 
+print actualLuminances
 
 for color in range(0, len(pins)):
 	if fade:
 		colorPin = pins[color] # pin for the current color
-#		print colorPin
+		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-		actualLuminance = 0
-		if actualLuminance < colorTargetLuminance:
+		actualLuminance = actualLuminances[colorPin]
+		print actualLuminance
+		if actualLuminance <= colorTargetLuminance:
 			while actualLuminance < colorTargetLuminance:
 				if experimental==1:
 					stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
@@ -105,3 +94,5 @@ for color in range(0, len(pins)):
 				print printLuminance
 				switch_leds(colorPin, printLuminance)
 				actualLuminance = nextLuminance
+		actualLuminances[colorPin] = actualLuminance # update actualLuminance
+		pickle.dump(actualLuminances, open(filename, "wb")) # and dump them
