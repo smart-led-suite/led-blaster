@@ -31,11 +31,11 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <?php
 echo "hello world1";
 $fade=$_GET['fade'];
-echo "Hello World2";
+echo "Hello World   fade:";
 echo $fade;
 
 if(isset($_GET['w_on'])) {
-$val = trim(@shell_exec("./universal.py §fade 100 0 0 0 ")); 
+$val = trim(@shell_exec("./universal.py $fade 100 0 0 0 ")); 
 echo "Licht ist an";
 }
 else if (isset($_GET['w_off'])) {
