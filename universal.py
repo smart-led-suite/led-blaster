@@ -1,12 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
-
+import time
+#       w    r   g   b
 pins = [27, 17, 18, 22] # white, red, green, blue pins
 
 speedfactor=2
 
-actualLuminance=0
+actualLuminance=1000
 printLuminance=0
 
 linear=0
@@ -16,11 +19,11 @@ exp2factor=3
 
 args = sys.argv # get the arguments php gave us when calling the script
 fade = args[1] 
-
+# -*- coding: utf-8 -*-
 # targeted luminance: white,  red,    green,    blue
 targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
-	targetLuminances[pins[i]] = args[i + 2] # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
+	targetLuminances[pins[i]] = (int(args[i + 2]) * 10) # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
 
 schrittweite=1
 steps=1000
@@ -41,17 +44,31 @@ for pinNr in range(len(pins)):
 
 
 for color in range(0, len(pins)):
+	if(color == 0): # weiß überspringen
+		continue
 	if fade:
 		colorPin = pins[color] # pin for the current color
-		print colorPin
+#		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
-		actualLuminance = 0
-		while actualLuminance < colorTargetLuminance:
-			if experimental==1:
-				stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
-			if experimental==2:
-				stepwidth = float(steps) / ((colorTargetLuminance - actualLuminance)*exp2factor)		
-			nextLuminance = actualLuminance + stepwidth	
-			printLuminance = float(nextLuminance)/steps
-			switch_leds(colorPin, printLuminance)
-			actualLuminance = nextLuminance
+		actualLuminance = 1000
+		if actualLuminance < colorTargetLuminance:
+			while actualLuminance < colorTargetLuminance:
+				if experimental==1:
+					stepwidth = float(steps) / (colorTargetLuminance - actualLuminance)	
+				if experimental==2:
+					stepwidth = float(steps) / ((colorTargetLuminance - actualLuminance)*exp2factor)		
+				nextLuminance = actualLuminance + stepwidth	
+				printLuminance = float(nextLuminance)/steps
+				switch_leds(colorPin, printLuminance)
+				actualLuminance = nextLuminance
+		elif actualLuminance > colorTargetLuminance:
+			while actualLuminance > colorTargetLuminance:
+				if experimental==1:
+					stepwidth = float(steps) / (actualLuminance - colorTargetLuminance)	
+				if experimental==2:
+					stepwidth = float(steps) / ((actualLuminance - colorTargetLuminance)*exp2factor)		
+				nextLuminance = actualLuminance - stepwidth	
+				printLuminance = float(nextLuminance)/steps
+				print printLuminance
+				switch_leds(colorPin, printLuminance)
+				actualLuminance = nextLuminance
