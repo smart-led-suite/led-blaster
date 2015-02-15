@@ -48,7 +48,7 @@ targetLuminances = {} # empty dictionary, will be filled right next:
 for i in range(0, len(pins)):
 	targetLuminances[pins[i]] = (int(args[i + 2]) * 10) # we have to add 2 because pins start with the third argument (1st is name of script, 2nd fade)
 
-
+print fade
 steps=1000
 stepwidth=1
 
@@ -76,6 +76,7 @@ for color in range(0, len(pins)):
 		print currentLuminance
 		if currentLuminance <= colorTargetLuminance:
 			while currentLuminance < colorTargetLuminance:
+
 				if experimental==1:
 					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
 				if experimental==2:
@@ -97,3 +98,4 @@ for color in range(0, len(pins)):
 				currentLuminance = nextLuminance
 		currentLuminances[colorPin] = currentLuminance # update currentLuminance
 		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+
