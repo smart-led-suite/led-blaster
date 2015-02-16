@@ -35,8 +35,8 @@ $white=$_GET['w'];
 //echo "Hello World   fade:";
 //echo $fade;
 
-if($fade == "") 
-  $fade=1;     // default is on
+if($fade == "") {
+  $fade=1;  }   // default is on
 if ($white==1) {   //licht an
   if($fade==1) {
     $cmd = "./universal.py 1 100 "; 
@@ -64,8 +64,8 @@ if ($white==0) {   //licht an
     echo "Licht ist aus";  } 
 }
 //else if (isset($_GET['w_off'])) {
-echo "Hallo 2";
-$cmd = "./universal.py 1 1 0 0 0 ";
+//echo "Hallo 2";
+/*$cmd = "./universal.py 1 1 0 0 0 ";
 echo $cmd;
 $val = shell_exec($cmd);
 echo $val;
@@ -73,7 +73,7 @@ echo "Licht ist aus";
 }// else if (isset($_GET('submit_l'])) {
 $cmd = "./universal.py $fade $luminance $luminance $luminance";
 shell_exec($cmd);
-//}
+//} */
 ?>
 </body>
 </html>
