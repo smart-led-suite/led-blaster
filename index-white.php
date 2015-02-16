@@ -45,16 +45,17 @@ if ($white==1) {   //licht an
     echo "Licht ist an";
 }
   else { 
-    $cmd = "./universal.py 1 100 "; 
+    $cmd = "./universal.py 1 100 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist an";  } 
 }
-if ($white==0) {   //licht an
+if ($white==0) {   //licht aus
   if($fade==1) {
-    $cmd = "./universal.py 1 0 "; 
+    $cmd = "./universal.py 1 0 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
+    echo $val;
     echo "Licht ist aus";
 }
   else { 
