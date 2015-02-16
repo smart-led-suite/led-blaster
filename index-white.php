@@ -5,11 +5,9 @@
 </head>
 <body>
 Licht an und ausschalten:
-<form method="get" action="index-white.php">
-<input type="submit" value="Licht ein" name="w_on"> <br>
-<input type="submit" value="Licht aus" name="w_off">
-</form>
 <form action="index-white.php" method="get">
+  <input type="submit" value="Licht ein" name="w_on"> 
+  <input type="submit" value="Licht aus" name="w_off"> <br> <br> 
   targetLuminance eingeben: 0 bis 100: 
   <input type="number" name="targetLuminance" min="0" max="100">
   <br>
