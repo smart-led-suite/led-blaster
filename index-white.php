@@ -6,11 +6,11 @@
 <body>
 Licht an und ausschalten:
 <form action="index-white.php" method="get">
-  <input type="submit" value="Licht ein" name="w_on"> 
-  <input type="submit" value="Licht aus" name="w_off"> <br> <br> 
-  targetLuminance eingeben: 0 bis 100: 
+  <input type="radio" value="Licht ein" name="w">Licht ein 
+  <input type="radio" value="Licht aus" name="w">Licht aus <br> <br> 
+<!--  targetLuminance eingeben: 0 bis 100: 
   <input type="number" name="luminance" min="0" max="100">
-  <br>
+  <br> -->
   <input type="radio" name="fade" value="0" checked>kein Fade
   <br>
   <input type="radio" name="fade" value="1" checked>Fade
@@ -29,6 +29,7 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <?php
 //echo "hello world1";
 $fade=$_GET['fade'];
+$white=$_GET('w')
 $luminance=$_GET['luminance'];
 //echo "Hello World   fade:";
 //echo $fade;
