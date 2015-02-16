@@ -7,7 +7,7 @@ import pickle
 
 #           r    g   b
 pins_rgb = [17, 18, 22] # red, green, blue pins
-pins_white = [27]
+pins_white = [25]
 pins = [] # pins list to work with later
 
 
