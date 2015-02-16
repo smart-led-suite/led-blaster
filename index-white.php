@@ -11,13 +11,13 @@ Licht an und ausschalten:
 </form>
 <form action="index-white.php" method="get">
   targetLuminance eingeben: 0 bis 100: 
-  <input type="number" name="targetLuminance" min="0" max="100">
+  <input type="number" name="luminance" min="0" max="100">
   <br>
   <input type="radio" name="fade" value="0" checked>kein Fade
   <br>
   <input type="radio" name="fade" value="1" checked>Fade
   <br>
-  <input type="submit">
+  <input type="submit" name="submit_l">
 </form>
 <br>
 
@@ -29,19 +29,29 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <br> <br>
 
 <?php
-echo "hello world1";
+//echo "hello world1";
 $fade=$_GET['fade'];
-echo "Hello World   fade:";
-echo $fade;
+$luminance=$_GET['luminance'];
+//echo "Hello World   fade:";
+//echo $fade;
 
 if(isset($_GET['w_on'])) {
-$val = trim(@shell_exec("./universal.py $fade 100 0 0 0 ")); 
+$cmd = "./universal.py 1 100 100 100";
+echo $cmd;
+$val =  shell_exec($cmd); 
 echo "Licht ist an";
 }
 else if (isset($_GET['w_off'])) {
-$val = trim(@shell_exec("./universal.py $fade 1 0 0 0 " ));
+echo "Hallo 2";
+$cmd = "./universal.py 1 1 0 0 0 ";
+echo $cmd;
+$val = shell_exec($cmd);
+echo $val;
 echo "Licht ist aus";
-}
+}// else if (isset($_GET('submit_l'])) {
+$cmd = "./universal.py $fade $luminance $luminance $luminance";
+shell_exec($cmd);
+//}
 ?>
 </body>
 </html>
