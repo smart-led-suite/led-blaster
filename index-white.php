@@ -39,27 +39,27 @@ if($fade == "") {
   $fade=1;  }   // default is on
 if ($white==1) {   //licht an
   if($fade==1) {
-    $cmd = "./universal.py 1 100 "; 
+    $cmd = "sudo  ./universal.py 1 100 "; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist an";
 }
   else { 
-    $cmd = "./universal.py 1 100 0 0"; 
+    $cmd = "sudo ./universal.py 1 100 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist an";  } 
 }
 if ($white==0) {   //licht aus
   if($fade==1) {
-    $cmd = "./universal.py 1 0 0 0"; 
+    $cmd = "sudo ./universal.py 1 0 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo $val;
     echo "Licht ist aus";
 }
   else { 
-    $cmd = "./universal.py 1 0 "; 
+    $cmd = "sudo ./universal.py 1 0 "; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist aus";  } 
