@@ -78,7 +78,7 @@ for color in range(0, len(pins)):
 	currentLuminance = currentLuminances[colorPin]
 	print "currentLuminance: "
 	print currentLuminance
-	if fade:
+	if int(fade) == 1:
 		if currentLuminance < colorTargetLuminance:
 			while currentLuminance < colorTargetLuminance:
 				if experimental==1:
@@ -105,5 +105,9 @@ for color in range(0, len(pins)):
 		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
 		print "targetLuminance: "
 		print colorTargetLuminance
-	elif fade == 0:
-		switch_leds(colorPin, targetLuminance)		
+	elif int(fade) == 0:
+		switch_leds(colorPin, float(colorTargetLuminance) / steps)
+		currentLuminances[colorPin] = currentLuminance # update currentLuminance
+		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+		print "targetLuminance: "
+		print colorTargetLuminance
