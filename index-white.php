@@ -6,12 +6,19 @@
 <body>
 Licht an und ausschalten:
 <form action="" method="get">
+
 <table>
 	<tr>
 		<td> weiß
 		<td> rot
 		<td> grün
 		<td> blau
+	</tr>
+	<tr>
+		<td> <input type="radio" value="-1" name="w">keine Änderung checked <br>
+		<td> <input type="radio" value="-1" name="r">keine Änderung checked <br>
+		<td> <input type="radio" value="-1" name="g">keine Änderung checked <br>
+		<td> <input type="radio" value="-1" name="b">keine Änderung checked <br>
 	</tr>
 	<tr>
 		<td> <input type="radio" value="0" name="w">0% Helligkeit  <br>
@@ -70,6 +77,9 @@ $luminanceBlue=$_GET['b'];  //wert für weiss einlesen
 if($fade == "") {
   $fade=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
 
+
+//wenn etwas in das Textfeld eingetragen wird, dann wird dieser wert der jeweiligen helligkeitFarbe zugeordnet
+//das Textfeld überschreibt also die checkboxen
 $alternativeLuminanceWhite=$_GET['luminance_white'];
 if($alternativeLuminanceWhite!="")  {
 	$luminanceWhite=$_GET['luminance_white'];
@@ -91,11 +101,11 @@ if($alternativeLuminanceBlue!="")  {
 
 echo $luminanceWhite;
  if($fade==1) {
-    $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
+    $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo $val;
-   echo "Licht ist aus";
+    echo "Licht ist aus";
     echo $luminanceWhite;
 }
   else { 
