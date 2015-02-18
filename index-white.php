@@ -15,10 +15,10 @@ Licht an und ausschalten:
 		<td> blau
 	</tr>
 	<tr>
-		<td> <input type="radio" value="-1" name="w">keine Änderung checked <br>
-		<td> <input type="radio" value="-1" name="r">keine Änderung checked <br>
-		<td> <input type="radio" value="-1" name="g">keine Änderung checked <br>
-		<td> <input type="radio" value="-1" name="b">keine Änderung checked <br>
+		<td> <input type="radio" value="-1" name="w" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="r" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="g" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="b" checked>keine Änderung  <br>
 	</tr>
 	<tr>
 		<td> <input type="radio" value="0" name="w">0% Helligkeit  <br>
