@@ -117,6 +117,6 @@ for color in range(0, len(pins)):
 	pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
 	print "targetLuminance: "
 	print colorTargetLuminance	
-	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
-		continue	#noch nicht fertig	
+#	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
+#		continue	#noch nicht fertig	
 	
