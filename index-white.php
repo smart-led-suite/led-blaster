@@ -32,10 +32,10 @@ Licht an und ausschalten:
   		<td> <input type="radio" value="100" name="b">100% Helligkeit <br> 
 	</tr>
 	<tr>
-  		<td> <input type="number" default="100" name="luminance_White" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_Red" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_Green" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_Blue" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_white" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_red" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_green" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_blue" min="0" max="100">
 	</tr> 
 </table>	
   <br> 
@@ -70,21 +70,21 @@ $luminanceBlue=$_GET['b'];  //wert für weiss einlesen
 if($fade == "") {
   $fade=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
 
-$alternativeLuminanceWhite=$_GET['luminance_White'];
+$alternativeLuminanceWhite=$_GET['luminance_white'];
 if($alternativeLuminanceWhite!="")  {
-	$luminanceWhite=$_GET['luminance_White'];
+	$luminanceWhite=$_GET['luminance_white'];
 }
-$alternativeLuminanceRed=$_GET['luminance_Red'];
+$alternativeLuminanceRed=$_GET['luminance_red'];
 if($alternativeLuminanceRed!="")  {
-	$luminanceRed=$_GET['luminance_Red'];
+	$luminanceRed=$_GET['luminance_red'];
 }
-$alternativeLuminanceGreen=$_GET['luminance_Green'];
+$alternativeLuminanceGreen=$_GET['luminance_green'];
 if($alternativeLuminanceGreen!="")  {
-	$luminanceGreen=$_GET['luminance_Green'];
+	$luminanceGreen=$_GET['luminance_green'];
 }
-$alternativeLuminanceBlue=$_GET['luminance_Blue'];
+$alternativeLuminanceBlue=$_GET['luminance_blue'];
 if($alternativeLuminanceBlue!="")  {
-	$luminanceBlue=$_GET['luminance_Blue'];
+	$luminanceBlue=$_GET['luminance_blue'];
 }
 
 //echo $luminance;
@@ -99,7 +99,7 @@ echo $luminanceWhite;
     echo $luminanceWhite;
 }
   else { 
-    $cmd = "sudo ./universal.py 0 $luminanceWhite 0 0 0"; 
+    $cmd = "sudo ./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist aus";  } 
