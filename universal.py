@@ -78,36 +78,40 @@ for color in range(0, len(pins)):
 	currentLuminance = currentLuminances[colorPin]
 	print "currentLuminance: "
 	print currentLuminance
-	if int(fade) == 1:
-		if currentLuminance < colorTargetLuminance:
+	if int(colorTargetLuminance) == -1:
+		continue # abbrechen. -1 ist Zeichen, um nichts zu verändern
+	elif int(fade) == 0: # Fade-Level 0: Nicht faden, hart ein- / ausschalten
+		switch_leds(colorPin, float(colorTargetLuminance) / steps)
+	elif int(fade) == 1: # Fade-Level 1: nacheinander Faden
+		if currentLuminance < colorTargetLuminance: # hochfaden
 			while currentLuminance < colorTargetLuminance:
 				if experimental==1:
 					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
 				if experimental==2:
 					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
-				nextLuminance = currentLuminance + stepwidth	
+				nextLuminance = currentLuminance + stepwidth
+				if(nextLuminance > colorTargetLuminance):
+					nextLuminance = colorTargetLuminance
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
-		elif currentLuminance > colorTargetLuminance:
+		elif currentLuminance > colorTargetLuminance: # runterfaden
 			while currentLuminance > colorTargetLuminance:
 				if experimental==1:
 					stepwidth = float(steps) / (currentLuminance - colorTargetLuminance)	
 				if experimental==2:
 					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
-				nextLuminance = currentLuminance - stepwidth	
+				nextLuminance = currentLuminance - stepwidth
+				if(nextLuminance > colorTargetLuminance):
+					nextLuminance = colorTargetLuminance	
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
 		else:
-			continue
-		currentLuminances[colorPin] = currentLuminance # update currentLuminance
-		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
-		print "targetLuminance: "
-		print colorTargetLuminance
-	elif int(fade) == 0:
-		switch_leds(colorPin, float(colorTargetLuminance) / steps)
-		currentLuminances[colorPin] = currentLuminance # update currentLuminance
-		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
-		print "targetLuminance: "
-		print colorTargetLuminance
+			continue # wenn currentLuminance und targetLumance das gleiche sind abbrechen
+	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
+		
+	currentLuminances[colorPin] = currentLuminance # update currentLuminance
+	pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+	print "targetLuminance: "
+	print colorTargetLuminance
