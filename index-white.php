@@ -15,15 +15,27 @@ Licht an und ausschalten:
 	</tr>
 	<tr>
 		<td> <input type="radio" value="0" name="w">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="r">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="g">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="b">0% Helligkeit  <br>
 	</tr>
 	<tr>
   		<td> <input type="radio" value="50" name="w">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="r">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="g">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="b">50% Helligkeit <br>
   	</tr>
   	<tr>
   		<td> <input type="radio" value="100" name="w">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="r">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="g">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="b">100% Helligkeit <br> 
 	</tr>
 	<tr>
-  		<td> <input type="number" default="100" name="luminance" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_White" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_Red" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_Green" min="0" max="100">
+  		<td> <input type="number" default="100" name="luminance_Blue" min="0" max="100">
 	</tr> 
 </table>	
   <br> 
@@ -45,29 +57,49 @@ nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebn
 <?php
 
 $fade=$_GET['fade'];  //fade einlesen
-$white=$_GET['w'];  //wert für weiss einlesen
-$luminance=$white; //wert für weiss auf luminance geben
+
+$luminanceWhite=$_GET['w'];  //wert für weiss einlesen
+//$luminanceWhite=$white; //wert für weiss auf luminance geben
+$luminanceRed=$_GET['r'];  //wert für weiss einlesen
+//$luminanceWhite=$white; //wert für weiss auf luminance geben
+$luminanceGreen=$_GET['g'];  //wert für weiss einlesen
+//$luminanceWhite=$white; //wert für weiss auf luminance geben
+$luminanceBlue=$_GET['b'];  //wert für weiss einlesen
+//$luminanceWhite=$white; //wert für weiss auf luminance geben
 
 if($fade == "") {
   $fade=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
 
-$alternativeLuminance=$_GET['luminance'];
-if($alternativeLuminance!="")  {
-	$luminance=$_GET['luminance'];
+$alternativeLuminanceWhite=$_GET['luminance_White'];
+if($alternativeLuminanceWhite!="")  {
+	$luminanceWhite=$_GET['luminance_White'];
 }
+$alternativeLuminanceRed=$_GET['luminance_Red'];
+if($alternativeLuminanceRed!="")  {
+	$luminanceRed=$_GET['luminance_Red'];
+}
+$alternativeLuminanceGreen=$_GET['luminance_Green'];
+if($alternativeLuminanceGreen!="")  {
+	$luminanceGreen=$_GET['luminance_Green'];
+}
+$alternativeLuminanceBlue=$_GET['luminance_Blue'];
+if($alternativeLuminanceBlue!="")  {
+	$luminanceBlue=$_GET['luminance_Blue'];
+}
+
 //echo $luminance;
 
-echo $luminance;
+echo $luminanceWhite;
  if($fade==1) {
-    $cmd = "sudo ./universal.py 1 $luminance 0 0 0"; 
+    $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo $val;
    echo "Licht ist aus";
-    echo $luminance;
+    echo $luminanceWhite;
 }
   else { 
-    $cmd = "sudo ./universal.py 0 $luminance 0 0 0"; 
+    $cmd = "sudo ./universal.py 0 $luminanceWhite 0 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist aus";  } 
