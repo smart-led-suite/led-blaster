@@ -95,10 +95,10 @@ for color in range(0, len(pins)):
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
-				currentLuminances[colorPin] = currentLuminance; # update currentLuminance
-				pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
-				print "targetLuminance: "
-				print colorTargetLuminance
+		#	currentLuminances[colorPin] = currentLuminance; # update currentLuminance
+	#		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+	#		print "targetLuminance: "
+	#		print colorTargetLuminance
 		elif currentLuminance > colorTargetLuminance: # runterfaden
 			while currentLuminance > colorTargetLuminance:
 				if experimental==1:
@@ -111,10 +111,10 @@ for color in range(0, len(pins)):
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
-				currentLuminances[colorPin] = currentLuminance; # update currentLuminance
-				pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
-				print "targetLuminance: "
-				print colorTargetLuminance
+		currentLuminances[colorPin] = currentLuminance; # update currentLuminance
+		pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
+		print "targetLuminance: "
+		print colorTargetLuminance
 		else:
 			continue # wenn currentLuminance und targetLumance das gleiche sind abbrechen
 	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
