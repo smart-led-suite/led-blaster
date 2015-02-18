@@ -106,7 +106,7 @@ for color in range(0, len(pins)):
 				if experimental==2:
 					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
 				nextLuminance = currentLuminance - stepwidth
-				if(nextLuminance > colorTargetLuminance):
+				if(nextLuminance < colorTargetLuminance):
 					nextLuminance = colorTargetLuminance	
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
