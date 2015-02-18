@@ -1,16 +1,31 @@
 <html>
 <head>
-<meta name="viewport" content="width=device-width" />
+<meta charset="UTF-8" name="viewport" content="width=device-width" />
 <title>LED Steuerung @ Home</title>
 </head>
 <body>
 Licht an und ausschalten:
 <form action="" method="get">
-  <input type="radio" value="0" name="w">0% Helligkeit  <br>
-  <input type="radio" value="50" name="w">50% Helligkeit <br>
-  <input type="radio" value="100" name="w">100% Helligkeit <br> 
-  targetLuminance eingeben: 0 bis 100: 
-  <input type="number" default="100" name="luminance" min="0" max="100">
+<table>
+	<tr>
+		<td> weiß
+		<td> rot
+		<td> grün
+		<td> blau
+	</tr>
+	<tr>
+		<td> <input type="radio" value="0" name="w">0% Helligkeit  <br>
+	</tr>
+	<tr>
+  		<td> <input type="radio" value="50" name="w">50% Helligkeit <br>
+  	</tr>
+  	<tr>
+  		<td> <input type="radio" value="100" name="w">100% Helligkeit <br> 
+	</tr>
+	<tr>
+  		<td> <input type="number" default="100" name="luminance" min="0" max="100">
+	</tr> 
+</table>	
   <br> 
   <input type="radio" name="fade" value="0" checked>kein Fade
   <br>
@@ -52,7 +67,7 @@ echo $luminance;
     echo $luminance;
 }
   else { 
-    $cmd = "sudo ./universal.py 1 $luminance 0 0 0"; 
+    $cmd = "sudo ./universal.py 0 $luminance 0 0 0"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
     echo "Licht ist aus";  } 
