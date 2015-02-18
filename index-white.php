@@ -43,12 +43,12 @@ if($fade == "") {
 //}//
 //$luminance=0;
 //echo $luminance;
-
+echo $white;
 //$alternativeLuminance=$_GET['luminance'];
 //if($alternativeLuminance!="")  {
-	$luminance=$_GET['luminance'];
+//	$luminance=$_GET['luminance'];
 //}
-//echo $luminance;
+echo $luminance;
 if ($white==1) {
 	$luminance=100;
 } 
@@ -56,7 +56,10 @@ if ($white==1) {
 
 if ($white==0) {   //licht aus
   $luminance=0;
-} 
+  $luminance=$_GET['luminance'];
+}
+
+ 
 echo $luminance;
  if($fade==1) {
     $cmd = "sudo ./universal.py 1 $luminance 0 0 0"; 
