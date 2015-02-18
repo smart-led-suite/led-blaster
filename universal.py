@@ -117,6 +117,6 @@ for color in range(0, len(pins)):
 				print colorTargetLuminance
 		else:
 			continue # wenn currentLuminance und targetLumance das gleiche sind abbrechen
-#	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
-#		continue #noch nicht fertig	
+	elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
+		continue	#noch nicht fertig	
 	
