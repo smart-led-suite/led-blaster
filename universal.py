@@ -78,7 +78,7 @@ for color in range(0, len(pins)):
 	currentLuminance = currentLuminances[colorPin]
 	print "currentLuminance: "
 	print currentLuminance
-	if int(colorTargetLuminance) == -1:
+	if int(colorTargetLuminance) == -10:
 		continue # abbrechen. -1 ist Zeichen, um nichts zu verändern
 	elif int(fade) == 0: # Fade-Level 0: Nicht faden, hart ein- / ausschalten
 		switch_leds(colorPin, float(colorTargetLuminance) / steps)
