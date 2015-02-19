@@ -11,7 +11,7 @@ pins_white = [25]
 pins = [] # pins list to work with later
 
 
-white = 1 # set to 1 for only white, to 0 for only rgb and to 2 for both
+white = 2  # set to 1 for only white, to 0 for only rgb and to 2 for both
 
 if(white == 1):
 	pins = pins_white
