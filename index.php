@@ -54,11 +54,6 @@ Licht an und ausschalten:
 </form>
 <br>
 
-
-
-
-immer erst ausschalten, wenn 'Licht ist an' dasteht und umgekehrt! <br>
-nach druecken des Knopfes WARTEN bis die Aktion abgeschlossen ist und das Ergebnis 'Licht ist aus/an' angezeigt wird!
 <br> <br>
 
 <?php
@@ -99,20 +94,20 @@ if($alternativeLuminanceBlue!="")  {
 
 //echo $luminance;
 
-echo $luminanceWhite;
+//echo $luminanceWhite;
  if($fade==1) {
     $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-    echo $cmd;
-    $val =  shell_exec($cmd); 
-    echo $val;
-    echo "Licht ist aus";
-    echo $luminanceWhite;
+   // echo $cmd;
+   // $val =  shell_exec($cmd); 
+   // echo $val;
+   // echo "Licht ist aus";
+  //  echo $luminanceWhite;
 }
   else { 
     $cmd = "sudo ./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
-    echo $cmd;
-    $val =  shell_exec($cmd); 
-    echo "Licht ist aus";  } 
+   // echo $cmd;
+   // $val =  shell_exec($cmd); 
+    //echo "Licht ist aus";  } 
 
 ?>
 </body>
