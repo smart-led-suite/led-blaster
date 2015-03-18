@@ -98,7 +98,7 @@ if($alternativeLuminanceBlue!="")  {
  if($fade==1) {
     $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
    // echo $cmd;
-   // $val =  shell_exec($cmd); 
+   $val =  shell_exec($cmd); 
    // echo $val;
    // echo "Licht ist aus";
   //  echo $luminanceWhite;
@@ -106,8 +106,9 @@ if($alternativeLuminanceBlue!="")  {
   else { 
     $cmd = "sudo ./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
    // echo $cmd;
-   // $val =  shell_exec($cmd); 
-    //echo "Licht ist aus";  } 
+    $val =  shell_exec($cmd); 
+    //echo "Licht ist aus"; 
+    } 
 
 ?>
 </body>
