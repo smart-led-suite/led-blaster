@@ -79,9 +79,10 @@ for color in range(0, len(pins)):
 	print "currentLuminance: "
 	print currentLuminance
 	if int(colorTargetLuminance) == -10:
-		continue # abbrechen. -1 ist Zeichen, um nichts zu verändern
+		continue # abbrechen. -1 (* 10) ist Zeichen, um nichts zu verändern
 	elif int(fade) == 0: # Fade-Level 0: Nicht faden, hart ein- / ausschalten
 		switch_leds(colorPin, float(colorTargetLuminance) / steps)
+		currentLuminance = colorTargetLuminance
 	elif int(fade) == 1: # Fade-Level 1: nacheinander Faden
 		if currentLuminance < colorTargetLuminance: # hochfaden
 			while currentLuminance < colorTargetLuminance:
@@ -113,7 +114,7 @@ for color in range(0, len(pins)):
 				currentLuminance = nextLuminance
 		else:
 			continue # wenn currentLuminance und targetLumance das gleiche sind abbrechen
-	currentLuminances[colorPin] = currentLuminance; # update currentLuminance
+	currentLuminances[colorPin] = currentLuminance # update currentLuminance
 	pickle.dump(currentLuminances, open(filename, "wb")) # and dump them
 	print "targetLuminance: "
 	print colorTargetLuminance	
