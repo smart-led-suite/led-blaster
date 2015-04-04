@@ -2,6 +2,9 @@
 <head>
 <meta charset="UTF-8" name="viewport" content="width=device-width" />
 <title>LED Steuerung @ Home</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="favicon.ico">
 </head>
 <body>
 Licht an und ausschalten:
@@ -96,16 +99,16 @@ if($alternativeLuminanceBlue!="")  {
 
 //echo $luminanceWhite;
  if($fade==1) {
-    $cmd = "sudo ./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-   // echo $cmd;
+    $cmd = "./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
+    echo $cmd;
    $val =  shell_exec($cmd); 
    // echo $val;
    // echo "Licht ist aus";
   //  echo $luminanceWhite;
 }
   else { 
-    $cmd = "sudo ./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
-   // echo $cmd;
+    $cmd = "./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
+    echo $cmd;
     $val =  shell_exec($cmd); 
     //echo "Licht ist aus"; 
     } 
