@@ -13,6 +13,12 @@ pins = [] # pins list to work with later
 
 white = 2  # set to 1 for only white, to 0 for only rgb and to 2 for both
 
+experimental=1
+exp1factor=0.01
+exp2factor=3
+firststepwidth=0.001 #stepwidth at currentLuminance=0 in exp1
+verschiebungY=1
+
 if(white == 1):
 	pins = pins_white
 elif(white == 0):
@@ -39,8 +45,8 @@ except Exception:
 printLuminance=0
 
 linear=0
-experimental=0
-exp2factor=3
+#experimental=1
+
 
 
 args = sys.argv # get the arguments php gave us when calling the script
@@ -53,7 +59,7 @@ for i in range(0, len(pins)):
 print "fade: "
 print fade
 steps=1000
-stepwidth=1
+stepwidth=0
 
 standard_output = sys.stdout
 
@@ -70,7 +76,7 @@ def switch_leds(pin, pwm_value):
 print "currentLuminances: "
 print currentLuminances
 
-
+stepwidth=0
 
 if int(fade) == 0: # Fade-Level 0: Nicht faden, hart ein- / ausschalten
 	print "Fadelevel 0"
@@ -80,6 +86,7 @@ if int(fade) == 0: # Fade-Level 0: Nicht faden, hart ein- / ausschalten
 		print "colorPin: "
 		print colorPin
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
+		#stepwidth=0
 		currentLuminance = currentLuminances[colorPin]
 		print "currentLuminance: "
 		print currentLuminance
@@ -98,6 +105,7 @@ elif int(fade) == 1: # Fade-Level 1: nacheinander Faden
 		colorPin = pins[color] # pin for the current color
 		print "colorPin: "
 		print colorPin
+		
 		colorTargetLuminance = float(targetLuminances[colorPin]) # targetLuminance for the current color
 		currentLuminance = currentLuminances[colorPin]
 		print "currentLuminance: "
@@ -106,24 +114,38 @@ elif int(fade) == 1: # Fade-Level 1: nacheinander Faden
 			continue # abbrechen. -1 (* 10) ist Zeichen, um nichts zu verändern
 		##
 		if currentLuminance < colorTargetLuminance: # hochfaden
+			
 			while currentLuminance < colorTargetLuminance:
 				if experimental==1:
-					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
+					stepwidth = float(currentLuminance-currentLuminances[colorPin]) * float(exp1factor)	
+					if stepwidth < 0.005:
+						stepwidth = stepwidth + 0.001
+					stepwidth += verschiebungY
 				if experimental==2:
 					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
-				nextLuminance = currentLuminance + stepwidth
+				nextLuminance = currentLuminance + stepwidth 
+				print stepwidth
+				
+				
+				print nextLuminance
 				if(nextLuminance > colorTargetLuminance):
 					nextLuminance = colorTargetLuminance
 				printLuminance = float(nextLuminance)/steps
 				switch_leds(colorPin, printLuminance)
 				currentLuminance = nextLuminance
 		elif currentLuminance > colorTargetLuminance: # runterfaden
+			#stepwidth = (currentLuminance/1000) + 1
 			while currentLuminance > colorTargetLuminance:
 				if experimental==1:
-					stepwidth = float(steps) / (currentLuminance - colorTargetLuminance)	
+					stepwidth = float(currentLuminance) * float(exp1factor)	
+					#if stepwidth < 0.005:
+					#	stepwidth = stepwidth + 0.001
+					stepwidth += verschiebungY
 				if experimental==2:
 					stepwidth = float(steps) / ((currentLuminance - colorTargetLuminance)*exp2factor)		
 				nextLuminance = currentLuminance - stepwidth
+				print stepwidth
+				print nextLuminance
 				if(nextLuminance < colorTargetLuminance):
 					nextLuminance = colorTargetLuminance	
 				printLuminance = float(nextLuminance)/steps
@@ -147,13 +169,19 @@ elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
 			##
 			if currentLuminance < colorTargetLuminance: # = hochfaden
 				if experimental==1:
-					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
+					stepwidth = float(currentLuminance-currentLuminances[colorPin]) * float(exp1factor)	
+					if stepwidth < 0.005:
+						stepwidth = stepwidth + 0.001
+					stepwidth += verschiebungY
 				if experimental==2:
 					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
 				nextLuminance = currentLuminance + stepwidth
 			elif currentLuminance > colorTargetLuminance: # = runterfaden
 				if experimental==1:
-					stepwidth = float(steps) / (colorTargetLuminance - currentLuminance)	
+					stepwidth = float(currentLuminance) * float(exp1factor)	
+					#if stepwidth < 0.005:
+					#	stepwidth = stepwidth + 0.001
+					stepwidth += verschiebungY
 				if experimental==2:
 					stepwidth = float(steps) / ((colorTargetLuminance - currentLuminance)*exp2factor)		
 				nextLuminance = currentLuminance - stepwidth
@@ -161,5 +189,7 @@ elif int(fade) == 2: # Fadel-Level 2: gleichzeitig Faden
 				continue
 			switch_leds(colorPin, float(nextLuminance) / steps)
 			currentLuminance = nextLuminance
-			currentLuminances[colorPin] = currentLuminance # update currentLuminance
+			currentLuminances[colorPin] = currentLuminance # update currentLuminance			
+	
+			
 pickle.dump(currentLuminances, open(filename, "wb")) # and dump them

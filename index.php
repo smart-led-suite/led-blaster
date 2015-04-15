@@ -51,7 +51,11 @@ Licht an und ausschalten:
   <br> 
   <input type="radio" name="fade" value="0" checked>kein Fade
   <br>
-  <input type="radio" name="fade" value="1" checked>Fade
+  <input type="radio" name="fade" value="1" checked>Fade (einzeln)
+  <br>
+  <input type="radio" name="fade" value="2" checked>Fade (synchron)
+  <br>
+  <!--<input type="number" default="5" name="speed" min="1" max="49"> Speed (1=langsam, 49=schnell)-->
   <br>
   <input type="submit" name="submit_l">
 </form>
@@ -62,6 +66,7 @@ Licht an und ausschalten:
 <?php
 
 $fade=$_GET['fade'];  //fade einlesen
+//$speed=$_GET['speed'];  //fade einlesen
 
 $luminanceWhite=$_GET['w'];  //wert für weiss einlesen
 //$luminanceWhite=$white; //wert für weiss auf luminance geben
@@ -74,6 +79,8 @@ $luminanceBlue=$_GET['b'];  //wert für weiss einlesen
 
 if($fade == "") {
   $fade=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
+if($speed == "") {
+  $speed=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
 
 
 //wenn etwas in das Textfeld eingetragen wird, dann wird dieser wert der jeweiligen helligkeitFarbe zugeordnet
@@ -99,17 +106,25 @@ if($alternativeLuminanceBlue!="")  {
 
 //echo $luminanceWhite;
  if($fade==1) {
-    $cmd = "./universal.py 1 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
+    $cmd = "./led-client.py 1 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
     echo $cmd;
    $val =  shell_exec($cmd); 
-   // echo $val;
+    echo $val;
    // echo "Licht ist aus";
   //  echo $luminanceWhite;
 }
-  else { 
-    $cmd = "./universal.py 0 $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
+elseif($fade==2) {
+	    $cmd = "./led-client.py 2 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
+	    echo $cmd;
+	   $val =  shell_exec($cmd); 
+	    echo $val;
+	   // echo "Licht ist aus";
+	  //  echo $luminanceWhite;
+}  else { 
+    $cmd = "./led-client.py 0 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
     echo $cmd;
     $val =  shell_exec($cmd); 
+    echo $val;
     //echo "Licht ist aus"; 
     } 
 
