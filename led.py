@@ -4,12 +4,14 @@ import os
 import sys
 import time
 import pickle
+import RPi.GPIO as g
 
 #           r    g   b
 pins_rgb = [17, 18, 22] # red, green, blue pins
 pins_white = [25]
-pins = [] # pins list to work with later
+pins = [] # pins map to work with later
 
+pwms = {} # holds the pwm objects
 
 white = 2  # set to 1 for only white, to 0 for only rgb and to 2 for both
 
@@ -27,11 +29,19 @@ elif(white == 2):
 	pins = pins_white
 	pins.extend(pins_rgb)
 
+print pins
+# setup PWM
+#g.setmode(g.BCM)
+#for pin in pins:
+#	g.setup(pin, g.OUT)
+#	pwms[pin] = g.PWM(pin, 1000) # 1kHz
+#	print "set pin " + str(pin) + " to pwm"
+
 
 speedfactor=2
 
 currentLuminances = {}
-filename = ".luminances.p"
+filename = "/tmp/luminances.p"
 try:
 	currentLuminances = pickle.load(open(filename, "rb"))
 	if(len(currentLuminances) == 0):
@@ -57,6 +67,11 @@ def switch_leds(pin, pwm_value):
 	print str(pin) + "=" + str(pwm_value)
 	sys.stdout = standard_output # set stdout to the original value so that we can debug
 	piblaster.close()
+	#print "val: " + str(pwm_value * 100)
+	#if(pwm_value == 0):
+	#	pwms[pin].stop()
+	#else:
+	#	pwms[pin].start(pwm_value * 100)
 
 # turn all leds off
 #for pinNr in range(len(pins)):

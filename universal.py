@@ -33,7 +33,7 @@ print pins
 speedfactor=2
 
 currentLuminances = {}
-filename = ".luminances.p"
+filename = "/tmp/luminances.p"
 try:
 	currentLuminances = pickle.load(open(filename, "rb"))
 	if(len(currentLuminances) == 0):
