@@ -1,6 +1,8 @@
 <html>
 <head>
-<meta charset="UTF-8" name="viewport" content="width=device-width" />
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>LED Steuerung @ Home</title>
 <link rel="icon" 
       type="image/ico" 
@@ -12,7 +14,7 @@ Licht an und ausschalten:
 
 <table>
 	<tr>
-		<td> weiß
+		<td> weiß / oben
 		<td> rot
 		<td> grün
 		<td> blau
@@ -30,6 +32,12 @@ Licht an und ausschalten:
 		<td> <input type="radio" value="0" name="b">0% Helligkeit  <br>
 	</tr>
 	<tr>
+  		<td> <input type="radio" value="25" name="w">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="r">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="g">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="b">25% Helligkeit <br>
+  	</tr>
+	<tr>
   		<td> <input type="radio" value="50" name="w">50% Helligkeit <br>
   		<td> <input type="radio" value="50" name="r">50% Helligkeit <br>
   		<td> <input type="radio" value="50" name="g">50% Helligkeit <br>
@@ -41,11 +49,11 @@ Licht an und ausschalten:
   		<td> <input type="radio" value="100" name="g">100% Helligkeit <br> 
   		<td> <input type="radio" value="100" name="b">100% Helligkeit <br> 
 	</tr>
-	<tr>
-  		<td> <input type="number" default="100" name="luminance_white" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_red" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_green" min="0" max="100">
-  		<td> <input type="number" default="100" name="luminance_blue" min="0" max="100">
+	<tr> <!-- alternative luminances "a_" -->
+  		<td> <input type="number" default="100" name="a_white" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_red" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_green" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_blue" min="0" max="100">
 	</tr> 
 </table>	
   <br> 
@@ -57,7 +65,7 @@ Licht an und ausschalten:
   <br>
   <!--<input type="number" default="5" name="speed" min="1" max="49"> Speed (1=langsam, 49=schnell)-->
   <br>
-  <input type="submit" name="submit_l">
+  <input type="submit" value="LEDs schalten">
 </form>
 <br>
 
@@ -85,21 +93,21 @@ if($speed == "") {
 
 //wenn etwas in das Textfeld eingetragen wird, dann wird dieser wert der jeweiligen helligkeitFarbe zugeordnet
 //das Textfeld überschreibt also die checkboxen
-$alternativeLuminanceWhite=$_GET['luminance_white'];
-if($alternativeLuminanceWhite!="")  {
-	$luminanceWhite=$_GET['luminance_white'];
+$alternativeWhite=$_GET['a_white'];
+if($a_White!="")  {
+	$luminanceWhite=$_GET['a_white'];
 }
-$alternativeLuminanceRed=$_GET['luminance_red'];
-if($alternativeLuminanceRed!="")  {
-	$luminanceRed=$_GET['luminance_red'];
+$alternativeRed=$_GET['a_red'];
+if($a_Red!="")  {
+	$luminanceRed=$_GET['a_red'];
 }
-$alternativeLuminanceGreen=$_GET['luminance_green'];
-if($alternativeLuminanceGreen!="")  {
-	$luminanceGreen=$_GET['luminance_green'];
+$alternativeGreen=$_GET['a_green'];
+if($a_Green!="")  {
+	$luminanceGreen=$_GET['a_green'];
 }
-$alternativeLuminanceBlue=$_GET['luminance_blue'];
-if($alternativeLuminanceBlue!="")  {
-	$luminanceBlue=$_GET['luminance_blue'];
+$alternativeBlue=$_GET['a_blue'];
+if($a_Blue!="")  {
+	$luminanceBlue=$_GET['a_blue'];
 }
 
 //echo $luminance;
@@ -107,25 +115,14 @@ if($alternativeLuminanceBlue!="")  {
 //echo $luminanceWhite;
  if($fade==1) {
     $cmd = "./led-client.py 1 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-    echo $cmd;
    $val =  shell_exec($cmd); 
-    echo $val;
-   // echo "Licht ist aus";
-  //  echo $luminanceWhite;
 }
 elseif($fade==2) {
 	    $cmd = "./led-client.py 2 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-	    echo $cmd;
 	   $val =  shell_exec($cmd); 
-	    echo $val;
-	   // echo "Licht ist aus";
-	  //  echo $luminanceWhite;
 }  else { 
-    $cmd = "./led-client.py 0 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; 
-    echo $cmd;
-    $val =  shell_exec($cmd); 
-    echo $val;
-    //echo "Licht ist aus"; 
+    $cmd = "./led-client.py 0 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue";
+    $val =  shell_exec($cmd);
     } 
 
 ?>
