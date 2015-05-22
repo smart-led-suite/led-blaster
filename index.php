@@ -14,7 +14,7 @@ Licht an und ausschalten:
 
 <table>
 	<tr>
-		<td> weiß / oben
+		<td> weiß 
 		<td> rot
 		<td> grün
 		<td> blau
@@ -94,19 +94,19 @@ if($speed == "") {
 //wenn etwas in das Textfeld eingetragen wird, dann wird dieser wert der jeweiligen helligkeitFarbe zugeordnet
 //das Textfeld überschreibt also die checkboxen
 $alternativeWhite=$_GET['a_white'];
-if($a_White!="")  {
+if($alternativeWhite!="")  {
 	$luminanceWhite=$_GET['a_white'];
 }
 $alternativeRed=$_GET['a_red'];
-if($a_Red!="")  {
+if($alternativeRed!="")  {
 	$luminanceRed=$_GET['a_red'];
 }
 $alternativeGreen=$_GET['a_green'];
-if($a_Green!="")  {
+if($alternativeGreen!="")  {
 	$luminanceGreen=$_GET['a_green'];
 }
 $alternativeBlue=$_GET['a_blue'];
-if($a_Blue!="")  {
+if($aalternativeBlue!="")  {
 	$luminanceBlue=$_GET['a_blue'];
 }
 
