@@ -62,7 +62,7 @@ standard_output = sys.stdout
 
 
 def switch_leds(pin, pwm_value):
-	if pwm_value >= 0.001 and pwm_value <= 1:
+	if (pwm_value >= 0.001 and pwm_value <= 1) or pwm_value==0:
 		piblaster = open("/dev/pi-blaster", "w")
 		sys.stdout = piblaster # set stdout so that the command is sent to /dev/pi-blaster
 		print str(pin) + "=" + str(pwm_value)
