@@ -100,6 +100,102 @@ int main(int argc, char* argv[]) {
 		}	
 	}
 	
+	//init variables to use with the interactive live input
+	char variable[5];
+	//command names
+	char modeName[] = "mode";
+	char waitName[] = "wait";
+  	char redb[] = "redb";
+  	char grnb[] = "grnb";
+  	char blub[] = "blub";
+  	char whtb[] = "whtb";
+  	char exit[] = "exit";
+  	char usel[] = "usel"; //useless but necessary
+  	
+  	//values
+  	uint16_t wait=0;
+  	uint16_t value;
+  	uint16_t brightness;
+  	uint16_t waitCounter = 0;
+ 	// char* pointer = NULL,  nl;
+  	int scanSuccess = 0;
+  	
+  	/*char *lineptr = NULL, nl;
+  	int n, servo;
+  	float value;*/
+	
+//	int mode = 0;
+	//int targetBrightness[4];
+	printf ("Welcome to your LED fade program \n");
+	printf ("enter exit = 1 to exit \n");
+	printf ("enter redb / grnb / blub / whtb = value to set brightness for a specific color \n");
+	printf ("Enter mode = 0/1 to set mode \n");
+	printf ("Enter wait = 0/1 (1 to wait until every color has been updated, then fade simutaneous \n");
+	
+	while(true) {
+	  printf ("Enter your configuration: ");
+	  scanSuccess = scanf ("%s = %d",&variable, &value);  
+	  printf("variable changed: %s set to %d. \n", variable, value);
+	  printf("return value: %d \n", scanSuccess);
+	  cout << variable << endl;
+	 // cout << waitName << endl;
+	  if (strcmp(exit, variable)==0) {
+	  	printf("exit program. thank you. \n");
+	  	return 0;
+	  } else if (strcmp(modeName, variable)==0) {
+	  	mode = value;
+	  } else if (strcmp(waitName, variable)==0) {
+	  	wait = value;
+	  } else if (strcmp(whtb, variable)==0) {
+	  	targetBrightness[0] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}	
+	  } else if (strcmp(redb, variable)==0) {
+	  	targetBrightness[1] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}
+	  } else if (strcmp(grnb, variable)==0) {
+	  	targetBrightness[2] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}
+	  } else if (strcmp(blub, variable)==0) {
+	  	targetBrightness[3] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}	
+	  }
+	  
+	  if (waitCounter>3) {
+	  	fadeSimultaneous(fadeDelayUs, targetBrightness);
+	  	waitCounter=0;
+	  }	
+	  cout << waitCounter << endl;
+	  cout << mode << endl;
+	  cout << wait << endl;
+	  cout << targetBrightness[0] << endl;
+	  cout << targetBrightness[1] << endl;
+	  cout << targetBrightness[2] << endl;
+	  cout << targetBrightness[3] << endl;
+	  /*	
+	  printf("sizeof %d", sizeof(variable));
+	  for (int i=0; i < sizeof(variable); i++) {
+	  	printf("value of variable[%d] is %s", i, variable[i]);
+	  }*/
+	}
+		
+		
+	
 	
 	
 	
