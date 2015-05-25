@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <string.h>
 #include <iostream>
 #include <stdio.h>
 using namespace std;
@@ -6,31 +6,73 @@ using namespace std;
 int main(int argc, char ** argv)
 {
    	 char str [80];
-  char variable[4];
+  char variable[5];
+  char modeName[] = "mode";
+  char redb[] = "redb";
+  char grnb[] = "grnb";
+  char blub[] = "blub";
+  char whtb[] = "whtb";
+  char exit[] = "exit";
+  char waitName[] = "wait";
+  bool wait;
+  int value;
   int brightness;
   int mode;
   int i;
  // char* pointer = NULL,  nl;
   int scanSuccess = 0;
   
-  char *lineptr = NULL, nl;
+  /*char *lineptr = NULL, nl;
   int n, servo;
-  float value;
+  float value;*/
 
+//int mode = 0;
+int targetBrightness[4];
+printf ("Welcome to your LED fade program \n");
+printf ("enter exit = 1 to exit \n");
+printf ("enter redb / grnb / blub / whtb = value to set brightness for a specific color \n");
+printf ("Enter mode = 0/1 to set mode \n");
+printf ("Enter wait = 0/1 (1 to wait until every color has been updated, then fade simutaneous \n");
 
-
-
-
-
+while(true) {
   printf ("Enter your configuration: ");
-  scanSuccess = scanf ("%s = %d",&variable, &brightness);  
-  printf("variable changed: %s set to %d. \n", variable, brightness);
-  printf("return value: %cd \n", scanSuccess);
+  scanSuccess = scanf ("%s = %d",&variable, &value);  
+  printf("variable changed: %s set to %d. \n", variable, value);
+  printf("return value: %d \n", scanSuccess);
+  cout << variable << endl;
+ // cout << exit << endl;
+  if (strcmp(exit, variable)==0) {
+  	printf("exit program. thank you. \n");
+  	return 0;
+  } else if (strcmp(modeName, variable)==0) {
+  	mode = value;
+  } else if (strcmp(waitName, variable)==0) {
+  	wait = value;
+  } else if (strcmp(whtb, variable)==0) {
+  	targetBrightness[0] = value;
+  } else if (strcmp(redb, variable)==0) {
+  	targetBrightness[1] = value;
+  } else if (strcmp(grnb, variable)==0) {
+  	targetBrightness[2] = value;
+  } else if (strcmp(blub, variable)==0) {
+  	targetBrightness[3] = value;
+  }
+  cout << mode << endl;
+  cout << wait << endl;
+  cout << targetBrightness[0] << endl;
+  cout << targetBrightness[1] << endl;
+  cout << targetBrightness[2] << endl;
+  cout << targetBrightness[3] << endl;
+  /*	
   printf("sizeof %d", sizeof(variable));
   for (int i=0; i < sizeof(variable); i++) {
   	printf("value of variable[%d] is %s", i, variable[i]);
+  }*/
   }
  }	
+  
+  
+  
   
    
    	/*

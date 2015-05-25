@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 	
 	
 	int pin = 17; //pin used for continious fade on 1 pin
-	uint16_t targetBrightness[4];
+	//uint16_t targetBrightness[4];
 	uint16_t mode = atoi(argv[1]);
 	
 	//init pwm
@@ -99,6 +99,10 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}	
 	}
+	
+	
+	
+	
 	
 	if (mode==0) {  //fade to targetLuminance
 		fadeAlgorithm = atoi(argv[2]);
@@ -117,8 +121,27 @@ int main(int argc, char* argv[]) {
 	
 	//uint16_t targetBrightness = 0;
 	
-		
-
+	//while (1) {
+	/*	cout << "entering loop. white=2000 to exit. color w/r/g/b" << endl;
+		for (int color; color < COLORS; color++) {
+			targetBrightness[color]=5000;
+			cout << "new targetBrightness: ";	
+			while (targetBrightness[color]==5000) {
+				cin >> targetBrightness[color];
+			}	 
+		/*	cout << "new targetBrightness w: or 2000 to exit";
+			cin >> targetBrightness[0];
+			cout << "new targetBrightness r: ";
+			cin >> targetBrightness[1];
+			cout << "new targetBrightness g: ";
+			cin >> targetBrightness[2];
+			cout << "new targetBrightness b: ";
+			cin >> targetBrightness[3];
+		}
+	if (targetBrightness[0]==2000) {
+		cout << "will exit now" << endl;
+		return 0;
+	}*/	
 	
 	//fade to target Luminance
 	if (mode==0) {
@@ -127,9 +150,11 @@ int main(int argc, char* argv[]) {
 			fadeDirectly(targetBrightness);			
 		} else if (fadeAlgorithm==1) {
 			fadeSuccessively(fadeDelayUs, targetBrightness);
+		} else if (fadeAlgorithm==2) {
+			fadeSimultaneous(fadeDelayUs, targetBrightness);
 		}
-		cout << "leds stay on for 2s..." << endl;
-		gpioDelay(2000000);
+		//cout << "leds stay on for 2s..." << endl;
+		//gpioDelay(2000000);
 	}
 	
 	
@@ -153,9 +178,11 @@ int main(int argc, char* argv[]) {
 			}
 	}
 	
+		
 	
 	
 	
+	//}
 		
 	
 	
@@ -177,11 +204,11 @@ int main(int argc, char* argv[]) {
 	/*cout << "end of program. turn all leds off" << endl; // prints !!!Hello World!!!
 	for (int color = 0; color < COLORS; color++) {
 		gpioWrite(pins[color], 0);
-	}
+	}*/
 	
 	
-	gpioTerminate();
-	cout << "gpio closed" << endl;*/
+	//gpioTerminate();
+	//cout << "gpio closed" << endl;
 	return 0;
 }
 
@@ -300,15 +327,15 @@ void fadeSuccessively(uint16_t delay, uint16_t targetBrightness[]) {
 	//uint16_t currentBrightness[4] = {0,0,0,0}; 
 	for (int color = 0; color < COLORS; color++) {
 		//if (currentBrightness[color] < targetBrightness [color]) {
-			for (currentBrightness[color]; currentBrightness[color] < targetBrightness[color]; currentBrightness[color]++) {
-				gpioPWM(pins[color], currentBrightness[color]);
-				gpioDelay(delay);
-			}
+		for (currentBrightness[color]; currentBrightness[color] < targetBrightness[color]; currentBrightness[color]++) {
+			gpioPWM(pins[color], currentBrightness[color]);
+			gpioDelay(delay);
+		}
 		//} else if (currentBrightness[color] > targetBrightness [color])	{
-			for (currentBrightness[color]; currentBrightness[color] > targetBrightness[color]; currentBrightness[color]--) {
-				gpioPWM(pins[color], currentBrightness[color]);
-				gpioDelay(delay);
-			}
+		for (currentBrightness[color]; currentBrightness[color] > targetBrightness[color]; currentBrightness[color]--) {
+			gpioPWM(pins[color], currentBrightness[color]);
+			gpioDelay(delay);
+		}
 		//}
 		gpioPWM(pins[color], targetBrightness[color]);
 	}
@@ -322,6 +349,26 @@ void fadeDirectly(uint16_t targetBrightness[]) {
 			}
 }
 
+
+void fadeSimultaneous(uint16_t delay, uint16_t targetBrightness[])
+{
+	cout << "fading leds simultaneous..." << endl;
+	for (int step = 0; step < realPWMrange; step++) {
+		for (int color = 0; color < COLORS; color++) {
+			if (currentBrightness[color] < targetBrightness [color]) {
+				currentBrightness[color]++;
+				//cout << pins[color] << " " << currentBrightness[color] << endl;
+				gpioPWM(pins[color], currentBrightness[color]);
+			} else if (currentBrightness[color] > targetBrightness [color])	{
+				currentBrightness[color]--;
+				//cout << pins[color] << " " << currentBrightness[color] << endl;
+				gpioPWM(pins[color], currentBrightness[color]);
+			}
+		}
+		gpioDelay(delay*SIMULTANEOUS_DELAY_FACTOR);
+	}
+	//fadeDirectly(targetBrightness); //to make sure everything is on the right brightness
+}
 
 
 //**************************************NOT USED******************************************

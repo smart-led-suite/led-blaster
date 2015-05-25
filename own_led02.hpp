@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <pigpio.h>
 #include <stdio.h>
+#include <string.h>
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 //#define ONE_PIN_INTERACTIVE //not working anymore, use old version if necessary 
@@ -26,6 +27,8 @@
 //currently interactive value
 #define FADE_DELAY_US 1000
 
+#define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode
+
 #define COLORS 4 //number of different leds, currently wrgb, maybe soon w/ autodetect
 
 
@@ -35,6 +38,7 @@
 //pins		w, r, g, b
 extern int pins[4];
 extern uint16_t targetBrightness[4];
+extern uint16_t currentBrightness[4];
 extern int fadeAlgorithm;
 extern int realPWMrange;
 extern int PWMrange;
@@ -46,6 +50,7 @@ bool initGeneral(void); //initializes the libary
 bool initPins(uint16_t mode); //initializes all pins
 bool initPin(int pin, uint16_t mode); //initializes all pins
 void fadeSuccessively(uint16_t delay, uint16_t targetBrightness[]);
+void fadeSimultaneous(uint16_t delay, uint16_t targetBrightness[]);
 void fadeDirectly(uint16_t targetBrightness[]);
 
 #endif
