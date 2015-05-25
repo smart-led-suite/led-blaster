@@ -27,7 +27,7 @@ int realPWMrange = 0;
 int PWMrange = 0;
 int fadeDelayUs = FADE_DELAY_US;
 
-
+uint16_t currentBrightness[4];
 
 //***********************************************************************************************
 //********************************************** MAIN *********************************************
@@ -43,14 +43,55 @@ int main(int argc, char* argv[]) {
 
 	*/	
 	
-	int pin = 17;
-	uint16_t targetBrightness[4];
 	
+	//OPEN CONFIG FILE IN OUR APPLICAITONS DIRECTORY OR CREATE IT IF IT DOESN'T EXIST
+	FILE *cbFile;
+	
+	const char *currentBrightnessFilename = "currentBrightness.led";
+
+	cbFile = fopen(currentBrightnessFilename, "rb");
+	if (cbFile)
+	{
+		//----- FILE EXISTS -----
+		fread(&currentBrightness[0], sizeof(unsigned char), 100, cbFile);
+
+		printf("File opened, some byte values: %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);
+
+		fclose(cbFile);
+	}
+	else
+	{
+		//----- FILE NOT FOUND -----
+		printf("File not found. Create new File\n");
+
+		//Write new file
+		cbFile = fopen(currentBrightnessFilename, "wb");
+		if (cbFile)
+		{
+			printf("set wrgb brightness to 0\n");
+			currentBrightness[0] = 0;
+			currentBrightness[1] = 0;
+			currentBrightness[2] = 0;
+			currentBrightness[3] = 0;
+
+			fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
+
+			fclose(cbFile);
+		}
+	}
+	
+	
+	
+	int pin = 17; //pin used for continious fade on 1 pin
+	uint16_t targetBrightness[4];
 	uint16_t mode = atoi(argv[1]);
 	
+	//init pwm
 	if(!initGeneral()) {
 		return 0;
 	}
+	
+	
 	//initialize all pins
 	for (int color = 0; color < COLORS; color++) {
 		if(!initPin(pins[color], mode)) {
@@ -59,7 +100,7 @@ int main(int argc, char* argv[]) {
 		}	
 	}
 	
-	if (!mode) {
+	if (mode==0) {  //fade to targetLuminance
 		fadeAlgorithm = atoi(argv[2]);
 		cout << "fade algorithm: " << fadeAlgorithm << endl;
 		cout << "targetBrightness w/r/g/b: ";
@@ -79,31 +120,13 @@ int main(int argc, char* argv[]) {
 		
 
 	
-	
+	//fade to target Luminance
 	if (mode==0) {
 	
 		if (fadeAlgorithm==0) {
-			fadeDirectly(targetBrightness);
-			/*for (int color = 0; color < COLORS; color++) {
-				//cout << "chosen targetBrightness[0]: " << targetBrightness[0] << endl;		
-				gpioPWM(pins[color], targetBrightness[color]);
-				cout << "set pin: " << pins[color] << " to chosen brightness (" << targetBrightness[color] << "). Ctrl+C to exit" << endl;
-			}*/	
-			//while(1); //stay in the progamm and do nothing
-			
+			fadeDirectly(targetBrightness);			
 		} else if (fadeAlgorithm==1) {
 			fadeSuccessively(fadeDelayUs, targetBrightness);
-			/*
-			cout << "fading leds chronologically..." << endl;
-			uint16_t currentBrightness[4] = {0,0,0,0}; 
-			for (int color = 0; color < COLORS; color++) {
-				for (currentBrightness[color]; currentBrightness[color] < targetBrightness[color]; currentBrightness[color]++) {
-					//cout << "chosen targetBrightness[0]: " << targetBrightness[0] << endl;		
-					gpioPWM(pins[color], currentBrightness[color]);
-					gpioDelay(fadeDelayUs);
-					//cout << "set pin: " << pins[color] << " to chosen brightness (" << targetBrightness[color] << "). Ctrl+C to exit" << endl;
-				}	
-			}*/
 		}
 		cout << "leds stay on for 2s..." << endl;
 		gpioDelay(2000000);
@@ -133,12 +156,32 @@ int main(int argc, char* argv[]) {
 	
 	
 	
-	cout << "end of program. turn all leds off" << endl; // prints !!!Hello World!!!
+		
+	
+	
+	//Write brightness to file
+		cbFile = fopen(currentBrightnessFilename, "wb");
+		if (cbFile)
+		{
+			printf("Writing brightness to file\n");
+			for (int i=0; i < 3; i++) {
+				currentBrightness[i] = targetBrightness[i];
+			}
+			
+			fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
+
+			fclose(cbFile);
+		}
+		
+		
+	/*cout << "end of program. turn all leds off" << endl; // prints !!!Hello World!!!
 	for (int color = 0; color < COLORS; color++) {
 		gpioWrite(pins[color], 0);
-	}	
+	}
+	
+	
 	gpioTerminate();
-	cout << "gpio closed" << endl;
+	cout << "gpio closed" << endl;*/
 	return 0;
 }
 
@@ -254,7 +297,7 @@ bool initPin(int pin, uint16_t mode) {
 //**************************************FADE********************
 void fadeSuccessively(uint16_t delay, uint16_t targetBrightness[]) {
 	cout << "fading leds successively..." << endl;
-	uint16_t currentBrightness[4] = {0,0,0,0}; 
+	//uint16_t currentBrightness[4] = {0,0,0,0}; 
 	for (int color = 0; color < COLORS; color++) {
 		//if (currentBrightness[color] < targetBrightness [color]) {
 			for (currentBrightness[color]; currentBrightness[color] < targetBrightness[color]; currentBrightness[color]++) {
