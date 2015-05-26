@@ -46,14 +46,14 @@ int main(int argc, char* argv[]) {
 	
 	//OPEN CONFIG FILE IN OUR APPLICAITONS DIRECTORY OR CREATE IT IF IT DOESN'T EXIST
 	FILE *cbFile;
-	
+	string a("test");
 	const char *currentBrightnessFilename = "currentBrightness.led";
 
 	cbFile = fopen(currentBrightnessFilename, "rb");
 	if (cbFile)
 	{
 		//----- FILE EXISTS -----
-		fread(&currentBrightness[0], sizeof(unsigned char), 100, cbFile);
+		fread(&currentBrightness[0], sizeof(unsigned char), 4, cbFile);
 
 		printf("File opened, some byte values: %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);
 
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
   	
   	//values
   	uint16_t wait=0;
-  	uint16_t value;
+  	uint16_t value = 0;
   	uint16_t brightness;
   	uint16_t waitCounter = 0;
  	// char* pointer = NULL,  nl;
@@ -132,7 +132,119 @@ int main(int argc, char* argv[]) {
 	printf ("Enter mode = 0/1 to set mode \n");
 	printf ("Enter wait = 0/1 (1 to wait until every color has been updated, then fade simutaneous \n");
 	
+	const char *configFilename = "config.blabla";
+	FILE *confFile;
+	
+	char fileInputString[5] = "    ";
+	char fileInputValue[20] = "   ";
+	
+	confFile = fopen(configFilename, "r");
+	
+	
+	if (confFile)
+	{
+		//----- FILE EXISTS -----
+		//while (fileInputString[0]==' ') {
+		fread(&fileInputString, sizeof(char), 4, confFile);
+		//}
+		fileInputString[5] = ' ';
+		cout << "File opened, print string " << fileInputString << endl;
+		
+		fread(&fileInputValue, sizeof(char), 20, confFile);
+		cout << "File opened, print string n2 " << fileInputValue << endl;
+		
+		//now change modes
+		 if (strcmp(exit, fileInputString)==0) {
+	  		printf("exit program. thank you. \n");
+	  	return 0;
+	  } else if (strcmp(modeName, fileInputString)==0) {
+	  	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  } else if (strcmp(waitName, fileInputString)==0) {
+	  	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  	wait = value;
+	  } else if (strcmp(whtb, fileInputString)==0) {
+	  	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  	targetBrightness[0] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}	
+	  } else if (strcmp(redb, fileInputString)==0) {
+	  	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  	targetBrightness[1] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}
+	  } else if (strcmp(grnb, fileInputString)==0) {
+	  	targetBrightness[2] = value;
+	  	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}
+	  } else if (strcmp(blub, fileInputString)==0) {
+	 	sscanf (fileInputValue, " = %d", &value);
+	  	cout << value << endl; 
+	  	mode = value;
+	  	targetBrightness[3] = value;
+	  	if (!wait) {
+	  		fadeSuccessively(fadeDelayUs, targetBrightness);
+	  	} else { 
+	  		waitCounter++;
+	  	}	
+	  }
+
+		fclose(confFile);
+		printf("clear file\n");
+
+		//Write new file
+		confFile = fopen(configFilename, "w");
+		if (confFile)
+		{
+			/*printf("write some values \n");
+			fileInputString[0] = 'c';
+
+			fwrite(&fileInputString, sizeof(fileInputString), 1, confFile) ;*/
+
+			fclose(confFile);
+		}
+		//return 0;
+	}
+	else
+	{
+		//----- FILE NOT FOUND -----
+		printf("File not found. Create new File\n");
+
+		//Write new file
+		confFile = fopen(configFilename, "w");
+		if (confFile)
+		{
+			/*printf("write some values \n");
+			fileInputString[0] = 'c';
+
+			fwrite(&fileInputString, sizeof(fileInputString), 1, confFile) ;*/
+
+			fclose(confFile);
+		}
+	}
+	
 	while(true) {
+	
+	
 	  printf ("Enter your configuration: ");
 	  scanSuccess = scanf ("%s = %d",&variable, &value);  
 	  printf("variable changed: %s set to %d. \n", variable, value);
@@ -179,7 +291,7 @@ int main(int argc, char* argv[]) {
 	  if (waitCounter>3) {
 	  	fadeSimultaneous(fadeDelayUs, targetBrightness);
 	  	waitCounter=0;
-	  }	
+	  }
 	  cout << waitCounter << endl;
 	  cout << mode << endl;
 	  cout << wait << endl;
