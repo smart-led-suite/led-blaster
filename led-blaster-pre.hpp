@@ -15,11 +15,11 @@
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 //#define ONE_PIN_INTERACTIVE //not working anymore, use old version if necessary 
-//#define CLI_FADE //set variables via cli (if ndef its made via input file inputData.txt
+#define CLI_FADE //set variables via cli (if ndef its made via input file inputData.txt
 
 
 
-//compiler params: sudo  g++ -o own_led02 own_led02.cpp -lpigpio -lrt -lpthread 
+//compiler params:  g++ -o led-blaster-pre led-blaster-pre.cpp -lpigpio -lrt -lpthread 
 
 //************* PWM CONFIG ***********************
 // default sample rate is 5 -> 5us per step
@@ -53,7 +53,7 @@ extern int fadeAlgorithm;
 extern int realPWMrange;
 extern int PWMrange;
 extern int fadeDelayUs;
-
+extern uint16_t mode;
 
 //**************** FUNCTIONS ********************************
 bool initGeneral(void); //initializes the libary
@@ -64,6 +64,6 @@ void writeCurrentBrightness(void);
 void fadeSuccessively(uint16_t delay, uint16_t targetBrightness[]);
 void fadeSimultaneous(uint16_t delay, uint16_t targetBrightness[]);
 void fadeDirectly(uint16_t targetBrightness[]);
-void modeContiniousFade(void);
+void *modeContiniousFade(void* mode);
 
 #endif
