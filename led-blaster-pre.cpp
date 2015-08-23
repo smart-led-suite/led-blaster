@@ -9,6 +9,7 @@
 //	(done)	 - introduce header file so the functions can be placed below the main part
 //	(done)	 - introduce file to save current luminances
 //	(done)	 - introduce simultaneous fadeAlgorithm
+//		 - introduce separate files
 //		 - improve simultaneous algorithm
 //		 - move currentBrightness read/write to own function
 //		 - introduce other fadeModes (aka exp fade)
@@ -18,13 +19,28 @@
 //		 - introduce config file w/ led pins etc. 
 //============================================================================
 
-#include </var/www-coming-soon/led-blaster-pre.hpp>
+#include <iostream>
+#include <cstdlib>
+#include <pigpio.h>
+#include <stdio.h>
+#include <string.h>
+#include <string>
+#include <pthread.h>
+#include <stdint.h> //libary which includes uint8_t etc.
+
+#include "modes.hpp"
+#include "fadeModes.hpp"
+#include "config.h"
+#include "currentBrightnessFileRW.hpp"
+#include "init.hpp"
+#include "led-blaster-pre.hpp"
+
 using namespace std;
 
 
 //pins		w, r, g, b
 int pins[4] = {25, 17,18,22};
-uint16_t targetBrightness[4];
+
 int fadeAlgorithm = 0;
 int realPWMrange = 0;
 int PWMrange = 0;
@@ -32,21 +48,16 @@ int fadeDelayUs = FADE_DELAY_US;
 int pin = 17; //pin used for continious fade on 1 pin
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 bool threadWasCreated = false; //default is: no thread (obviusly)
-uint16_t currentBrightness[4];
+uint16_t targetBrightness[4]; //global because of readCurrentBrightness || maybe changed in the future since we won't need the cBFile in the future
+uint16_t currentBrightness[4]; 
 
 //***********************************************************************************************
 //********************************************** MAIN *********************************************
 //*********************************************************************************************	
 
-int main(int argc, char* argv[]) {
-	/****************************************************************************************
-	they are chars and have to be converted to ints 
-		first argument argv[0]: info about filename etc
-		2nd: mode
-		3rd: not used right now
-		4/5/6/7: value for wrgb (only if mode=0)
-
-	*/	
+int main(int argc, char* argv[]) {	
+	
+	
 	
 	
 	//OPEN CONFIG FILE IN OUR APPLICAITONS DIRECTORY OR CREATE IT IF IT DOESN'T EXIST
@@ -104,10 +115,10 @@ int main(int argc, char* argv[]) {
 	//int targetBrightness[4];
 	#ifdef CLI_FADE
 	printf ("Welcome to your LED fade program \n");
-	printf ("enter exit = 1 to exit \n");
+	printf ("enter exit = 1 to exit. doesn't work for whatever reason :( \n");
 	printf ("enter redb / grnb / blub / whtb = value to set brightness for a specific color \n");
-	printf ("Enter mode = 0/1 to set mode \n");
-	printf ("Enter wait = 0/1 (1 to wait until every color has been updated, then fade simutaneous \n");
+	printf ("Enter mode = 0/1 to set mode; 0 = set brightness; 1 = continious fade \n");
+	printf ("Enter wait = x; x=0: fade to brightness; x>0: wait x times until updating brightness again \n");
 	#endif
 	
 	const char *configFilename = "inputData.txt";
@@ -123,7 +134,7 @@ while(true) {
 	  	cout << "(loop start) Enter your configuration:  ";
 	  	scanSuccess = scanf ("%s = %d",&variable, &value);  
 	  	printf("variable changed: %s set to %d. \n", variable, value);
-	  	printf("return value: %d \n", scanSuccess);
+	  	printf("return value (number of scanned variables): %d \n", scanSuccess);
 	  	if (strcmp(exit_cmd, variable)==0) {
 	  		printf("exit program. thank you. \n");
 			writeCurrentBrightness();
@@ -160,7 +171,10 @@ while(true) {
 	  		/* if (threadWasCreated)
 	  			pthread_exit(NULL); */
 	  		if (wait == 0 || waitCounter == 0) {
+	  			cout << "fading leds simultaneous..." << endl;
 		  		fadeSimultaneous(fadeDelayUs, targetBrightness);
+		  		//fadeDirectly(targetBrightness); //for testing purposes
+		  		cout << "fading leds simultaneous finished" << endl;
 		  	}
 		  	cout << "waitCounter: " << waitCounter << endl;
 			cout << "mode: " << mode << endl;
@@ -188,7 +202,10 @@ while(true) {
 	  		threadWasCreated = true;
 	  		//modeContiniousFade();
 			
-		}	
+		}
+		
+		gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
+		//gpioDelay(10000); //10ms some delay so it won't use that much cpu power 
 			
 	}
 	pthread_exit(NULL);	
@@ -197,223 +214,4 @@ while(true) {
 
 //***************************************FUNCTIONS***************************************
 
-//MODES
 
-//continious fade (mode = 1)
-// this function is initialized w/ a pointer in order to create a separate thread in main()
-void *modeContiniousFade(void*) {
-	uint16_t currentBrightnessSingle = 0;
-		cout << "continious fade mode. set pin: 17/18/22/25 R/G/B/W: " << endl;
-		int pin = 25;
-		//cin >> pin;
-		cout << "value of mode is: " << mode << endl;
-		cout << "start continuos fade on pin " << pin << ". exit with mode = 0" << endl;
-		cout << "Enter your configuration: " << endl ; //surprisingly, without endl it prints nothing (at the begin of the main loop the same command works)
-		while(mode == 1) {
-				while(currentBrightnessSingle < realPWMrange) {
-					currentBrightnessSingle++;
-					gpioPWM(pin, currentBrightnessSingle);
-					gpioDelay(fadeDelayUs);
-					//cout << currentBrightnessSingle << endl;
-				}
-				while(currentBrightnessSingle > 0) {
-					currentBrightnessSingle--;
-					gpioPWM(pin, currentBrightnessSingle);
-					gpioDelay(fadeDelayUs);
-					//cout << currentBrightnessSingle << endl;
-				}
-		}
-		mode = 0;
-		pthread_exit(NULL);
-		
-}
-
-//*********************************general INIT*******************************************
-bool initGeneral(void) {
-	#ifdef ONE_PIN_INTERACTIVE
-		cout << "enter pin (R/G/B/W || 17/18/22/25(or 27) :" << endl;
-		cin >> pin;
-		cout << "choosen pin: " << pin << endl;
-	#endif
-	
-	if (gpioInitialise() < 0)
-	{
-	   cout << "pigpio initialisation failed." << endl;
-	   return 1;
-	}
-	else
-	{
-	   cout << "pigpio initialised okay." << endl;
-	   return 0;
-	}
-}
-
-
-//***************************PINS INIT******************************************************
-
-
-bool initPin(int pin, uint16_t mode) {
-	#if PWM_CONFIG
-		int realRange = 0;
-		int setRange = 0;
-		int targetRange = 0;
-		
-	test	int targetFrequency = 0;
-		int frequency = 0;
-	
-		cout << "enter target frequency :" << endl;
-		cin >> targetFrequency;
-		cout << "set frequency to: " << targetFrequency << endl;
-		frequency = gpioSetPWMfrequency(pin, targetFrequency);
-		cout << "range was set to closest frequency: " << frequency << endl;
-		cout << "check frequency: " << gpioGetPWMfrequency(pin) << endl;	
-		
-		cout << "enter target range :" << endl;
-		cin >> targetRange;
-		cout << "set range to: " << targetRange << endl;
-		realRange = gpioSetPWMrange(pin, targetRange);
-		cout << "range was set to real range: " << realRange << endl;
-		cout << "check range: " << gpioGetPWMrange(pin) << endl;
-	#else
-		#ifdef ONE_PIN_INTERACTIVE
-		gpioSetPWMfrequency(pin, PWM_FREQUENCY);
-		cout << "check frequency: " << gpioGetPWMfrequency(pin) << endl;
-		gpioSetPWMrange(pin, PWM_RANGE);
-		#endif
-		//for all pins now done after defining as an output
-	#endif		
-	
-	
-	if (gpioSetMode(pin, 1)) {
-		cout << "error while setting " << pin << " to output" << endl;
-		return 1;
-	}
-	cout << "set " << pin << " to output" << endl;
-	
-	gpioSetPWMfrequency(pin, PWM_FREQUENCY);
-	cout << "check frequency: " << gpioGetPWMfrequency(pin) << endl;
-	gpioSetPWMrange(pin, PWM_RANGE);
-	realPWMrange = gpioGetPWMrealRange(pin);
-	cout << "check real pwm range: " << realPWMrange << endl;
-	PWMrange = gpioGetPWMrange(pin);
-	cout << "check pwm range: " << PWMrange << endl;
-		
-	#ifdef ONE_PIN_INTERACTIVE
-	//if (!gpioSetMode(pin, 1)) {
-	//	cout << "set " << pin << " to output" << endl;
-	//}			
-	/*int realPWMrange = gpioSetPWMrange(pin, PWM_RANGE);
-	cout << "pwm range set to: "  << endl;
-	cout << realPWMrange  << endl;*/
-	
-	if (!gpioPWM(pin, 0)) {
-		cout << "pwm set to 0 correctly" << endl;
-	}
-	#endif
-	return 0;
-}
-
-//*************** R/W CURRENT BRIGHTNESS ************************
-
-
-void readCurrentBrightness(void) {
-	FILE *cbFile;
-	const char *currentBrightnessFilename = "currentBrightness.led";
-
-	cbFile = fopen(currentBrightnessFilename, "rb");
-	if (cbFile)
-	{
-		//----- FILE EXISTS -----
-		
-		fread(&currentBrightness[0], sizeof(unsigned char), 4, cbFile);
-
-		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);
-
-		fclose(cbFile);
-	}
-	else
-	{
-		//----- FILE NOT FOUND -----
-		printf("File not found. Create new File\n");
-
-		//Write new file
-		cbFile = fopen(currentBrightnessFilename, "wb");
-		if (cbFile)
-		{
-			printf("set wrgb brightness to 0\n");
-			currentBrightness[0] = 0;
-			currentBrightness[1] = 0;
-			currentBrightness[2] = 0;
-			currentBrightness[3] = 0;
-
-			fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
-
-			fclose(cbFile);
-		}
-	}
-}
-
-//Write brightness to file
-void writeCurrentBrightness (void) {
-	FILE *cbFile;
-	const char *currentBrightnessFilename = "currentBrightness.led";
-	cbFile = fopen(currentBrightnessFilename, "wb");
-	if (cbFile)
-	{
-		printf("Writing brightness to file\n");
-		for (int i=0; i < 3; i++) {
-			currentBrightness[i] = targetBrightness[i];
-		}		
-		fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
-		fclose(cbFile);
-	}
-}		
-
-//**************************************FADE********************
-void fadeSuccessively(uint16_t delay, uint16_t targetBrightness[]) {
-	cout << "fading leds successively..." << endl;
-	//uint16_t currentBrightness[4] = {0,0,0,0}; 
-	for (int color = 0; color < COLORS; color++) {
-		//if (currentBrightness[color] < targetBrightness [color]) {
-		for (currentBrightness[color]; currentBrightness[color] < targetBrightness[color]; currentBrightness[color]++) {
-			gpioPWM(pins[color], currentBrightness[color]);
-			gpioDelay(delay);
-		}
-		//} else if (currentBrightness[color] > targetBrightness [color])	{
-		for (currentBrightness[color]; currentBrightness[color] > targetBrightness[color]; currentBrightness[color]--) {
-			gpioPWM(pins[color], currentBrightness[color]);
-			gpioDelay(delay);
-		}
-		//}
-		gpioPWM(pins[color], targetBrightness[color]);
-	}
-}
-
-void fadeDirectly(uint16_t targetBrightness[]) {
-	for (int color = 0; color < COLORS; color++) {
-				//cout << "chosen targetBrightness[0]: " << targetBrightness[0] << endl;		
-				gpioPWM(pins[color], targetBrightness[color]);
-				cout << "set pin: " << pins[color] << " to chosen brightness (" << targetBrightness[color] << "). Ctrl+C to exit" << endl;
-			}
-}
-
-
-void fadeSimultaneous(uint16_t delay, uint16_t targetBrightness[])
-{
-	cout << "fading leds simultaneous..." << endl;
-	for (int step = 0; step < realPWMrange; step++) {
-		for (int color = 0; color < COLORS; color++) {
-			if (currentBrightness[color] < targetBrightness [color]) {
-				currentBrightness[color]++;
-				//cout << pins[color] << " " << currentBrightness[color] << endl;
-				gpioPWM(pins[color], currentBrightness[color]);
-			} else if (currentBrightness[color] > targetBrightness [color])	{
-				currentBrightness[color]--;
-				//cout << pins[color] << " " << currentBrightness[color] << endl;
-				gpioPWM(pins[color], currentBrightness[color]);
-			}
-		}
-		gpioDelay(delay*SIMULTANEOUS_DELAY_FACTOR);
-	}
-	//fadeDirectly(targetBrightness); //to make sure everything is on the right brightness
-}
