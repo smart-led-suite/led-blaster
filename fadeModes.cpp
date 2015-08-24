@@ -1,6 +1,7 @@
 
 #include "fadeModes.hpp"
 #include "led-blaster-pre.hpp"
+#include "config.h"
 #include <iostream>
 #include <cstdlib>
 #include <pigpio.h>

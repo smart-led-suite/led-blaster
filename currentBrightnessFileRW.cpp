@@ -11,7 +11,8 @@
 
 
 
-void readCurrentBrightness(void) {
+void readCurrentBrightness(void) 
+{
 	FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.led";
 
@@ -55,10 +56,12 @@ void writeCurrentBrightness (void) {
 	cbFile = fopen(currentBrightnessFilename, "wb");
 	if (cbFile)
 	{
+		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);	
 		printf("Writing brightness to file\n");
-		for (int i=0; i < 3; i++) {
+		/*for (int i=0; i < 3; i++) {  //commented because we want to save the current brightness not the target brightness ;)
 			currentBrightness[i] = targetBrightness[i];
-		}		
+			
+		}*/		
 		fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
 		fclose(cbFile);
 	}

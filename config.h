@@ -3,7 +3,12 @@
 
 /* USEFUL DEVELOPER INFO
 
-	compiler params: g++ -o led-blaster-pre led-blaster-pre.cpp fadeModes.cpp currentBrightnessFileRW.cpp init.cpp modes.cpp  -lpigpio -lrt -lpthread 
+compiler params:  g++ -g -o led-blaster-pre led-blaster-pre.cpp fadeModes.cpp currentBrightnessFileRW.cpp init.cpp modes.cpp  -lpigpio -lrt -lpthread 
+
+
+EVERY NEW MODE WHICH USES A WHILE LOOP is should stop it's loop when his mode is no longer active (mode is therefore a global variable)
+
+A client program should ALWAYS change mode to 0 if it wants to adjust the individual brightness, otherwise the leds will flicker and won't behave as expected!
 
 
 */

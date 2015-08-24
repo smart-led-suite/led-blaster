@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <pigpio.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <string>
 #include <pthread.h>
@@ -21,13 +23,15 @@ using namespace std;
 // this function is initialized w/ a pointer in order to create a separate thread in main()
 void *modeContiniousFade(void*) 
 {
+	
 	uint16_t currentBrightnessSingle = 0;
-	cout << "continious fade mode. set pin: 17/18/22/25 R/G/B/W: " << endl;
 	int pin = 25;
-	//cin >> pin;
-	cout << "value of mode is: " << mode << endl;
-	cout << "start continuos fade on pin " << pin << ". exit with mode = 0" << endl;
-	cout << "Enter your configuration: " << endl ; //surprisingly, without endl it prints nothing (at the begin of the main loop the same command works)
+	
+	//if ctrl+c is pressed we want to terminate the gpios and close all open threads. therefore we'll want to catch the ctrl+c by the user
+	//signal(SIGINT, terminateLedBlaster);
+	signal(SIGINT, ledBlasterTerminate);
+	
+	cout << "start continuos fade on pin " << pin << ". exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
 	while(mode == 1) 
 	{
 		while(currentBrightnessSingle < realPWMrange) 
