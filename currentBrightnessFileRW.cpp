@@ -14,9 +14,9 @@
 void readCurrentBrightness(void) 
 {
 	FILE *cbFile;
-	const char *currentBrightnessFilename = "currentBrightness.led";
+	const char *currentBrightnessFilename = "currentBrightness.txt";
 
-	cbFile = fopen(currentBrightnessFilename, "rb");
+	cbFile = fopen(currentBrightnessFilename, "r");
 	if (cbFile)
 	{
 		//----- FILE EXISTS -----
@@ -33,7 +33,7 @@ void readCurrentBrightness(void)
 		printf("File not found. Create new File\n");
 
 		//Write new file
-		cbFile = fopen(currentBrightnessFilename, "wb");
+		cbFile = fopen(currentBrightnessFilename, "w");
 		if (cbFile)
 		{
 			printf("set wrgb brightness to 0\n");
@@ -52,8 +52,8 @@ void readCurrentBrightness(void)
 //Write brightness to file
 void writeCurrentBrightness (void) {
 	FILE *cbFile;
-	const char *currentBrightnessFilename = "currentBrightness.led";
-	cbFile = fopen(currentBrightnessFilename, "wb");
+	const char *currentBrightnessFilename = "currentBrightness.txt";
+	cbFile = fopen(currentBrightnessFilename, "w");
 	if (cbFile)
 	{
 		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);	
