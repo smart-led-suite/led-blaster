@@ -31,4 +31,5 @@ extern uint16_t mode;
 
 //**************** FUNCTIONS ********************************
 void ledBlasterTerminate(int dummy); //function which terminates the program safely. needs the dummy variable to be called by the sigHandler!
+void ledBlasterTerminateFast(int dummy); //same but FASTER
 #endif

@@ -13,9 +13,9 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 */
 
-// DEFINE PROGRAM OPTIONS (comment to disable unless otherwise noted)
+//************************* DEFINE PROGRAM OPTIONS (comment to disable unless otherwise noted)******************************+
 
-#define DEBUG //define DEBUG information
+//#define DEBUG //define DEBUG information
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 
@@ -24,20 +24,17 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //#define DETAILED_PIN_INIT_INFORMATION //detailed info in pin init 
 
-
-
-
-
-
 #define FADE_DELAY_US 1000 //default value of fadeDelayUs
 
 #define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode (useful?)
 
 #define COLORS 4 //number of different leds, currently wrgb, maybe soon w/ autodetect
 
+//if activated, you can i.e. adjust the speed variable without restarting mode 1 etc. 
+#define MODE_LIVE_MANIPULATING  //according to the pthread documentation this is NOT recommended. we may delete this option in the future if it causes problems.
 
-
-
+#define SIGINT_PIBLASTER_TERMINATE_TIME_VALUE 1000 //time value which is send to fade function if sigint is detected (i.e. because of ctrl+c)
+#define SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE 50 //time value which is send to fade function if sigterm is detected (i.e. because of kill or killall command)
 
 //********************************ADVANCED OPTIONS****************************************************************
 
