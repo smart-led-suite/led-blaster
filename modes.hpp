@@ -2,5 +2,5 @@
 #define _modes_hpp
 
 void *modeContiniousFade(void* mode);
-
+void *modeContiniousFadeRandom(void* time); 
 #endif
