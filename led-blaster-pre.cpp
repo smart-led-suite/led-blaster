@@ -5,18 +5,19 @@
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
 // ToDo	       : 
-//	(done)	 - new universal initPin
-//	(done)	 - introduce header file so the functions can be placed below the main part
-//	(done)	 - introduce file to save current luminances
-//	(done)	 - introduce simultaneous fadeAlgorithm
-//		 - introduce separate files
-//		 - improve simultaneous algorithm
-//		 - move currentBrightness read/write to own function
-//		 - introduce other fadeModes (aka exp fade)
-//		 - introduce pipes (major)
-//		 - introduce some other modes (fade w/ overlap of different colors)
-//		 - introduce music mode
-//		 - introduce config file w/ led pins etc. 
+//	(done)		 - new universal initPin
+//	(done)		 - introduce header file so the functions can be placed below the main part
+//	(done)		 - introduce file to save current luminances
+//	(done)		 - introduce simultaneous fadeAlgorithm
+//			 - introduce separate files
+//			 - improve simultaneous algorithm
+//			 - move currentBrightness read/write to own function
+//			 - introduce other fadeModes (aka exp fade)
+//	(done, untested) - introduce pipes (major)
+//		 	 - introduce some other modes (fade w/ overlap of different colors)
+//			 - introduce music mode
+//			 - introduce config file w/ led pins etc.
+//			 - tidying up code changes due to implementation of FIFO (BLOCKER)
 //============================================================================
 
 #include <iostream>
@@ -71,14 +72,22 @@ int main(int argc, char* argv[]) {
 	bool modeOnethreadWasCreated = false; //default is: no thread (obviusly)
 	bool mode2threadWasCreated = false; //default is: no thread (obviusly)
 	//init variables to use with the interactive live input
-	char variable[5] = "    ";
-	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
-  	//float value = 0; declared later
-  	uint16_t brightness;
   	uint16_t waitCounter = 0; //used only in live mode. 
-  	int scanSuccess = 0;
 	int fadeTimeMs = 1000; //time variable in ms; default is 1000
 	int speed = 1; //speedvariable for mode1
+	
+	// FIFO vars
+	char *lineptr = NULL, nl; // pointer to line currently being read
+	size_t linelen; // length of line read
+	int n; // needed to check if anything was read, and how many parts were detected during sscanf
+	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
+	char cmd[] = "                   "; // command (before "=")
+	float value; // brightness (after "=")
+	
+	int sleep = 50000; // us to sleep
+	
+	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
+	
   	//init variables needed for thread creation
   	
 	
