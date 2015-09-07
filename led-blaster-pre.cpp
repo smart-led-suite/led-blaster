@@ -38,6 +38,10 @@
 #include "init.hpp"
 #include "led-blaster-pre.hpp"
 
+
+// MOVE #defines into header
+#define FIFO_FILE	"/dev/led-blaster"
+
 using namespace std;
 
 
@@ -107,52 +111,80 @@ int main(int argc, char* argv[]) {
 	//if the kill command is send (SIGTERM) we want to terminate the gpios and close all open threads a bit faster than if ctrl+c is detected
 	signal(SIGTERM, ledBlasterTerminateFast);
 	
-	while(true) {
 	
-	  	cout << "Enter your configuration:  ";
-	  	scanSuccess = scanf ("%s = %d",&variable, &value);  
-	  	printf("variable changed: %s set to %d. \n", variable, value);
-	  	printf("return value (number of scanned variables): %d \n", scanSuccess);
-	  	if (strcmp("exit", variable)==0) //strcmp compares c strings and returns 0 if they are the same
+	
+	
+	// FIFO preparations
+	FILE *fifo_file;
+
+        //Create the FIFO if it does not exist 
+        umask(0);
+        mknod(FIFO_FILE, S_IFIFO|0666, 0);
+
+        fifo_file = fopen(FIFO_FILE, "r");
+	
+	char *lineptr = NULL, nl; // pointer to line currently being read
+	size_t linelen; // length of line read
+	int n; // needed to check if anything was read, and how many parts were detected during sscanf
+	
+	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
+	char cmd[] = "                   "; // command (before "=")
+	float value; // brightness (after "=")
+	
+	int sleep = 50000; // us to sleep
+	
+	while(true) {
+		// READ COMMAND + VALUE
+		if ((n = getline(&lineptr, &linelen, fp)) < 0) { // if no lines read -> wait and repeat
+			usleep(sleep);
+			continue;
+		}
+		printf("[%d]%s\n", n, lineptr);
+		n = sscanf(lineptr, "%[^=]=%f%c", &cmd, &value, &nl);
+		
+		printf("n: %d, cmd: %s, br: %f\n", n, cmd, value);
+		
+		// PROCESS COMMAND
+	  	if (strcmp("exit", cmd)==0) //strcmp compares c strings and returns 0 if they are the same
 	  	{
 	  		ledBlasterTerminate(0); //terminates LEDBlaster. function needs an int as argument which is useless (but necessary for signal() syntax
 			//return 0;
 	  	}
-	  	else  if (strcmp("mode", variable)==0) 
+	  	else  if (strcmp("mode", cmd)==0) 
 	  	{
 	  		mode = value;
 	  	}
-		else if (strcmp("time", variable)==0)
+		else if (strcmp("time", cmd)==0)
 	  	{
 			fadeTimeMs = value;
 		}
-		else if (strcmp("sped", variable)==0)
+		else if (strcmp("speed", cmd)==0)
 	  	{
 			speed = value;
 		}
-		if (mode == 0) { //mode statement is here because we only need these variables in mode0
-		  	if (strcmp("wait", variable)==0) 
+		if (mode == 0) { //mode statement is here because we only need these cmds in mode0
+		  	if (strcmp("wait", cmd)==0) 
 		  	{
 		  		waitCounter = value;
 		  	}
-		  	else if (strcmp("whtb", variable)==0) 
+		  	else if (strcmp("w", cmd)==0) 
 		  	{
 		  		targetBrightness[0] = value;
 		  		if (waitCounter) 
 		  		{
 			  		waitCounter--;
 			  	}	
-		  	} else if (strcmp("redb", variable)==0) {
+		  	} else if (strcmp("r", cmd)==0) {
 		  		targetBrightness[1] = value;
 		  		if (waitCounter) {
 			  			waitCounter--;
 			  		}
-		  	} else if (strcmp("grnb", variable)==0) {
+		  	} else if (strcmp("g", cmd)==0) {
 		  		targetBrightness[2] = value;
 		  		if (waitCounter) {
 			  			waitCounter--;
 			  		}
-		  	} else if (strcmp("blub", variable)==0) {
+		  	} else if (strcmp("b", cmd)==0) {
 		  		targetBrightness[3] = value;
 		  		if (waitCounter) {
 			  			waitCounter--;
@@ -235,7 +267,7 @@ int main(int argc, char* argv[]) {
 		gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
 		//gpioDelay(10000); //10ms some delay so it won't use that much cpu power 
 			
-	}
+	}*/ // END NOW-INVALID CODE 
 	pthread_exit(NULL);	
 }
 
