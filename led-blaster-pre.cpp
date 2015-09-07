@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	//init variables to use with the interactive live input
 	char variable[5] = "    ";
 	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
-  	uint32_t value = 0;
+  	float value = 0;
   	uint16_t brightness;
   	uint16_t waitCounter = 0; //used only in live mode. 
   	int scanSuccess = 0;
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
 	
 	while(true) {
 		// READ COMMAND + VALUE
-		if ((n = getline(&lineptr, &linelen, fp)) < 0) { // if no lines read -> wait and repeat
+		if ((n = getline(&lineptr, &linelen, fifo_file)) < 0) { // if no lines read -> wait and repeat
 			usleep(sleep);
 			continue;
 		}
