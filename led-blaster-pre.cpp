@@ -77,6 +77,8 @@ int main(int argc, char* argv[]) {
 	int speed = 1; //speedvariable for mode1
 	
 	// FIFO vars
+	FILE *fifo_file;
+	
 	char *lineptr = NULL, nl; // pointer to line currently being read
 	size_t linelen; // length of line read
 	int n; // needed to check if anything was read, and how many parts were detected during sscanf
@@ -127,23 +129,12 @@ int main(int argc, char* argv[]) {
 	
 	
 	// FIFO preparations
-	FILE *fifo_file;
-
         //Create the FIFO if it does not exist 
         umask(0);
         mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
         fifo_file = fopen(FIFO_FILE, "r");
 	
-	char *lineptr = NULL, nl; // pointer to line currently being read
-	size_t linelen; // length of line read
-	int n; // needed to check if anything was read, and how many parts were detected during sscanf
-	
-	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
-	char cmd[] = "                   "; // command (before "=")
-	float value; // brightness (after "=")
-	
-	int sleep = 50000; // us to sleep
 	
 	while(true) {
 		// READ COMMAND + VALUE
