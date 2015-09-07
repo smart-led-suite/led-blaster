@@ -30,6 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <linux/stat.h>
 
 #include "modes.hpp"
 #include "fadeModes.hpp"
@@ -267,7 +270,7 @@ int main(int argc, char* argv[]) {
 		gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
 		//gpioDelay(10000); //10ms some delay so it won't use that much cpu power 
 			
-	}*/ // END NOW-INVALID CODE 
+	} // END NOW-INVALID CODE 
 	pthread_exit(NULL);	
 }
 
