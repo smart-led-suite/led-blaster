@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	//init variables to use with the interactive live input
 	char variable[5] = "    ";
 	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
-  	float value = 0;
+  	//float value = 0; declared later
   	uint16_t brightness;
   	uint16_t waitCounter = 0; //used only in live mode. 
   	int scanSuccess = 0;
