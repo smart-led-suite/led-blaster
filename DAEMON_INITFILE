@@ -1,0 +1,27 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          led-blaster
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Daemon for LED control on Raspberry Pi
+# Description:       This daemon makes controlling LED strips via a Raspberry Pi much easier. It
+#                    provides fading to a desired brightness for each white, red, green and blue as  #                    well as continuous fade modes. led-blaster is controlled via a FIFO
+### END INIT INFO
+# Author: <daniel.buecheler@t-online.de>
+
+case "$1" in 
+	start)
+		/opt/led-blaster
+		;;
+	stop)
+		killall led-blaster
+		;;
+	restart)
+		killall led-blaster
+		/opt/led-blaster
+		;;
+esac
+
+exit 0
