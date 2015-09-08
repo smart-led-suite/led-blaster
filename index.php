@@ -57,11 +57,15 @@ Licht an und ausschalten:
 	</tr> 
 </table>	
   <br> 
-  <input type="radio" name="fade" value="0" checked>kein Fade
+  <input type="radio" name="mode" value="0" checked>Fade zu oben definierten Farben
   <br>
-  <input type="radio" name="fade" value="1" checked>Fade (einzeln)
+  <input type="radio" name="mode" value="1" >dauerhafter FadeMode 1 (WRGB an/aus)
   <br>
-  <input type="radio" name="fade" value="2" checked>Fade (synchron)
+  <input type="number" default="1" name="speed" min="1" max="100"> Speed-Variable für Mode1 (Faktor, je höher desto langsamer der Fade)
+  <br>
+  <input type="radio" name="mode" value="2" >dauerhafter FadeMode 2 (von zufallsfarbe zu zufallsfarbe)
+  <br>
+  <input type="number" default="1" name="time" min="1" max="25000">Time Variable von Mode2, 1000ms = 1s bis nächste Farbe erreicht
   <br>
   <!--<input type="number" default="5" name="speed" min="1" max="49"> Speed (1=langsam, 49=schnell)-->
   <br>
@@ -73,8 +77,9 @@ Licht an und ausschalten:
 
 <?php
 
-$fade=$_GET['fade'];  //fade einlesen
-//$speed=$_GET['speed'];  //fade einlesen
+$mode=$_GET['mode'];  //fade einlesen
+$speed=$_GET['speed'];  //speed einlesen
+$time=$_GET['time']; 	//time einlesen
 
 $luminanceWhite=$_GET['w'];  //wert für weiss einlesen
 //$luminanceWhite=$white; //wert für weiss auf luminance geben
@@ -85,11 +90,14 @@ $luminanceGreen=$_GET['g'];  //wert für weiss einlesen
 $luminanceBlue=$_GET['b'];  //wert für weiss einlesen
 //$luminanceWhite=$white; //wert für weiss auf luminance geben
 
-if($fade == "") {
-  $fade=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
-if($speed == "") {
-  $speed=1;  }   // default is on || immer an, da 0 in python noch nicht realisiert ist
-
+if($speed == "") 
+{
+  	$speed=1;     // default is factor 1
+}
+if($time == "") 
+{
+  	$time=1000;     // default is time=1000
+}
 
 //wenn etwas in das Textfeld eingetragen wird, dann wird dieser wert der jeweiligen helligkeitFarbe zugeordnet
 //das Textfeld überschreibt also die checkboxen
@@ -106,24 +114,89 @@ if($alternativeGreen!="")  {
 	$luminanceGreen=$_GET['a_green'];
 }
 $alternativeBlue=$_GET['a_blue'];
-if($aalternativeBlue!="")  {
+if($alternativeBlue!="")  {
 	$luminanceBlue=$_GET['a_blue'];
 }
+
+echo "alternativeBlue: " . $alternativeBlue . "<br> luminanceBlue: " . $luminanceBlue . "<br>";
+
+$numberOfChangedBrightness = 0;
+if ($luminanceWhite != -1) 
+{
+	$numberOfChangedBrightness++;
+	$luminanceWhite = $luminanceWhite * 10;
+}
+if ($luminanceRed != -1) 
+{
+	$numberOfChangedBrightness++;
+	$luminanceRed = $luminanceRed * 10;
+}
+if ($luminanceGreen != -1) 
+{
+	$numberOfChangedBrightness++;
+	$luminanceGreen = $luminanceGreen * 10;
+}
+if ($luminanceBlue != -1) 
+{
+	$numberOfChangedBrightness++;
+	$luminanceBlue = $luminanceBlue * 10;
+}
+
 
 //echo $luminance;
 
 //echo $luminanceWhite;
- if($fade==1) {
-    $cmd = "./led-client.py 1 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-   $val =  shell_exec($cmd); 
+if($mode==0) {								//fade to desired color/brightness
+	$cmd = "echo mode=0 > /dev/led-blaster"; 			//enter mode 0
+	$val =  shell_exec($cmd); 
+	echo $cmd . "<br>";							//debugging info (only used at the beginning)
+	$cmd = "echo wait=$numberOfChangedBrightness > /dev/led-blaster"; 			//set wait counter to $numberOfChangedBrightness (itll fade after changing four colorBrightnesses if everything was changed
+	$val =  shell_exec($cmd); 
+	echo $cmd . "<br>";							//debugging info (only used at the beginning)
+	if ($luminanceWhite != -1)
+	{
+		$cmd = "echo w=$luminanceWhite > /dev/led-blaster"; 	//set each brightness WRGB
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
+	}
+	if ($luminanceRed != -1)
+	{
+		$cmd = "echo r=$luminanceRed > /dev/led-blaster"; 		//set each brightness WRGB
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";
+	}							//debugging info (only used at the beginning)
+	if ($luminanceGreen != -1)
+	{
+		$cmd = "echo g=$luminanceGreen > /dev/led-blaster"; 	//set each brightness WRGB
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";
+		}
+	if ($luminanceBlue != -1)
+	{								//debugging info (only used at the beginning)
+		$cmd = "echo b=$luminanceBlue > /dev/led-blaster"; 	//set each brightness WRGB
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
+	}
 }
-elseif($fade==2) {
-	    $cmd = "./led-client.py 2 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue"; //print to python script
-	   $val =  shell_exec($cmd); 
-}  else { 
-    $cmd = "./led-client.py 0 $speed $luminanceWhite $luminanceRed $luminanceGreen $luminanceBlue";
-    $val =  shell_exec($cmd);
-    } 
+
+else
+{
+	$cmd = "echo mode=$mode > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
+	$val =  shell_exec($cmd); 
+	echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
+	if ($mode == 1)
+	{
+		$cmd = "echo speed=$speed > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
+	}
+	else if ($mode == 2)
+	{	
+		$cmd = "echo time=$time > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
+		$val =  shell_exec($cmd); 
+		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
+	}
+}
 
 ?>
 </body>
