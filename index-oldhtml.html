@@ -1,0 +1,79 @@
+<html>
+<head>
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>(beta) LED Steuerung @ Home</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="favicon.ico">
+</head>
+<body>
+Licht an und ausschalten:
+<form action="fadeOld.php" method="get">
+
+<table>
+	<tr>
+		<td> weiß 
+		<td> rot
+		<td> grün
+		<td> blau
+	</tr>
+	<tr>
+		<td> <input type="radio" value="-1" name="w" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="r" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="g" checked>keine Änderung  <br>
+		<td> <input type="radio" value="-1" name="b" checked>keine Änderung  <br>
+	</tr>
+	<tr>
+		<td> <input type="radio" value="0" name="w">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="r">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="g">0% Helligkeit  <br>
+		<td> <input type="radio" value="0" name="b">0% Helligkeit  <br>
+	</tr>
+	<tr>
+  		<td> <input type="radio" value="25" name="w">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="r">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="g">25% Helligkeit <br>
+  		<td> <input type="radio" value="25" name="b">25% Helligkeit <br>
+  	</tr>
+	<tr>
+  		<td> <input type="radio" value="50" name="w">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="r">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="g">50% Helligkeit <br>
+  		<td> <input type="radio" value="50" name="b">50% Helligkeit <br>
+  	</tr>
+  	<tr>
+  		<td> <input type="radio" value="100" name="w">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="r">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="g">100% Helligkeit <br> 
+  		<td> <input type="radio" value="100" name="b">100% Helligkeit <br> 
+	</tr>
+	<tr> <!-- alternative luminances "a_" -->
+  		<td> <input type="number" default="100" name="a_white" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_red" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_green" min="0" max="100">
+  		<td> <input type="number" default="100" name="a_blue" min="0" max="100">
+	</tr> 
+</table>	
+  <br> 
+  <input type="radio" name="mode" value="0" checked>Fade zu oben definierten Farben
+  <br>
+  <input type="radio" name="mode" value="1" >dauerhafter FadeMode 1 (WRGB an/aus)
+  <br>
+  <input type="number" default="1" name="speed" min="1" max="100"> Speed-Variable für Mode1 (Faktor, je höher desto langsamer der Fade)
+  <br>
+  <input type="radio" name="mode" value="2" >dauerhafter FadeMode 2 (von zufallsfarbe zu zufallsfarbe)
+  <br>
+  <input type="number" default="1" name="time" min="1" max="25000">Time Variable von Mode2, 1000ms = 1s bis nächste Farbe erreicht
+  <br>
+  <!--<input type="number" default="5" name="speed" min="1" max="49"> Speed (1=langsam, 49=schnell)-->
+  <br>
+  <input type="submit" value="LEDs schalten">
+</form>
+<br>
+ <a href="wecker.php">Wecker Funktion (beta)</a> 
+
+<br> <br>
+</body>
+</html>
