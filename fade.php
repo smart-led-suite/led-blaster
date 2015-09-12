@@ -69,13 +69,13 @@ for ($color = 0; $color < 4; $color++) //some things we have to apply to each co
 //we want to transmit time everytime its not nothing
 if ($time != "")
 {
-    $cmd = "echo time=$time > /dev/led-blaster"; //echo the desired time into led-blaster
+    $cmd = "echo time=" . $time . " > /dev/led-blaster"; //echo the desired time into led-blaster
     $val =  shell_exec($cmd); //and execute that command
     echo "<br>" . $cmd . "<br>\n";	
 }
 
-
-if($mode==0) {								//fade to desired color/brightness
+//echo "<br> value of $mode: " . $mode;
+if( $mode== 0 && $mode != "") {								//fade to desired color/brightness
 	$cmd = "echo mode=0 > /dev/led-blaster"; 			//enter mode 0
 	$val =  shell_exec($cmd); 
 	echo $cmd . "<br>";							//debugging info (only used at the beginning)
@@ -92,8 +92,7 @@ if($mode==0) {								//fade to desired color/brightness
 	}
 	
 }
-
-else
+else if ($mode != "") 	//for every other mode but not when mode variable is not set (i.e. when time was changed)
 {
 	$cmd = "echo mode=$mode > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
 	$val =  shell_exec($cmd); 
