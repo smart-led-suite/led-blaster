@@ -10,16 +10,19 @@
     <link rel="stylesheet" media="screen" href="design.css">        
 
         <p id="default"> <br>
-    Die LEDs wurden angeschaltet. In 5s erscheint wieder die Seite zum Ändern der Helligkeit.     
+    Die LEDs wurden angeschaltet oder die Konfiguration verändert. <br>
+    In 5s erscheint die Seite zum Ändern der Helligkeit. <br>    
     Falls nicht, <a href="/index.html">hier klicken!</a> <br>
     (es kann sein das dadurch das LED Schalten verhindert wird) <br>
+    Falls du zur Konfigurationsseite "Erweitert" möchtest, <a href="/advanced.html">hier klicken!</a>  <br> <br>      
 
         
 <?php
 
 $mode = $_GET['mode'];  //fade einlesen
 $speed = $_GET['speed'];  //speed einlesen
-$time = $_GET['time']; 	//time einlesen
+$time = $_GET['a_time']; 	//time einlesen
+//$a_time = $_GET['a_time'];
 
 $luminance[0] = $_GET['w'];  //wert für weiss einlesen
 $luminance[1] = $_GET['r'];  //wert für rot einlesen
@@ -39,13 +42,13 @@ $colorName = array( //array for the names of the colors (matching the names in l
 3 => 'b',
  );
 
-if($speed == "") 
+if($speed == "")  
 {
   	$speed=1;     // default is factor 1
 }
-if($time == "") 
+if($time == "")  //if there's nothing in the variable the input field was empty -> we'll take the range input field then
 {
-  	$time=1000;     // default is time=1000
+  	$time=$_GET['time'];     // default is time=1000
 }
 
 $numberOfChangedBrightness = 0;
@@ -63,6 +66,13 @@ for ($color = 0; $color < 4; $color++) //some things we have to apply to each co
 	}
 }
 
+//we want to transmit time everytime its not nothing
+if ($time != "")
+{
+    $cmd = "echo time=$time > /dev/led-blaster"; //echo the desired time into led-blaster
+    $val =  shell_exec($cmd); //and execute that command
+    echo "<br>" . $cmd . "<br>\n";	
+}
 
 
 if($mode==0) {								//fade to desired color/brightness
@@ -74,7 +84,7 @@ if($mode==0) {								//fade to desired color/brightness
 	echo $cmd . "<br>";							//debugging info (only used at the beginning)
 	for ($color = 0; $color < 4; $color++) //write every color's brightness to fifo
 	{
-		if ($luminance[$color] != -1)
+		if ($luminance[$color] != -1 && $luminance[$color] != "") //if we have to change the brightness and theres acutally a brightness ;_)
 		{
 			$cmd = "echo ". $colorName[$color] . "=" . $luminance[$color] . " > /dev/led-blaster"; 	//set each brightness WRGB
 			$val =  shell_exec($cmd); 
@@ -91,12 +101,6 @@ else
 	if ($mode == 1)
 	{
 		$cmd = "echo speed=$speed > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
-		$val =  shell_exec($cmd); 
-		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
-	}
-	else if ($mode == 2)
-	{	
-		$cmd = "echo time=$time > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
 		$val =  shell_exec($cmd); 
 		echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
 	}

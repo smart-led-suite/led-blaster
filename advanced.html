@@ -1,0 +1,59 @@
+<html>
+<head>
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Erweitert</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="favicon.ico">
+ <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>    
+<!-- import custom stylesheet -->  
+<link rel="stylesheet" media="screen" href="design.css">    
+<style>
+    h4   { background-color: transparent; } 
+    </style>
+</head>
+<body  bgcolor="#e2e2e2" >
+    <p id="default">
+    <b>Erweitert</b> <br><br>
+    </p>
+    <form action="fade.php">
+        <p id="inputField">
+            <b> zusätzliche Modi</b>: <br><br>
+    neben dem Einstellen festen Farben gibt es noch zwei zusätzliche Modi.<br>
+        </p>
+        <p id="modeChooser">
+            <input type="radio" checked value="0" name="mode">Mode 0 <br> 
+            Beschreibung: feste Farben, die <a href="/index.html">hier</a> eingestellt werden
+            <br>
+            <input type="radio" value="1" name="mode"> Mode 1 <br>
+            Beschreibung: Weiß an, Weiß aus, etc. in WRGB Reihenfolge 
+            <br> 
+            <input type="radio" value="2" name="mode">Mode 2 <br>
+            Beschreibung: Fade zu zufällig generierten Farben 
+        <br>
+            </p>
+            <p id="inputField"> 
+             <input type="submit" value="Mode wählen">
+            </p>
+    </form>
+    <form action="fade.php">
+      <p id="modeChooser"> 
+          <br><br><br>
+    Weitere Einstellungen: <br>
+        </p>
+    <p id="inputField">
+        <b> time-variable</b> <br><br>
+        bestimmt, wie lange (in Millisekunden) es dauert bis alle LEDs bei der      gewünschten Helligkeit sind <br><br>
+        
+    <input type="number" name="a_time" min="200" max="1000000"> (maximal 1 Mio.) <br><br>
+        oder mit dem Slider auswählen (200-20'000)
+      <input type="range" name="time" min="200" max="20000" step="1" value="0"><br><br>
+    
+         <input type="submit" value="time-variable ändern!">
+        </p>
+       <br>
+    </form>
+    </body>    
+</html>

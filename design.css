@@ -1,26 +1,35 @@
-#red {
+
+       
+
+        #red {
                 text-align: center;
                 font-family: sans-serif;
+                font-size: 14;
                 color: white;
-                background-color: firebrick;
+                background-color: rgba(178, 34, 34, 0.78);
         }
         #green {
                 text-align: center;
                 font-family: sans-serif;
                 color: white;
-                background-color: forestgreen;
+                font-weight: lighter;
+                font-size: 14;
+                background-color: rgba(34, 139, 34, 0.73);
 
         }
         #blue {
                 text-align: center;
                 font-family: sans-serif;
+                font-weight: lighter;
+                font-size: 14; 
                 color: white;
-                background-color: dodgerblue;
+                background-color: rgba(30, 144, 255, 0.87);
         }
         #white {
                 text-align: center;
                 font-family: sans-serif;
-                font-style: normal;
+                font-weight: lighter;
+                font-size: 14;
                 color: black;
                 background-color: lightgrey;
         }
@@ -31,9 +40,15 @@
         }
          
         #default {
-            text-align: center;
+                text-align: center;
                 font-family: sans-serif;
                 font-style: normal;
+        }
+        #left {
+                text-align: left;
+                font-family: sans-serif;
+                font-style: normal;
+                font-weight: lighter;
         }
 
         #grey {
@@ -42,12 +57,43 @@
                 font-style: normal;
                 background-color: lightslategrey;
         }
+
+        #modeChooser {
+                text-align: left;
+                font-family: sans-serif;
+                font-weight: lighter;
+                font-size: 14;
+                color: black;
+                border-color: #2f2d2d;
+                border-width: 5px;
+                line-height: 150%;
+        }
+       
+        #inputField {
+                text-align: center;
+                font-family: sans-serif;
+                font-weight: lighter;
+                font-size: 14;
+                color: black;
+                border-color: #2f2d2d;
+                border-width: 5px;
+                /*background-color: rgba(0, 0, 0, 0.15);*/
+                input[type=range]{
+                -webkit-appearance: none;
+                width: 95%;
+                height: 10px;
+                background: transparent;
+                border: none;
+                border-radius: 3px;
+            }
+        }
+
         /* style the range sliders */
         input[type=range]{
             -webkit-appearance: none;
             width: 100%;
             height: 10px;
-            background: #9b9a9a;
+            background: transparent;
             border: none;
             border-radius: 3px;
         }
@@ -56,7 +102,7 @@
             -webkit-appearance: none;
             width: 400px;
             height: 5px;
-            background: #9b9a9a;
+            background: transparent;
             border: none;
             border-radius: 3px;
         }
