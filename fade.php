@@ -60,10 +60,29 @@ for ($color = 0; $color < 4; $color++) //some things we have to apply to each co
 	if($alternative[$color] != "")  { 	//only use the input field value when its not an empty string
 		$luminance[$color] = $alternative[$color];
 	}
-	if ($luminance[$color] != -1) 	//if color is -1 we don't have to do anything since it means 'no change in brightness'
+    //if luminance[color] is an empty string we won't do anything
+	if ($luminance[$color] != -1 && $luminance[$color] != "") 	//if color is -1 we don't have to do anything since it means 'no change in brightness'
 	{
 		$numberOfChangedBrightness++;		//if it isn't -1 we'll change the brightness. this variable is important for the wait=x command expected by led-blaster
 	}
+}
+
+
+if ($numberOfChangedBrightness > 0) //only if we have to change the brightness of at least one color
+{
+    
+    $cmd = "echo wait=$numberOfChangedBrightness > /dev/led-blaster"; 			//set wait counter to $numberOfChangedBrightness (itll fade after changing four colorBrightnesses if everything was changed
+	$val =  shell_exec($cmd); 
+	echo $cmd . "<br>";							//debugging info (only used at the beginning)
+	for ($color = 0; $color < 4; $color++) //write every color's brightness to fifo
+	{
+		if ($luminance[$color] != -1 && $luminance[$color] != "") //if we have to change the brightness and theres acutally a brightness ;_)
+		{
+			$cmd = "echo ". $colorName[$color] . "=" . $luminance[$color] . " > /dev/led-blaster"; 	//set each brightness WRGB
+			$val =  shell_exec($cmd); 
+            echo "<br>" . $cmd . "<br>\n";
+		}
+    }
 }
 
 //we want to transmit time everytime its not nothing
@@ -74,30 +93,11 @@ if ($time != "")
     echo "<br>" . $cmd . "<br>\n";	
 }
 
-//echo "<br> value of $mode: " . $mode;
-if( $mode== 0 && $mode != "") {								//fade to desired color/brightness
-	$cmd = "echo mode=0 > /dev/led-blaster"; 			//enter mode 0
-	$val =  shell_exec($cmd); 
-	echo $cmd . "<br>";							//debugging info (only used at the beginning)
-	$cmd = "echo wait=$numberOfChangedBrightness > /dev/led-blaster"; 			//set wait counter to $numberOfChangedBrightness (itll fade after changing four colorBrightnesses if everything was changed
-	$val =  shell_exec($cmd); 
-	echo $cmd . "<br>";							//debugging info (only used at the beginning)
-	for ($color = 0; $color < 4; $color++) //write every color's brightness to fifo
-	{
-		if ($luminance[$color] != -1 && $luminance[$color] != "") //if we have to change the brightness and theres acutally a brightness ;_)
-		{
-			$cmd = "echo ". $colorName[$color] . "=" . $luminance[$color] . " > /dev/led-blaster"; 	//set each brightness WRGB
-			$val =  shell_exec($cmd); 
-		}
-	}
-	
-}
-else if ($mode != "") 	//for every other mode but not when mode variable is not set (i.e. when time was changed)
-{
+if($mode != "") {								//change the mode
 	$cmd = "echo mode=$mode > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
 	$val =  shell_exec($cmd); 
 	echo $cmd . "<br>\n";							//debugging info (only used at the beginning)
-	if ($mode == 1)
+	if ($mode == 1 && $speed != "")
 	{
 		$cmd = "echo speed=$speed > /dev/led-blaster"; //echo the desired mode into led-blaster, thats all we have to do
 		$val =  shell_exec($cmd); 
