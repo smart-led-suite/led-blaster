@@ -8,14 +8,15 @@ make
 sudo make install
 cd ..			#navigate to led-blaster folder
 echo "creating directory /opt/led-blaster"
-mkdir /opt/led-blaster
-mv *.hpp *.cpp *.h /opt/led-blaster
+sudo mkdir /opt/led-blaster
+sudo mv *.hpp *.cpp *.h /opt/led-blaster
+sudo mv Makefile DAEMON_INITFILE /opt/led-blaster
 cd /opt/led-blaster
 echo ll
 echo "making led-blaster"
-make 
+sudo make 
 echo "add led-blaster to autostart"
-mv DAEMON_INITFILE /etc/init.d/led-blaster
+sudo mv DAEMON_INITFILE /etc/init.d/led-blaster
 sudo chmod +x /etc/init.d/led-blaster
 sudo update-rc.d led-blaster defaults
 cd #return to home directory
