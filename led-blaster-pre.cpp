@@ -69,16 +69,10 @@ uint16_t currentBrightness[4];
 //*********************************************************************************************	
 
 int main(int argc, char* argv[]) {	
-	bool modeOnethreadWasCreated = false; //default is: no thread (obviusly)
-	bool mode2threadWasCreated = false; //default is: no thread (obviusly)
+	bool mode1ThreadActive = false; //default is: no thread (obviusly)
+	bool mode2ThreadActive = false; //default is: no thread (obviusly)
 	//init variables to use with the interactive live input
-	char variable[5] = "    ";
 	
-	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
-	char cmd[] = "                "; // command (before "=")
-	int value; // brightness (after "=")
-	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
-  	//float value = 0; declared later
   	uint16_t brightness;
   	uint16_t waitCounter = 0; //used only in live mode. 
 	int fadeTimeMs = 1000; //time variable in ms; default is 1000
@@ -89,10 +83,10 @@ int main(int argc, char* argv[]) {
 	
 	char *lineptr = NULL, nl; // pointer to line currently being read
 	size_t linelen; // length of line read
-	int n; // needed to check if anything was read, and how many parts were detected during sscanf
+	int numberOfValues; // needed to check if anything was read, and how many parts were detected during sscanf
 	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
 	char cmd[] = "                   "; // command (before "=")
-	float value; // brightness (after "=")
+	int value; // brightness (after "=")
 	
 	int sleep = 50000; // us to sleep
 	
@@ -143,148 +137,144 @@ int main(int argc, char* argv[]) {
 
         fifo_file = fopen(FIFO_FILE, "r");
 	
-
-	char *lineptr = NULL, nl; // pointer to line currently being read
-	size_t linelen; // length of line read
-	int n; // needed to check if anything was read, and how many parts were detected during sscanf
-	
-
-	
-	int sleep = 50000; // us to sleep
-	
 	while(true) {
 		// READ COMMAND + VALUE
-		if ((n = getline(&lineptr, &linelen, fifo_file)) < 0) { // if no lines read -> wait and repeat
+		if ((numberOfValues = getline(&lineptr, &linelen, fifo_file)) < 0) { // if no lines read -> wait and repeat
 			usleep(sleep);
 			continue;
 		}
-		printf("[%d]%s\n", n, lineptr);
-		n = sscanf(lineptr, "%[^=]=%d%c", &cmd, &value, &nl);
+		printf("[%d]%s\n", numberOfValues, lineptr);
+		numberOfValues = sscanf(lineptr, "%[^=]=%d%c", &cmd, &value, &nl);
 		
-		printf("n: %d, cmd: %s, value: %d\n", n, cmd, value);
-		
-		// PROCESS COMMAND
-	  	if (strcmp("exit", cmd)==0) //strcmp compares c strings and returns 0 if they are the same
-	  	{
-	  		ledBlasterTerminate(0); //terminates LEDBlaster. function needs an int as argument which is useless (but necessary for signal() syntax
-			//return 0;
-	  	}
-	  	else  if (strcmp("mode", cmd)==0) 
-	  	{
-	  		mode = value;
-	  	}
-		else if (strcmp("time", cmd)==0)
-	  	{
-			fadeTimeMs = value;
-		}
-		else if (strcmp("speed", cmd)==0)
-	  	{
-			speed = value;
-		}
-		if (mode == 0) { //mode statement is here because we only need these cmds in mode0
-		  	if (strcmp("wait", cmd)==0) 
+		printf("numberOfValues: %d, cmd: %s, value: %d\n", numberOfValues, cmd, value);
+		//if we have the variable=value syntax we have 3 returned by sscanf
+		//only in this case we want to do anything.
+		if (numberOfValues == 3) 
+		{
+			// PROCESS COMMAND
+		  	if (strcmp("exit", cmd)==0) //strcmp compares c strings and returns 0 if they are the same
 		  	{
-		  		waitCounter = value;
+		  		ledBlasterTerminate(0); //terminates LEDBlaster. function needs an int as argument which is useless (but necessary for signal() syntax
+				//return 0;
 		  	}
-		  	else if (strcmp("w", cmd)==0) 
+		  	else  if (strcmp("mode", cmd)==0) 
 		  	{
-		  		targetBrightness[0] = value;
-		  		if (waitCounter) 
-		  		{
-			  		waitCounter--;
-			  	}	
-		  	} else if (strcmp("r", cmd)==0) {
-		  		targetBrightness[1] = value;
-		  		if (waitCounter) {
-			  			waitCounter--;
-			  		}
-		  	} else if (strcmp("g", cmd)==0) {
-		  		targetBrightness[2] = value;
-		  		if (waitCounter) {
-			  			waitCounter--;
-			  		}
-		  	} else if (strcmp("b", cmd)==0) {
-		  		targetBrightness[3] = value;
-		  		if (waitCounter) {
-			  			waitCounter--;
-			  		}	
+		  		mode = value;
 		  	}
+			else if (strcmp("time", cmd)==0)
+		  	{
+				fadeTimeMs = value;
+			}
+			else if (strcmp("speed", cmd)==0)
+		  	{
+				speed = value;
+			}
+			if (mode == 0) { //mode statement is here because we only need these cmds in mode0
+			  	if (strcmp("wait", cmd)==0) 
+			  	{
+			  		waitCounter = value;
+			  	}
+			  	else if (strcmp("w", cmd)==0) 
+			  	{
+			  		targetBrightness[0] = value;
+			  		if (waitCounter) 
+			  		{
+				  		waitCounter--;
+				  	}	
+			  	} else if (strcmp("r", cmd)==0) {
+			  		targetBrightness[1] = value;
+			  		if (waitCounter) {
+				  			waitCounter--;
+				  		}
+			  	} else if (strcmp("g", cmd)==0) {
+			  		targetBrightness[2] = value;
+			  		if (waitCounter) {
+				  			waitCounter--;
+				  		}
+			  	} else if (strcmp("b", cmd)==0) {
+			  		targetBrightness[3] = value;
+			  		if (waitCounter) {
+				  			waitCounter--;
+				  		}	
+			  	}
+			  	
 		  	
-	  	
-	  		if (waitCounter == 0) {
-	  			cout << "fading leds simultaneous..." << endl;
-		  		fadeSimultaneous(fadeTimeMs);
-		  		//fadeDirectly(targetBrightness); //for testing purposes
-		  		cout << "fading leds simultaneous finished" << endl;
-		  	}
-		  	cout << "waitCounter: " << waitCounter << endl;
-			cout << "mode: " << mode << endl;
-			cout << "waitCounter: " << waitCounter << endl;
-			cout << "targetBrightness w " << targetBrightness[0] << endl;
-			cout << "targetBrightness r " <<  targetBrightness[1] << endl;
-			cout << "targetBrightness g " <<  targetBrightness[2] << endl;
-			cout << "targetBrightness b " <<  targetBrightness[3] << endl;
-			modeOnethreadWasCreated = false; 	//make it possible to start mode 1 again
-			mode2threadWasCreated = false; 		//make it possible to start mode 1 again
-		}
-	  	else if (mode == 1) 
-	  	{
-	  		if (modeOnethreadWasCreated == false) 
-	  		{
-		  		//for documentation about threads see: https://computing.llnl.gov/tutorials/pthreads/
-		  		//and about the pthread_create function see:  https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
-		  		pthread_t continiousFadeThread; //create reference variable for the thread
-		  		//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.
-		  		//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
-		  		#ifndef MODE_LIVE_MANIPULATING
-		  			int a = pthread_create(&continiousFadeThread, NULL, NULL, modeContiniousFade , (void *) speed); //init the new thread, it can be adressed by continiousFadeThread, the speed variable will be sent as attribute, the main function of the new thread is modeContiniousFade
-		  		#endif
-		  		#ifdef MODE_LIVE_MANIPULATING
-		  		int a = pthread_create(&continiousFadeThread, NULL, modeContiniousFade , (void *) &speed); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom
-		  		#endif
-		  		if (a != 0)  //if it is successfull it returns 0, otherwise an error code
+		  		if (waitCounter == 0) {
+		  			cout << "fading leds simultaneous..." << endl;
+			  		fadeSimultaneous(fadeTimeMs);
+			  		writeCurrentBrightness(); //write brightness so php part can read it :-)
+			  		//fadeDirectly(targetBrightness); //for testing purposes
+			  		cout << "fading leds simultaneous finished" << endl;
+			  	}
+			  	cout << "waitCounter: " << waitCounter << endl;
+				cout << "mode: " << mode << endl;
+				cout << "waitCounter: " << waitCounter << endl;
+				cout << "targetBrightness w " << targetBrightness[0] << endl;
+				cout << "targetBrightness r " <<  targetBrightness[1] << endl;
+				cout << "targetBrightness g " <<  targetBrightness[2] << endl;
+				cout << "targetBrightness b " <<  targetBrightness[3] << endl;
+				mode1ThreadActive = false; 	//make it possible to start mode 1 again
+				mode2ThreadActive = false; 		//make it possible to start mode 1 again
+			}
+		  	else if (mode == 1) 
+		  	{
+		  		if (mode1ThreadActive == false) 
 		  		{
-		  			cout << "Something happened while starting the modeContiniousFade Thread" << endl;
-		  			cout << "error no: " << a << endl;		//print the errorcode if one occurs
-		  		} 
-		  		else 							//else, the thread was successfully created
-		  		{
-		  		modeOnethreadWasCreated = true; //set variable to true because thread has been created successfully
-		  		cout << "start continuos fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
+			  		//for documentation about threads see: https://computing.llnl.gov/tutorials/pthreads/
+			  		//and about the pthread_create function see:  https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
+			  		pthread_t continiousFadeThread; //create reference variable for the thread
+			  		//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.
+			  		//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
+			  		#ifndef MODE_LIVE_MANIPULATING
+			  			int a = pthread_create(&continiousFadeThread, NULL, NULL, modeContiniousFade , (void *) speed); //init the new thread, it can be adressed by continiousFadeThread, the speed variable will be sent as attribute, the main function of the new thread is modeContiniousFade
+			  		#endif
+			  		#ifdef MODE_LIVE_MANIPULATING
+			  		int a = pthread_create(&continiousFadeThread, NULL, modeContiniousFade , (void *) &speed); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom
+			  		#endif
+			  		if (a != 0)  //if it is successfull it returns 0, otherwise an error code
+			  		{
+			  			cout << "Something happened while starting the modeContiniousFade Thread" << endl;
+			  			cout << "error no: " << a << endl;		//print the errorcode if one occurs
+			  		} 
+			  		else 							//else, the thread was successfully created
+			  		{
+			  		mode1ThreadActive = true; //set variable to true because thread has been created successfully
+			  		cout << "start continuos fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
+			  		}
 		  		}
-	  		}
-	  					
-		}
-		else if (mode == 2) 
-	  	{
-	  		if (mode2threadWasCreated == false) 
-	  		{
-		  		//for documentation about threads see: https://computing.llnl.gov/tutorials/pthreads/
-		  		//and about the pthread_create function see:  https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
-		  		pthread_t continiousFadeRandomThread; //create reference variable for the thread
-		  		//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.
-		  		//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
-		  		#ifndef MODE_LIVE_MANIPULATING
-		  			int a = pthread_create(&continiousFadeRandomThread, NULL, modeContiniousFadeRandom , (void *) fadeTimeMs); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom 
-		  		#endif
-		  		#ifdef MODE_LIVE_MANIPULATING
-		  		int a = pthread_create(&continiousFadeRandomThread, NULL, modeContiniousFadeRandom , (void *) &fadeTimeMs); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom 
-		  		#endif
-		  		if (a != 0)  //if it is successfull it returns 0, otherwise an error code
+		  					
+			}
+			else if (mode == 2) 
+		  	{
+		  		if (mode2ThreadActive == false) 
 		  		{
-		  			cout << "Something happened while starting the modeContiniousFadeRandom Thread" << endl;
-		  			cout << "error no: " << a << endl;		//print the errorcode if one occurs
-		  		} 
-		  		else 							//else, the thread was successfully created
-		  		{
-		  		mode2threadWasCreated = true; //set variable to true because thread has been created successfully
-		  		cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
+			  		//for documentation about threads see: https://computing.llnl.gov/tutorials/pthreads/
+			  		//and about the pthread_create function see:  https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
+			  		pthread_t continiousFadeRandomThread; //create reference variable for the thread
+			  		//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.
+			  		//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
+			  		#ifndef MODE_LIVE_MANIPULATING
+			  			int a = pthread_create(&continiousFadeRandomThread, NULL, modeContiniousFadeRandom , (void *) fadeTimeMs); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom 
+			  		#endif
+			  		#ifdef MODE_LIVE_MANIPULATING
+			  		int a = pthread_create(&continiousFadeRandomThread, NULL, modeContiniousFadeRandom , (void *) &fadeTimeMs); //init the new thread, it can be adressed by continiousFadeRandomThread, the fadeTimeUs variable will be sent as attribute, the main function of the new thread is modeContiniousFadeRandom 
+			  		#endif
+			  		if (a != 0)  //if it is successfull it returns 0, otherwise an error code
+			  		{
+			  			cout << "Something happened while starting the modeContiniousFadeRandom Thread" << endl;
+			  			cout << "error no: " << a << endl;		//print the errorcode if one occurs
+			  		} 
+			  		else 							//else, the thread was successfully created
+			  		{
+			  		mode2ThreadActive = true; //set variable to true because thread has been created successfully
+			  		cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
+			  		}
 		  		}
-	  		}
-	  					
+		  					
+			}
+			gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
+			//gpioDelay(10000); //10ms some delay so it won't use that much cpu power 
 		}
-		gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
-		//gpioDelay(10000); //10ms some delay so it won't use that much cpu power 
 			
 	} // END NOW-INVALID CODE 
 	pthread_exit(NULL);	
