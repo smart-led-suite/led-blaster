@@ -12,3 +12,19 @@ the following things are on our toDo-list:
 5. some additional modes like continious fade to random color w/ defined speed etc.
 6. an alarm clock which fades on all/some leds slowly at a given time (sunrise simulation to wake up easily) (in coordination with some PHP code...)
 7. more to come...
+
+#commands
+
+echo them into /dev/led-blaster
+
+r = value  //set redBrightness to value 0...RANGE
+g = value  //set greenBrightness to value 0...RANGE
+b = value  //set blueBrightness to value 0...RANGE
+w = value  //set whiteBrightness to value 0...RANGE
+
+mode = value //choose mode obviously
+mode0 = fade to fixed brightness
+mode2 = fade to random colors
+
+time = value
+select the time (in ms) needed until fade is completed
