@@ -17,14 +17,18 @@ the following things are on our toDo-list:
 
 echo them into /dev/led-blaster
 
-r = value  //set redBrightness to value 0...RANGE
-g = value  //set greenBrightness to value 0...RANGE
-b = value  //set blueBrightness to value 0...RANGE
-w = value  //set whiteBrightness to value 0...RANGE
+1. RGBW brightnesses:
 
-mode = value //choose mode obviously
-mode0 = fade to fixed brightness
-mode2 = fade to random colors
+  r = value  //set redBrightness to value 0...RANGE
+  g = value  //set greenBrightness to value 0...RANGE
+  b = value  //set blueBrightness to value 0...RANGE
+  w = value  //set whiteBrightness to value 0...RANGE
 
-time = value
-select the time (in ms) needed until fade is completed
+2. modes:
+  mode = value //choose mode obviously
+  mode0 = fade to fixed brightness
+  mode2 = fade to random colors
+
+3. time:
+  time = value
+  select the time (in ms) needed until fade is completed
