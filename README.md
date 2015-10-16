@@ -20,8 +20,11 @@ echo them into /dev/led-blaster
 1. RGBW brightnesses:
 
   r = value  //set redBrightness to value 0...RANGE
+  
   g = value  //set greenBrightness to value 0...RANGE
+  
   b = value  //set blueBrightness to value 0...RANGE
+  
   w = value  //set whiteBrightness to value 0...RANGE
 
 2. modes:
