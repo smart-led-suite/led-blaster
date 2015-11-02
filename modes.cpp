@@ -51,23 +51,40 @@ void *mode1(void* fadeTimePointer)
 	
 	while(mode == 1) // so this thread will be deleted if the mode is changed
 	{
-		for (int color = 1; color < COLORS; color++) //generate random brightness for every color exept white because that doesn't look nice.
-		{  
-		targetBrightness[color] = rand() % 1001;	 //rand % 1000 creates numbers between 0 and 999, ... % 1001 should create nubers between 0 and 1000
+		//generate random brightness for every color 
+		
+		for(auto const &colors : pin) 
+		{ 
+			//exept white because that doesn't look nice.
+			//searches for w as an indicator for white
+			size_t foundWhite = colors.first.find("w");
+			//the find function returns string::npos if theres no result
+			//only if theres no result -> no white we want to continue
+			if (foundWhite == string::npos)
+			{
+				//rand % 1000 creates numbers between 0 and 999, ... 
+				//% 1001 should create nubers between 0 and 1000
+				ledsTarget[colors.first] = rand() % 1001;	 
+			
+				#ifdef MODE_LIVE_MANIPULATING
+					//if the fadeTime is 0 (i.e. no fade, just flickering) 
+					//we'll set it to 1 (default delay)
+					if (* (int *)fadeTimePointer < 800) 
+					{
+						fadeTime = 800;
+					} 
+					else
+					{
+						// turn fadeTimePointer pointer in a int 
+						// and save it as fadeTime
+						fadeTime = * (int*)fadeTimePointer; 
+					}		
+				#endif
+				fadeSimultaneous(fadeTime);	
+			}
 		}
-		#ifdef MODE_LIVE_MANIPULATING
-			if (* (int *)fadeTimePointer < 1) //if the fadeTime is 0 (i.e. no fade, just flickering) we'll set it to 1 (default delay)
-		{
-			fadeTime = 1;
-		} 
-		else
-		{
-			fadeTime = * (int*)fadeTimePointer; // turn fadeTimePointer pointer in a int and save it as fadeTime
-		}		
-		#endif
-		fadeSimultaneous(fadeTime);	
 	}
-	turnLedsOff(1000); //turn all leds off so we can start from the beginning in the next mode
+	//turnLedsOff(1000); //turn all leds off so we can start from the beginning in the next mode
 	mode = 0; //set mode to 0 to be sure, maybe we'll delete this in the future
 	pthread_exit(NULL); //exit this thread
 		
