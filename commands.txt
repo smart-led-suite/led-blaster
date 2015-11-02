@@ -7,7 +7,7 @@ w = value  //set whiteBrightness to value 0...RANGE
 
 mode = value //choose mode obviously
 mode0 = fade to fixed brightness
-mode2 = fade to random colors
+mode1 = fade to random colors
 
 time = value
 select the time needed until fade is completed
