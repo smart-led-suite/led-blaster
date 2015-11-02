@@ -1,12 +1,16 @@
 #ifndef _led_blaster_pre_hpp
 #define _led_blaster_pre_hpp
 
-#include "fadeModes.hpp"
+//THE TWO READ/WRITE FUNCTIONS DO NOTHING RIGHT NOW
+//theres a rewrite necessary but currently we dont use them anyway
+
+#include "fade.hpp"
 #include "config.h"
 #include "currentBrightnessFileRW.hpp"
 #include "init.hpp"
 #include "modes.hpp"
 
+#include <map>
 #include <iostream>
 #include <cstdlib>
 #include <pigpio.h>
@@ -20,14 +24,18 @@ using namespace std;
 //******************* VARIABLES ****************************
 
 //pins		w, r, g, b
-extern int pins[COLORS];
-extern uint16_t targetBrightness[COLORS];
-extern uint16_t currentBrightness[COLORS];
+//extern int pins[COLORS];
+//extern uint16_t targetBrightness[COLORS];
+//extern uint16_t currentBrightness[COLORS];
 extern int fadeAlgorithm;
 extern int realPWMrange;
 extern int PWMrange;
 extern int fadeDelayUs;
 extern uint16_t mode;
+
+extern map < string, int> pin;
+extern map < string, int> ledsTarget;
+extern map < string, int> ledsCurrent;
 
 //**************** FUNCTIONS ********************************
 void ledBlasterTerminate(int dummy); //function which terminates the program safely. needs the dummy variable to be called by the sigHandler!

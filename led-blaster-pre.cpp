@@ -26,6 +26,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <map>
+
+#include <string>
 #include <pthread.h>
 #include <stdint.h> //libary which includes uint8_t etc.
 #include <stdio.h>
@@ -50,17 +53,38 @@ using namespace std;
 
 
 //pins		w, r, g, b
-int pins[4] = {25, 17,18,22};
+//int pins[4] = {25, 17,18,22};
 
 
 int realPWMrange = 0;
 int PWMrange = 0;
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
-uint16_t targetBrightness[4]; //global because of readCurrentBrightness || maybe changed in the future since we won't need the cBFile in the future
-uint16_t currentBrightness[4]; 
+//uint16_t targetBrightness[4]; //global because of readCurrentBrightness || maybe changed in the future since we won't need the cBFile in the future
+//uint16_t currentBrightness[4]; 
 
 
+map < std::string, int> pin = 
+{
+	{"w", 25}, 
+	{"r", 17},
+	{"g", 18},
+	{"b", 22}
+};
+map < string, int> ledsTarget = 
+{
+	{"w", 0}, 
+	{"r", 0},
+	{"g", 0},
+	{"b", 0}
+};
+map < string, int> ledsCurrent = 
+{
+	{"w", 0}, 
+	{"r", 0},
+	{"g", 0},
+	{"b", 0}
+};
 
 
 //***********************************************************************************************
@@ -98,32 +122,34 @@ int main(int argc, char* argv[]) {
 	readCurrentBrightness();
 	
 	//init pwm
-	if(initGeneral()) {				//initializes the pigpio libary. returns 0 if there was no problem
-		cout << "initGeneral failed!" << endl;	//if there's a problem print it out and exit the program
+	//initializes the pigpio libary. returns 0 if there was no problem
+	if(initGeneral()) {				
+		//if there's a problem print it out and exit the program
+		cout << "initGeneral failed!" << endl;	
 		return 1;
 	}
 	
 	//initialize all pins
-	for (int color = 0; color < COLORS; color++) {
-		if(initPin(pins[color], mode) != 0) {  				//initializes each pin. returns 0 if everything went ok
-			cout << "error in initPin " << pins[color] << endl;	//print that there has been an error if this happens (very unlikely)
-			return 2;						//and exit the program
+	//every color from the pin map
+	for(auto const &colors : pin) {
+		//initializes each pin. returns 0 if everything went ok
+		if(initPin(colors.second, mode) != 0) {  				
+			//print that there has been an error if this happens (very unlikely)
+			cout << "error in initPin " << colors.second; 
+			cout << "which is used by color " << colors.first << endl;
+			//and exit the program	
+			return 2;						
 		}	
 	}
 	
 	
-  	
-  	//some kind of manual at the beginning
-	printf ("Welcome to your LED fade program \n");
-	printf ("to exit, enter exit = 1 or press Ctrl+C \n");
-	printf ("enter redb / grnb / blub / whtb = value to set brightness for a specific color (range 0 t 1000 \n");
-	printf ("Enter mode = 0/1 to set mode; 0 = set brightness; 1 = continious fade \n");
-	printf ("Enter wait = x; x=0: fade to brightness; x>0: wait x times until updating brightness again \n");
 	
-	//if ctrl+c is pressed we want to terminate the gpios and close all open threads. therefore we'll want to catch the ctrl+c by the user
+	//if ctrl+c is pressed we want to terminate the gpios and close all open threads. 
+	//therefore we'll want to catch the ctrl+c by the user
 	//signal(SIGINT, terminateLedBlaster);
 	signal(SIGINT, ledBlasterTerminate);
-	//if the kill command is send (SIGTERM) we want to terminate the gpios and close all open threads a bit faster than if ctrl+c is detected
+	//if the kill command is send (SIGTERM) we want to terminate the gpios and close all 
+	//open threads a bit faster than if ctrl+c is detected
 	signal(SIGTERM, ledBlasterTerminateFast);
 	
 	
@@ -169,45 +195,42 @@ int main(int argc, char* argv[]) {
 			  	{
 			  		waitCounter = value;
 			  	}
-			  	else if (strcmp("w", cmd)==0) 
+			  	else 
 			  	{
-			  		targetBrightness[0] = value;
+			  		auto cmdInMap = ledsTarget.find(cmd);
+			  		if (cmdInMap != ledsTarget.end())
+			  		{
+			  			ledsTarget[cmd] = value;
+			  		} 
+			  		else
+			  		{
+			  			cout << "input couldnt be detected" << endl;
+			  		}
 			  		if (waitCounter) 
 			  		{
 				  		waitCounter--;
-				  	}	
-			  	} else if (strcmp("r", cmd)==0) {
-			  		targetBrightness[1] = value;
-			  		if (waitCounter) {
-				  			waitCounter--;
-				  		}
-			  	} else if (strcmp("g", cmd)==0) {
-			  		targetBrightness[2] = value;
-			  		if (waitCounter) {
-				  			waitCounter--;
-				  		}
-			  	} else if (strcmp("b", cmd)==0) {
-			  		targetBrightness[3] = value;
-			  		if (waitCounter) {
-				  			waitCounter--;
-				  	}	
-			  	}
+				  	}
+				  		
+			  	} 
 			  	
 		  	
 		  		if (waitCounter == 0) {
 		  			cout << "fading leds simultaneous..." << endl;
 			  		fadeSimultaneous(fadeTimeMs);
-			  		writeCurrentBrightness(); //write brightness so php part can read it :-)
-			  		//fadeDirectly(targetBrightness); //for testing purposes
+			  		//fadeDirectly(); //for testing purposes
+			  		//write brightness so php part can read it :-)
+			  		//writeCurrentBrightness(); 
 			  		cout << "fading leds simultaneous finished" << endl;
 			  	}
+			  	//print some debug info of the variables
 			  	cout << "waitCounter: " << waitCounter << endl;
 				cout << "mode: " << mode << endl;
 				cout << "waitCounter: " << waitCounter << endl;
-				cout << "targetBrightness w " << targetBrightness[0] << endl;
-				cout << "targetBrightness r " <<  targetBrightness[1] << endl;
-				cout << "targetBrightness g " <<  targetBrightness[2] << endl;
-				cout << "targetBrightness b " <<  targetBrightness[3] << endl;
+				for(auto const &leds : ledsTarget)
+				{
+  				// print color and target brightness
+  				cout << "color and brightness: " << leds.first << " " << leds.second << endl;
+  				}
 				mode1ThreadActive = false; 	//make it possible to start mode 1 again
 			}
 		  
@@ -215,11 +238,15 @@ int main(int argc, char* argv[]) {
 		  	{
 		  		if (mode1ThreadActive == false) 
 		  		{
-			  		//for documentation about threads see: https://computing.llnl.gov/tutorials/pthreads/
-			  		//and about the pthread_create function see:  https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
+			  		//for documentation about threads see: 
+			  		//https://computing.llnl.gov/tutorials/pthreads/
+			  		//and about the pthread_create function see:  
+			  		//https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
 			  		pthread_t mode1Thread; //create reference variable for the thread
-			  		//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.
-			  		//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
+			  		//it is recommended to not use a address as attribute because the value
+			  		//may change until the thread is started (it's listed as bad example in the documentation.
+			  		//but as we WANT to change it after the thread has started we're using it anyway. 
+			  		//if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
 			  		#ifndef MODE_LIVE_MANIPULATING
 			  			//init the new thread, it can be adressed by mode1Thread, the fadeTimeUs variable will 
 			  			//be sent as attribute, the main function of the new thread is mode1 
@@ -229,7 +256,7 @@ int main(int argc, char* argv[]) {
 			  			//init the new thread, it can be adressed by mode1Thread
 			  			//the fadeTimeUs variable will be sent as attribute
 			  			//the main function of the new thread is mode1 
-			  		threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeTimeMs); 
+			  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeTimeMs); 
 			  		#endif
 			  		if (threadErrorNumber != 0)  //if it is successfull it returns 0, otherwise an error code
 			  		{
@@ -250,7 +277,6 @@ int main(int argc, char* argv[]) {
 		}
 			
 	} // END NOW-INVALID CODE 
-	pthread_exit(NULL);	
 }
 
 
