@@ -1,4 +1,7 @@
 //*************** R/W CURRENT BRIGHTNESS ************************
+//THE TWO READ/WRITE FUNCTIONS DO NOTHING RIGHT NOW
+//theres a rewrite necessary but currently we dont use them anyway
+
 
 #include "currentBrightnessFileRW.hpp"
 #include "led-blaster-pre.hpp"
@@ -13,7 +16,7 @@
 
 void readCurrentBrightness(void) 
 {
-	FILE *cbFile;
+	/* FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.txt";
 
 	cbFile = fopen(currentBrightnessFilename, "r");
@@ -46,25 +49,23 @@ void readCurrentBrightness(void)
 
 			fclose(cbFile);
 		}
-	}
+	} */
 }
 
 //Write brightness to file
 void writeCurrentBrightness (void) {
+	/*
 	FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.txt";
 	cbFile = fopen(currentBrightnessFilename, "w");
 	if (cbFile)
 	{
 		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);	
-		printf("Writing brightness to file\n");
-		/*for (int i=0; i < 3; i++) {  //commented because we want to save the current brightness not the target brightness ;)
-			currentBrightness[i] = targetBrightness[i];
-			
-		}*/		
+		printf("Writing brightness to file\n");		
 		fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
 		fclose(cbFile);
 	}
+	*/
 }		
 
 
