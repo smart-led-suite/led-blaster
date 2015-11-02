@@ -3,8 +3,10 @@
 
 /* USEFUL DEVELOPER INFO
 
-compiler params:  g++ -g -o led-blaster-pre led-blaster-pre.cpp fadeModes.cpp currentBrightnessFileRW.cpp init.cpp modes.cpp  -lpigpio -lrt -lpthread 
+compiler params: 
+g++ -std=c++0x -g -o led-blaster-pre led-blaster-pre.cpp fade.cpp currentBrightnessFileRW.cpp init.cpp modes.cpp  -lpigpio -lrt -lpthread 
 
+//std=c++0x sets the compiler to use the new c++11 standard which we use for the maps.
 
 EVERY NEW MODE WHICH USES A WHILE LOOP is should stop it's loop when his mode is no longer active (mode is therefore a global variable)
 
@@ -34,7 +36,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 #define MODE_LIVE_MANIPULATING  //according to the pthread documentation this is NOT recommended. we may delete this option in the future if it causes problems.
 
 #define SIGINT_PIBLASTER_TERMINATE_TIME_VALUE 1000 //time value which is send to fade function if sigint is detected (i.e. because of ctrl+c)
-#define SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE 50 //time value which is send to fade function if sigterm is detected (i.e. because of kill or killall command)
+#define SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE 500 //time value which is send to fade function if sigterm is detected (i.e. because of kill or killall command)
 
 //********************************ADVANCED OPTIONS****************************************************************
 
