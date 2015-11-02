@@ -1,15 +1,14 @@
 commands to use with the led c script
 
-redB = value  //set redBrightness to value 0...RANGE
-grnB = value  //set greenBrightness to value 0...RANGE
-bluB = value  //set blueBrightness to value 0...RANGE
-whtB = value  //set whiteBrightness to value 0...RANGE
+r = value  //set redBrightness to value 0...RANGE
+g = value  //set greenBrightness to value 0...RANGE
+b = value  //set blueBrightness to value 0...RANGE
+w = value  //set whiteBrightness to value 0...RANGE
 
 mode = value //choose mode obviously
+mode0 = fade to fixed brightness
+mode2 = fade to random colors
 
-//future
-pwmf = value //pwm_frequency
-pwmr = value //pwm_range
-...
-
--> 4 buchstaben reichen!!
+time = value
+select the time needed until fade is completed
+(in ms)
