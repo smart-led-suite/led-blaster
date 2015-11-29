@@ -7,15 +7,46 @@
 #include "led-blaster-pre.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
+#include <pigpio.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <map>
+
+#include <string>
+#include <pthread.h>
+#include <stdint.h> //libary which includes uint8_t etc.
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <linux/stat.h>
 
 
 
-void readCurrentBrightness(void) 
-{
+
+
+void writeCurrentBrightness (void) {
+	for(auto const &colors : pin)
+	{		
+		//*******maps explanation**************
+  		//write the target brightness to the pin
+  		//colors.second marks the second row in the pin map
+  		//ledsTarget[colors.first] is the brightness which belongs to the specific color
+		//colors.first is in this case the name of the color which is also an ID for the targetBrightness
+		ofstream myfile;
+		 myfile.open ("/var/www/html/led-smarthome/example.csv");
+  		if (myfile.is_open()) 
+  		{
+			myfile << colors.first << ";";
+			myfile << colors.second << ";";
+			myfile << ledsTarget[colors.first] <<"\n";
+			myfile.close();
+		}
+	}	
 	/* FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.txt";
 
@@ -52,20 +83,6 @@ void readCurrentBrightness(void)
 	} */
 }
 
-//Write brightness to file
-void writeCurrentBrightness (void) {
-	/*
-	FILE *cbFile;
-	const char *currentBrightnessFilename = "currentBrightness.txt";
-	cbFile = fopen(currentBrightnessFilename, "w");
-	if (cbFile)
-	{
-		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);	
-		printf("Writing brightness to file\n");		
-		fwrite(&currentBrightness[0], sizeof(unsigned char), 100, cbFile) ;
-		fclose(cbFile);
-	}
-	*/
-}		
+		
 
 
