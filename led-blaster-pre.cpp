@@ -162,6 +162,8 @@ int main(int argc, char* argv[]) {
 
         fifo_file = fopen(FIFO_FILE, "r");
 	
+	cout << "led-blaster has successfully started." << endl;
+	
 	while(true) {
 		// READ COMMAND + VALUE
 		if ((numberOfValues = getline(&lineptr, &linelen, fifo_file)) < 0) { // if no lines read -> wait and repeat
@@ -219,7 +221,7 @@ int main(int argc, char* argv[]) {
 			  		fadeSimultaneous(fadeTimeMs);
 			  		//fadeDirectly(); //for testing purposes
 			  		//write brightness so php part can read it :-)
-			  		//writeCurrentBrightness(); 
+			  		writeCurrentBrightness(); 
 			  		cout << "fading leds simultaneous finished" << endl;
 			  	}
 			  	//print some debug info of the variables

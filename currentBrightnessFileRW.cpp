@@ -30,23 +30,31 @@
 
 
 void writeCurrentBrightness (void) {
-	for(auto const &colors : pin)
-	{		
-		//*******maps explanation**************
-  		//write the target brightness to the pin
-  		//colors.second marks the second row in the pin map
-  		//ledsTarget[colors.first] is the brightness which belongs to the specific color
-		//colors.first is in this case the name of the color which is also an ID for the targetBrightness
-		ofstream myfile;
-		 myfile.open ("/var/www/html/led-smarthome/example.csv");
-  		if (myfile.is_open()) 
-  		{
-			myfile << colors.first << ";";
-			myfile << colors.second << ";";
-			myfile << ledsTarget[colors.first] <<"\n";
-			myfile.close();
+	ofstream myfile;
+	myfile.open ("/var/www/html/example.csv");
+  	if (myfile.is_open()) 
+  	{
+  		cout << "writing current brightness to file..." << endl;
+		for(auto const &colors : pin)
+		{		
+			//*******maps explanation**************
+	  		//write the target brightness to the pin
+	  		//colors.second marks the second row in the pin map
+	  		//ledsTarget[colors.first] is the brightness which belongs to the specific color
+			//colors.first is in this case the name of the color which is also an ID for the targetBrightness
+		
+				myfile << colors.first << ";";
+				myfile << colors.second << ";";
+				myfile << ledsTarget[colors.first] <<"\n";
+				
 		}
-	}	
+	}
+	else
+	{
+   	cout << " current brightness file couldnt be opened" << endl;
+   	}
+	myfile.close();
+	//cout << "finished." << endl;	
 	/* FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.txt";
 
@@ -83,6 +91,7 @@ void writeCurrentBrightness (void) {
 	} */
 }
 
-		
+	void readCurrentBrightness(void) {
+	}	
 
 
