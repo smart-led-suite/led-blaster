@@ -6,7 +6,7 @@ using namespace std;
 int main () {
   cout << "hello" << endl;
   ofstream myfile;
-  myfile.open ("/var/www/html/led-smarthome/example.csv");
+  myfile.open ("/var/www/html/example.csv");
   if (myfile.is_open()) 
   {
    	/* ok, proceed with output */ 
