@@ -32,21 +32,21 @@
 void writeCurrentBrightness (void) {
 	ofstream myfile;
 	myfile.open ("/var/www/html/example.csv");
-  	if (myfile.is_open()) 
+  	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
 		for(auto const &colors : pin)
-		{		
+		{
 			//*******maps explanation**************
 	  		//write the target brightness to the pin
 	  		//colors.second marks the second row in the pin map
 	  		//ledsTarget[colors.first] is the brightness which belongs to the specific color
 			//colors.first is in this case the name of the color which is also an ID for the targetBrightness
-		
+
 				myfile << colors.first << ";";
-				myfile << colors.second << ";";
+				//myfile << colors.second << ";";
 				myfile << ledsTarget[colors.first] <<"\n";
-				
+
 		}
 	}
 	else
@@ -54,7 +54,7 @@ void writeCurrentBrightness (void) {
    	cout << " current brightness file couldnt be opened" << endl;
    	}
 	myfile.close();
-	//cout << "finished." << endl;	
+	//cout << "finished." << endl;
 	/* FILE *cbFile;
 	const char *currentBrightnessFilename = "currentBrightness.txt";
 
@@ -62,7 +62,7 @@ void writeCurrentBrightness (void) {
 	if (cbFile)
 	{
 		//----- FILE EXISTS -----
-		
+
 		fread(&currentBrightness[0], sizeof(unsigned char), 4, cbFile);
 
 		printf("read current brightness (w/r/g/b): %i %i %i %i\n", currentBrightness[0], currentBrightness[1], currentBrightness[2], currentBrightness[3]);
@@ -92,6 +92,4 @@ void writeCurrentBrightness (void) {
 }
 
 	void readCurrentBrightness(void) {
-	}	
-
-
+	}
