@@ -31,7 +31,7 @@
 
 void writeCurrentBrightness (void) {
 	ofstream myfile;
-	myfile.open ("/var/www/html/example.csv");
+	myfile.open ("/var/www/html/brightness.csv");
   	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
