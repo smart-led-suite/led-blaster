@@ -11,7 +11,7 @@
 #include <stdint.h> //libary which includes uint8_t etc.
 
 bool initGeneral(void); //initializes the libary
-bool initPin(int pin, uint16_t mode); //initializes a single pin
+bool initPin(int pin); //initializes a single pin
 
 
 #endif

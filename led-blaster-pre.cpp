@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
 	//every color from the pin map
 	for(auto const &colors : pin) {
 		//initializes each pin. returns 0 if everything went ok
-		if(initPin(colors.second, mode) != 0) {
+		if(initPin(colors.second) != 0) {
 			//print that there has been an error if this happens (very unlikely)
 			cout << "error in initPin " << colors.second;
 			cout << "which is used by color " << colors.first << endl;
