@@ -1,16 +1,23 @@
 #include <iostream>
 //#include <map>
 #include <stdint.h> //libary which includes uint16_t etc.
+#include "config.h"
 #include "led.hpp"
-#include <stdio.h>
+
+//#include <stdio.h>
 #include <pigpio.h>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
 
+
 using namespace std;
 //getter
+std::string LED::getColorCode()
+{
+  return (colorcode);
+}
 uint16_t LED::getPin()
 {
   return pin;
@@ -27,7 +34,12 @@ uint16_t LED::getTargetBrightness()
 {
   return targetBrightness;
 }
+
 //setter
+void LED::setColorCode(std::string new_colorcode)
+{
+  colorcode = new_colorcode;
+}
 void LED::setPin(uint16_t newpin)
 {
   pin = newpin;
@@ -53,19 +65,21 @@ void LED::writeBrightnessToPin(uint16_t brightness)
 
 
 
-LED::LED(uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_targetBrightness)
+LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_targetBrightness)
 {
+  colorcode = led_colorcode;
   pin = led_pin;
   isColor = led_isColor;
   currentBrightness = led_currentBrightness;
   targetBrightness = led_targetBrightness;
 }
 
+
 int main(int argc, char const *argv[]) {
   //some class init
-  LED led(25, false, 0, 20);
+  LED led("w", 25, false, 0, 20);
   std::vector<LED> leds;
-  leds.push_back(LED(23, false, 0, 20));
+  //leds.push_back(LED("r", 23, false, 0, 20));
 //  cout << leds[0].getPin() << endl;
 //  cout << leds.size() << endl;
   //file testing
@@ -101,7 +115,7 @@ int main(int argc, char const *argv[]) {
         ledIsColor = false;
       }
       //add this as a new element in leds vector element
-      leds.push_back(LED(stoi(variables[1],nullptr), ledIsColor, 0, 0));
+      leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
       cout << variables[0] << endl;
       cout << variables[1] << endl;
       std::cout << buffer << std::endl;
@@ -117,9 +131,10 @@ int main(int argc, char const *argv[]) {
 
   //print the leds vector
   for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-    cout << leds[ledsAvailable].getPin() << endl;
-    cout << leds[ledsAvailable].getIsColor() << endl;
-    cout << leds[ledsAvailable].getCurrentBrightenss() << endl;
+    cout << leds[ledsAvailable].getColorCode() << " ";
+    cout << leds[ledsAvailable].getPin() << " ";
+    cout << leds[ledsAvailable].getIsColor() << " ";
+    cout << leds[ledsAvailable].getCurrentBrightenss() << " ";
     cout << leds[ledsAvailable].getTargetBrightness() << endl;
   }
 

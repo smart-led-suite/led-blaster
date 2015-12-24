@@ -1,20 +1,24 @@
+#ifndef _led_h
+#define _led_h
 #include <stdint.h> //libary which includes uint8_t etc.
+#include <string>
 //compiler params:
-// g++ -std=c++0x -o object led.hpp led.cpp -lpigpio -lrt -lpthread && ./object
-
+// g++ -std=c++0x -o object led.hpp led.cpp init.cpp -lpigpio -lrt -lpthread
 
 class LED
 {
   public:
     //constructor
-    LED(uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_argetBrightness);
+    LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_argetBrightness);
     //getter
+    std::string getColorCode();
     uint16_t getPin();
     bool getIsColor();
     uint16_t getCurrentBrightenss();
     uint16_t getTargetBrightness();
 
     //setter
+    void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
     void setIsColor(bool newisColor);
     void setCurrentBrightenss(uint16_t new_cBrightness);
@@ -23,8 +27,10 @@ class LED
     void writeBrightnessToPin(uint16_t brightness);
 
   private:
+    std::string colorcode;
     uint16_t pin;
     bool isColor;
     uint16_t currentBrightness;
     uint16_t targetBrightness;
 };
+#endif
