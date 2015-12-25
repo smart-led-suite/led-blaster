@@ -1,7 +1,9 @@
 
 #include "fade.hpp"
+#include "led.hpp"
 #include "led-blaster-pre.hpp"
 #include "config.h"
+#include <vector>
 #include <iostream>
 #include <cstdlib>
 #include <pigpio.h>
@@ -14,14 +16,8 @@
 //fade Directly (basically NOFADE)
 void fadeDirectly(void)
 {
-	for(auto const &colors : pin)
-	{
-		//*******maps explanation**************
-  		//write the target brightness to the pin
-  		//colors.second marks the second row in the pin map
-  		//ledsTarget[colors.first] is the brightness which belongs to the specific color
-		//colors.first is in this case the name of the color which is also an ID for the targetBrightness
-		gpioPWM(colors.second, ledsTarget[colors.first]);
+	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
+		gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getTargetBrightness());
 	}
 }
 
@@ -41,24 +37,19 @@ void fadeSimultaneous(uint32_t time)
 
 
 	//for every color we have to know the number of steps
-	for(auto const &colors : pin)
+	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
 	{
-		//*******maps explanation**************
-		//colors.first is the name of the color, i.e. "w"
-  		//in the following we'll use ledsCurrent[colors.first]
-  		//and ledsTarget[colors.first] as current and target brightness
-
 		// check which of the two is bigger so we won't get a 'negative difference'
-		if (ledsTarget[colors.first] < ledsCurrent[colors.first])
+		if ( leds[ledsAvailable].getTargetBrightness() <  leds[ledsAvailable].getCurrentBrightness())
 		{
 			//if target is smaller than current, we need to subtract current from target
-			brightnessDifference = ledsCurrent[colors.first] - ledsTarget[colors.first];
+			brightnessDifference =  leds[ledsAvailable].getCurrentBrightness() -  leds[ledsAvailable].getTargetBrightness();
 
 		}
-		if (ledsTarget[colors.first] > ledsCurrent[colors.first])
+		if ( leds[ledsAvailable].getTargetBrightness() >  leds[ledsAvailable].getCurrentBrightness())
 		{
 			//same as above but vice versa
-			brightnessDifference = ledsTarget[colors.first] - ledsCurrent[colors.first];
+			brightnessDifference =  leds[ledsAvailable].getTargetBrightness() -  leds[ledsAvailable].getCurrentBrightness();
 		}
 		//if the difference is bigger than the current difference we'll save it
 		if (brightnessDifference > totalSteps)
@@ -71,37 +62,27 @@ void fadeSimultaneous(uint32_t time)
 	for (int step = 0; step < realPWMrange; step++)
 	{
 		// for each individual color at each individual step
-		//using the pin map well iterate through all specified colors
-		for(auto const &colors : pin)
+		//using the object vector
+		for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
 		{
-			//*******maps explanation**************
-			//now colors.first references to the first attribute of pin, which is the name of the color
-			//i.e. "w" for white
-			//colors.second references to the 2nd attribute which is the pin.
-			//in the ledsCurrent (for currentBrightness) and ledsTarget (for targetBrightness)
-			//we also have the name of the color as first attribute.
-			//so if we want to know the targetB of white we'll use ledsTarget["w"]
-			//-> to make it as variable as possible, the needed brightness (both target and current)
-			//is in ledsTarget[colors.first] or ledsCurrent[colors.first]
-			//*******explanation end**************
 
 			//if brightness has to be increased (current is lower than target)
-			if (ledsCurrent[colors.first] < ledsTarget[colors.first])
+			if (leds[ledsAvailable].getCurrentBrightness() < leds[ledsAvailable].getTargetBrightness())
 			{
 				//increase currentBRIGHTNESS of that color
-				ledsCurrent[colors.first]++;
+				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() + 1);
 				//write updated brightness to pin
-				gpioPWM(colors.second, ledsCurrent[colors.first]);
+				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
 			//if brightness has to be decreased (current is higher than target)
-			else if (ledsCurrent[colors.first] > ledsTarget[colors.first])
+			else if (leds[ledsAvailable].getCurrentBrightness() > leds[ledsAvailable].getTargetBrightness())
 			{
 				//decrease brightness of that color
-				ledsCurrent[colors.first]--;
+				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() - 1);
 				//write updated brightness to pin
-				gpioPWM(colors.second, ledsCurrent[colors.first]);
+				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
@@ -139,8 +120,9 @@ void fadeSimultaneous(uint32_t time)
 void turnLedsOff(uint32_t time)
 {
 	//set targetBrightness of all colors to 0
-	for(auto const &colors : pin)  {
-		ledsTarget[colors.first] = 0;
+	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+	{
+		leds[ledsAvailable].setTargetBrightness(0);
 	}
 	fadeSimultaneous(time); //fade leds in time to off.
 }

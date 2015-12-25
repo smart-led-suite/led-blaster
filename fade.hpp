@@ -11,6 +11,6 @@
 void fadeSuccessively(uint16_t delay);
 void fadeSimultaneous(uint32_t time);
 void fadeDirectly(void);
-void turnLedsOff(uint32_t time); 
+void turnLedsOff(uint32_t time);
 
 #endif //fade.hpp

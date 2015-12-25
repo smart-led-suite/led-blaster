@@ -12,6 +12,7 @@
 
 #include <map>
 #include <iostream>
+#include <vector>
 #include <cstdlib>
 #include <pigpio.h>
 #include <stdio.h>
@@ -19,6 +20,7 @@
 #include <string>
 #include <pthread.h>
 #include <stdint.h> //libary which includes uint8_t etc.
+#include "led.hpp"
 
 using namespace std;
 //******************* VARIABLES ****************************
@@ -27,6 +29,7 @@ using namespace std;
 //extern int pins[COLORS];
 //extern uint16_t targetBrightness[COLORS];
 //extern uint16_t currentBrightness[COLORS];
+extern std::vector<LED> leds;
 extern int fadeAlgorithm;
 extern int realPWMrange;
 extern int PWMrange;

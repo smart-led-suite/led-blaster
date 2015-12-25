@@ -27,6 +27,7 @@
 #include <string.h>
 #include <string>
 #include <map>
+#include <vector>
 
 #include <string>
 #include <pthread.h>
@@ -38,12 +39,14 @@
 #include <unistd.h>
 #include <linux/stat.h>
 
+#include "led.hpp"
 #include "modes.hpp"
 #include "fade.hpp"
 #include "config.h"
 #include "currentBrightnessFileRW.hpp"
 #include "init.hpp"
 #include "led-blaster-pre.hpp"
+
 
 
 // MOVE #defines into header
@@ -63,34 +66,21 @@ uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 //uint16_t targetBrightness[4]; //global because of readCurrentBrightness || maybe changed in the future since we won't need the cBFile in the future
 //uint16_t currentBrightness[4];
 
-
+//init vector which will hold the led-object information
+std::vector<LED> leds;
+/*
 map < std::string, int> pin =
 {
-	{"w", 25},
-	{"w1", 26},
-	{"r", 17},
-	{"g", 18},
-	{"g2", 19},
-	{"b", 22}
+	{"q", 1},
 };
 map < string, int> ledsTarget =
 {
-	{"w", 0},
-	{"w1", 26},
-	{"r", 0},
-	{"g", 0},
-	{"g2", 19},
-	{"b", 0}
+	{"q", 0},
 };
 map < string, int> ledsCurrent =
 {
-	{"w", 0},
-	{"w1", 26},
-	{"r", 0},
-	{"g", 0},
-	{"g2", 19},
-	{"b", 0}
-};
+	{"q", 0},
+};*/
 
 
 //***********************************************************************************************
@@ -121,12 +111,6 @@ int main(int argc, char* argv[]) {
 
 	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
 
-  	//init variables needed for thread creation
-
-
-	//OPEN CONFIG FILE IN OUR APPLICAITONS DIRECTORY OR CREATE IT IF IT DOESN'T EXIST
-	readCurrentBrightness();
-
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(initGeneral()) {
@@ -135,19 +119,19 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	//initialize all pins
-	//every color from the pin map
-	for(auto const &colors : pin) {
-		//initializes each pin. returns 0 if everything went ok
-		if(initPin(colors.second) != 0) {
-			//print that there has been an error if this happens (very unlikely)
-			cout << "error in initPin " << colors.second;
-			cout << "which is used by color " << colors.first << endl;
-			//and exit the program
-			return 2;
-		}
-	}
-
+	//now read the colors.csv and create led.objects based on that
+	readConfig();
+	//test if it worked
+	//print the leds vector
+  for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
+    cout << leds[ledsAvailable].getColorCode() << " ";
+    cout << leds[ledsAvailable].getPin() << " ";
+    cout << leds[ledsAvailable].getIsColor() << " ";
+    cout << leds[ledsAvailable].getCurrentBrightness() << " ";
+    cout << leds[ledsAvailable].getTargetBrightness() << endl;
+  }
+	//does nothing atm
+	readCurrentBrightness();
 
 
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
@@ -162,11 +146,11 @@ int main(int argc, char* argv[]) {
 
 
 	// FIFO preparations
-        //Create the FIFO if it does not exist
-        umask(0);
-        mknod(FIFO_FILE, S_IFIFO|0666, 0);
+  //Create the FIFO if it does not exist
+  umask(0);
+  mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
-        fifo_file = fopen(FIFO_FILE, "r");
+  fifo_file = fopen(FIFO_FILE, "r");
 
 	cout << "led-blaster has successfully started." << endl;
 
@@ -205,19 +189,25 @@ int main(int argc, char* argv[]) {
 			  	}
 			  	else
 			  	{
-			  		auto cmdInMap = ledsTarget.find(cmd);
-			  		if (cmdInMap != ledsTarget.end())
-			  		{
-			  			ledsTarget[cmd] = value;
-			  		}
-			  		else
-			  		{
-			  			cout << "input couldnt be detected" << endl;
-			  		}
-			  		if (waitCounter)
-			  		{
-				  		waitCounter--;
-				  	}
+						bool commandFound = false;
+						for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+						{
+							//convert string object to char*
+							const char * c_colorcode = leds[ledsAvailable].getColorCode().c_str();
+							if(strcmp(c_colorcode, cmd) == 0)
+							{
+								leds[ledsAvailable].setTargetBrightness(value);
+								if (waitCounter)
+					  		{
+						  		waitCounter--;
+						  	}
+								commandFound = true;
+
+							}
+						}
+						if (commandFound == false) {
+							std::cout << "couldnt detect input" << std::endl;
+						}
 
 			  	}
 
@@ -225,22 +215,25 @@ int main(int argc, char* argv[]) {
 		  		if (waitCounter == 0) {
 		  			cout << "fading leds simultaneous..." << endl;
 			  		//write to file before fading
-					writeCurrentBrightness();
-					fadeSimultaneous(fadeTimeMs);
+						writeCurrentBrightness();
+						fadeSimultaneous(fadeTimeMs);
 			  		//fadeDirectly(); //for testing purposes
 			  		//write brightness so php part can read it :-)
 			  		//writeCurrentBrightness();
 			  		cout << "fading leds simultaneous finished" << endl;
 			  	}
 			  	//print some debug info of the variables
-			  	cout << "waitCounter: " << waitCounter << endl;
+					for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
+				    cout << leds[ledsAvailable].getColorCode() << " ";
+				    //cout << leds[ledsAvailable].getPin() << " ";
+				    //cout << leds[ledsAvailable].getIsColor() << " ";
+				    //cout << leds[ledsAvailable].getCurrentBrightness() << " ";
+				    cout << leds[ledsAvailable].getTargetBrightness() << endl;
+				  }
+			  cout << "waitCounter: " << waitCounter << endl;
 				cout << "mode: " << mode << endl;
 				cout << "waitCounter: " << waitCounter << endl;
-				for(auto const &leds : ledsTarget)
-				{
-  				// print color and target brightness
-  				cout << "color and brightness: " << leds.first << " " << leds.second << endl;
-  				}
+
 				mode1ThreadActive = false; 	//make it possible to start mode 1 again
 			}
 
