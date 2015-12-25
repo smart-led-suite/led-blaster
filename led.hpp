@@ -14,14 +14,14 @@ class LED
     std::string getColorCode();
     uint16_t getPin();
     bool getIsColor();
-    uint16_t getCurrentBrightenss();
+    uint16_t getCurrentBrightness();
     uint16_t getTargetBrightness();
 
     //setter
     void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
     void setIsColor(bool newisColor);
-    void setCurrentBrightenss(uint16_t new_cBrightness);
+    void setCurrentBrightness(uint16_t new_cBrightness);
     void setTargetBrightness(uint16_t new_tBrightness);
     //functions
     void writeBrightnessToPin(uint16_t brightness);
