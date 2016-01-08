@@ -74,6 +74,7 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t
   currentBrightness = led_currentBrightness;
   targetBrightness = led_targetBrightness;
   //initializes each pin. returns 0 if everything went ok
+  std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   if(initPin(pin) != 0) {
     //print that there has been an error if this happens (very unlikely)
     cout << "error in initPin " << pin;

@@ -3,7 +3,7 @@
 
 
 void readConfig(void);
-void readCurrentBrightness(void);
+void readTargetBrightness(void);
 void writeCurrentBrightness (void);
 
 #endif
