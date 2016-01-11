@@ -64,6 +64,7 @@ void readConfig(void)
       }
       //now we'll save the key
       std::string key;
+      //values are seperated by '=' in the file
       if( std::getline(is_line, key, '=') )
       {
         //and save the value
