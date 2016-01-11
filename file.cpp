@@ -3,7 +3,7 @@
 //theres a rewrite necessary but currently we dont use them anyway
 
 
-#include "currentBrightnessFileRW.hpp"
+#include "file.hpp"
 #include "led-blaster-pre.hpp"
 #include "led.hpp"
 
@@ -27,11 +27,99 @@
 #include <unistd.h>
 #include <linux/stat.h>
 
+//own private function so we have the config values at the top
+bool assignConfigValues (std::string key, std::string value)
+{
+  if (key.compare("time") == 0) {
+    fadeTimeMs = std::stoi(value);
+    return 0;
+  }
+  if (key.compare("server_path") == 0)
+  {
+    serverPath = value;
+    return 0;
+  }
+  return 1;
+}
 
+//read general config from config file
 void readConfig(void)
 {
+  const char *configFileName = "/etc/led-blaster.cfg";
+    //open file
+  ifstream configFile (configFileName , ios::in);
+  if(configFile.is_open())
+    {
+    //FILE IS OPEN
+    std::string line;
+    //read it line by line
+    while( std::getline(configFile, line) )
+    {
+      //convert to stream again
+      std::istringstream is_line(line);
+      //detect // and # at the beginning of the line as comment
+      if (line.compare(0,1,"#") == 0 || line.compare(0,2,"//") == 0)
+      {
+        continue; //go to the next line
+      }
+      //now we'll save the key
+      std::string key;
+      if( std::getline(is_line, key, '=') )
+      {
+        //and save the value
+        std::string value;
+        if( std::getline(is_line, value) )
+          #ifdef DEBUG
+          std::cout << "key/value recieved " << key << " " << value << std::endl;
+          #endif
+          if (assignConfigValues(key, value))
+          {
+            std::cerr << "configFile read error at" << line << std::endl;
+          }
+      }
+    }
+    #ifdef DEBUG
+    std::cout << "fadetime: " << fadeTimeMs << std::endl;
+  //  std::cout << "server: " << serverPath << std::endl;
+    #endif
+    configFile.close();
+  }
+  else
+   {
+     std::cerr << "config file couldnt be opened, try creating it and use defaults" << std::endl;
+     //then well try to create it
+       ofstream configFile (configFileName , ios::out);
+       if (configFile.is_open()) {
+         //write default settings
+         configFile << "#config file for led-blaster, source found usually at /opt/led-blaster" << endl;
+         configFile << "#some config values are stored here" << endl << endl;
+         configFile << "#syntax: " << endl;
+         configFile << "#   key=value " << endl;
+         configFile << "#   no whitespaces allowed, only one key/value pair per line! " << endl;
+         configFile << "#   lines started with '#' and '//' are comments" << endl << endl;
+         configFile << "#time which is needed to fade (in ms)" << endl;
+         configFile << "time=" << FADE_TIME_MS <<  endl;
+         configFile << "#path to the apache server with the colors/brightness.csv config files" << endl;
+         configFile << "server_path=/var/www/html/" << endl;
+         configFile.close();
+       }
+       else
+       {
+         std::cerr << "no file could be created. check your rights. using defaults now." << std::endl;
+
+       }
+       fadeTimeMs = FADE_TIME_MS;
+
+   }
+}
+
+
+
+//READING COLORS.CSV -> color config
+void readColorConfig(void)
+{
 	//define filename
- 	const char *configFileName = "/var/www/html/colors.csv";
+ 	 const char *configFileName = (serverPath + "colors.csv").c_str();
   //open file
   ifstream configFile (configFileName , ios::in);
  	if(configFile.is_open())
@@ -77,36 +165,54 @@ void readConfig(void)
  	  }
  	else {
     //if opening of the file doesnt work, print an error
- 	  cout << "Unable to open file \"" << configFileName << "\"" << endl;
+ 	  cerr << "Unable to open file \"" << configFileName << "\", use defaults instead" << endl;
+    //then well try to create it
+      ofstream configFile (configFileName , ios::out);
+      if (configFile.is_open()) {
+        configFile << "w;25;#000000;#cfcfcf;weiß" << endl;
+        configFile << "r;17;#ffffff;#b50333;rot" << endl;
+        configFile << "g;18;#ffffff;#26a300;grün" << endl;
+        configFile << "b;22;#ffffff;#0000ff;blau" << endl;
+      }
+      else
+      {
+        std::cerr << "no file could be created. check your rights. using defaults now." << std::endl;
+
+      }
+      //enter defaults for basic functionality
+      leds.push_back(LED("w", 25, 0, 0, 0));
+      leds.push_back(LED("r", 17, 0, 0, 0));
+      leds.push_back(LED("g", 18, 0, 0, 0));
+      leds.push_back(LED("b", 22, 0, 0, 0));
  	}
 }
 
 void writeCurrentBrightness (void) {
 	ofstream myfile;
-	myfile.open ("/var/www/html/brightness.csv");
+	myfile.open (serverPath + "brightness.csv");
   	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
 			for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
 			{
-
+        //write colorcode and targetBrightness to file
 				myfile << leds[ledsAvailable].getColorCode() << ";";
 				//myfile << colors.second << ";";
 				myfile << leds[ledsAvailable].getTargetBrightness() <<"\n";
-
 		}
 	}
 	else
 	{
-   	cout << " current brightness file couldnt be opened" << endl;
+   	cerr << " current brightness file couldnt be opened" << endl;
    	}
 	myfile.close();
 }
 
 	void readTargetBrightness(void) {
     std::cout << "reading target Brightness" << std::endl;
-    //define filename
-    const char *brightnessFileName = "/var/www/html/brightness.csv";
+    //define filename, consisting of serverPath and the name and convert it to char
+    //with the c_str function
+    const char *brightnessFileName = (serverPath + "brightness.csv").c_str();
     //open file
     ifstream brightnessFile (brightnessFileName , ios::in);
     if(brightnessFile.is_open())
@@ -138,11 +244,11 @@ void writeCurrentBrightness (void) {
           }
         }
         //some debug info
-        #ifdef DEBUG
+        /*#ifdef DEBUG
         cout << variables[0] << endl; //this is the colorcode
         cout << variables[1] << endl; //this is the current brightness (which will be the target brightness at init)
         std::cout << buffer << std::endl;
-        #endif
+        #endif*/
       }
       //print new brightnesses
         for (size_t currentLed = 0; currentLed < leds.size(); currentLed++) {
@@ -153,6 +259,7 @@ void writeCurrentBrightness (void) {
       }
     else {
       //if opening of the file doesnt work, print an error
-      cout << "Unable to open file \"" << brightnessFileName << "\"" << endl;
+      cerr << "Unable to open file \"" << brightnessFileName << "\"" << endl;
+      cout << "we'll ignore that we couldnt read brightness file because its not that important for basic functionality" << endl;
     }
 	}
