@@ -5,7 +5,7 @@
 
 compiler params:
 
-g++ -std=c++0x -g -o led-blaster-pre led-blaster-pre.cpp fade.cpp currentBrightnessFileRW.cpp init.cpp modes.cpp led.cpp -lpigpio -lrt -lpthread
+g++ -std=c++0x -g -o led-blaster-pre led-blaster-pre.cpp fade.cpp file.cpp init.cpp modes.cpp led.cpp -lpigpio -lrt -lpthread
 YOU CAN ALSO USE THE MAKEFILE! (sudo make)
 // std=c++0x sets the compiler to use the new c++11 standard which we use for the maps.
 
@@ -18,7 +18,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //************************* DEFINE PROGRAM OPTIONS (comment to disable unless otherwise noted)******************************+
 
-//#define DEBUG //define DEBUG information
+#define DEBUG //define DEBUG information
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 
@@ -27,8 +27,8 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //#define DETAILED_PIN_INIT_INFORMATION //detailed info in pin init
 
+#define FADE_TIME_MS 1000 //default value of fadeDelayMs
 #define FADE_DELAY_US 1000 //default value of fadeDelayUs
-
 #define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode (useful?)
 
 #define COLORS 4 //number of different leds, currently wrgb, maybe soon w/ autodetect

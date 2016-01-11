@@ -2,7 +2,7 @@
 #include "modes.hpp"
 #include "fade.hpp"
 #include "config.h"
-#include "currentBrightnessFileRW.hpp"
+#include "file.hpp"
 #include "init.hpp"
 #include "led-blaster-pre.hpp"
 

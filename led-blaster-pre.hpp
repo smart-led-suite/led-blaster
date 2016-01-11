@@ -6,7 +6,7 @@
 
 #include "fade.hpp"
 #include "config.h"
-#include "currentBrightnessFileRW.hpp"
+#include "file.hpp"
 #include "init.hpp"
 #include "modes.hpp"
 
@@ -24,12 +24,9 @@
 
 using namespace std;
 //******************* VARIABLES ****************************
-
-//pins		w, r, g, b
-//extern int pins[COLORS];
-//extern uint16_t targetBrightness[COLORS];
-//extern uint16_t currentBrightness[COLORS];
+extern std::string serverPath;
 extern std::vector<LED> leds;
+extern int fadeTimeMs;
 extern int fadeAlgorithm;
 extern int realPWMrange;
 extern int PWMrange;

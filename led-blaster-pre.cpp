@@ -43,7 +43,7 @@
 #include "modes.hpp"
 #include "fade.hpp"
 #include "config.h"
-#include "currentBrightnessFileRW.hpp"
+#include "file.hpp"
 #include "init.hpp"
 #include "led-blaster-pre.hpp"
 
@@ -63,24 +63,12 @@ int realPWMrange = 0;
 int PWMrange = 0;
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
-//uint16_t targetBrightness[4]; //global because of readCurrentBrightness || maybe changed in the future since we won't need the cBFile in the future
-//uint16_t currentBrightness[4];
+std::string serverPath = "/var/www/html/";
+int fadeTimeMs; //time variable in ms; default is 1000
 
 //init vector which will hold the led-object information
 std::vector<LED> leds;
-/*
-map < std::string, int> pin =
-{
-	{"q", 1},
-};
-map < string, int> ledsTarget =
-{
-	{"q", 0},
-};
-map < string, int> ledsCurrent =
-{
-	{"q", 0},
-};*/
+
 
 
 //***********************************************************************************************
@@ -94,7 +82,7 @@ int main(int argc, char* argv[]) {
 
   	uint16_t brightness;
   	uint16_t waitCounter = 0; //used only in live mode.
-	int fadeTimeMs = 1000; //time variable in ms; default is 1000
+
 
 
 	// FIFO vars
@@ -111,6 +99,7 @@ int main(int argc, char* argv[]) {
 
 	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
 
+	readConfig();
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(initGeneral()) {
@@ -120,7 +109,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	//now read the colors.csv and create led.objects based on that
-	readConfig();
+	readColorConfig();
 	#ifdef DEBUG
 		//test if it worked
 		//print the leds vector
