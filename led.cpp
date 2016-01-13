@@ -6,7 +6,6 @@
 #include "init.hpp"
 
 //#include <stdio.h>
-#include <pigpio.h>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -60,7 +59,7 @@ void LED::setTargetBrightness(uint16_t new_tBrightness)
 //functions
 void LED::writeBrightnessToPin(uint16_t brightness)
 {
-  gpioPWM(pin, brightness);
+  //gpioPWM(pin, brightness);
 }
 
 

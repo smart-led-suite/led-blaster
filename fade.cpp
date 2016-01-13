@@ -6,18 +6,18 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
-#include <pigpio.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <stdint.h> //libary which includes uint8_t etc.
 #include <utility>
+#include <unistd.h> //usleep
 
 
 //fade Directly (basically NOFADE)
 void fadeDirectly(void)
 {
 	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-		gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getTargetBrightness());
+		std::cout << "change pin " << leds[ledsAvailable].getPin() << " to brightness " << leds[ledsAvailable].getTargetBrightness() << std::endl;
 	}
 }
 
@@ -32,7 +32,7 @@ void fadeSimultaneous(uint32_t time)
 	uint32_t endTime = 0; //time to check if theres any overhead
 	bool brightnessWasChanged = false; 					// variable to check if some brightness was changed to see if we need to make a delay
 
-	startTime = gpioTick(); //save start time so we can see how fast the function really is
+	//startTime = gpioTick(); //save start time so we can see how fast the function really is
 
 
 
@@ -72,7 +72,7 @@ void fadeSimultaneous(uint32_t time)
 				//increase currentBRIGHTNESS of that color
 				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() + 1);
 				//write updated brightness to pin
-				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
+					std::cout << "change pin " << leds[ledsAvailable].getPin() << " to brightness " << leds[ledsAvailable].getCurrentBrightness() << std::endl;
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
@@ -82,7 +82,7 @@ void fadeSimultaneous(uint32_t time)
 				//decrease brightness of that color
 				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() - 1);
 				//write updated brightness to pin
-				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
+					std::cout << "change pin " << leds[ledsAvailable].getPin() << " to brightness " << leds[ledsAvailable].getCurrentBrightness() << std::endl;
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
@@ -105,15 +105,15 @@ void fadeSimultaneous(uint32_t time)
 				delayUs = FADE_DELAY_US; //variable specified in config.h; default is 1000
 			}
 
-			gpioDelay(delayUs); 		//make a delay
+			usleep(delayUs); 		//make a delay
 			brightnessWasChanged = false;				//set value to false again so it won't make a delay every time :)
 		}
 	}
-	fadeDirectly(); 					//to make sure everything is at the right brightness
-	endTime = gpioTick(); //time needed for the fade
+	//fadeDirectly(); 					//to make sure everything is at the right brightness
+	//endTime = gpioTick(); //time needed for the fade
 	#ifdef DEBUG
-		printf("time variable for fade: %d \n", time);
-		printf("real time needed for fade: %d \n", (endTime - startTime) / 1000); //end-start gives elapsed time in micros; divided by 1000 we have it in millis to compare
+	//	printf("time variable for fade: %d \n", time);
+	//	printf("real time needed for fade: %d \n", (endTime - startTime) / 1000); //end-start gives elapsed time in micros; divided by 1000 we have it in millis to compare
 	#endif
 }
 

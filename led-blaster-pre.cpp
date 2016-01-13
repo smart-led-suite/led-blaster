@@ -22,7 +22,6 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <pigpio.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -32,6 +31,7 @@
 #include <string>
 #include <pthread.h>
 #include <stdint.h> //libary which includes uint8_t etc.
+#include <unistd.h> //usleep
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -59,8 +59,8 @@ using namespace std;
 //int pins[4] = {25, 17,18,22};
 
 
-int realPWMrange = 0;
-int PWMrange = 0;
+int realPWMrange = 1000;
+int PWMrange = 1000;
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
 std::string serverPath = "/var/www/html/";
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	// FIFO vars
 	FILE *fifo_file;
 
-	char *lineptr = NULL, nl; // pointer to line currently being read
+	char * lineptr = NULL, nl; // pointer to line currently being read
 	size_t linelen; // length of line read
 	int numberOfValues; // needed to check if anything was read, and how many parts were detected during sscanf
 	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 		printf("[%d]%s\n", numberOfValues, lineptr);
-		numberOfValues = sscanf(lineptr, "%[^=]=%d%c", &cmd, &value, &nl);
+		numberOfValues =  sscanf(lineptr, "%[^=]=%d%c", &cmd, &value, &nl);
 
 		printf("numberOfValues: %d, cmd: %s, value: %d\n", numberOfValues, cmd, value);
 		//if we have the variable=value syntax we have 3 returned by sscanf
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
 		  		}
 
 			}
-			gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
+			usleep(100000); //sleeps for 0.1s
 			//gpioDelay(10000); //10ms some delay so it won't use that much cpu power
 		}
 
@@ -285,7 +285,7 @@ void ledBlasterTerminate(int dummy)
   	turnLedsOff(SIGINT_PIBLASTER_TERMINATE_TIME_VALUE); //turn all leds off in 1000ms = 1s so it won't take too long
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
-	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+	//gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
 	pthread_exit(NULL);
 	printf("exit program. thank you. \n");
@@ -300,7 +300,7 @@ void ledBlasterTerminateFast(int dummy)
   	turnLedsOff(SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
-	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+	//gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
 	pthread_exit(NULL);
 	printf("exit program. thank you. \n");

@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <pigpio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>       /* for the random function :time */

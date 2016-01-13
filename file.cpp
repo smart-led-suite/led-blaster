@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <pigpio.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
