@@ -48,7 +48,7 @@
 #include "led-blaster-pre.hpp"
 
 
-
+//
 // MOVE #defines into header
 #define FIFO_FILE	"/dev/led-blaster"
 
@@ -63,7 +63,7 @@ int realPWMrange = 1000;
 int PWMrange = 1000;
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
-std::string serverPath = "/var/www/html/";
+ std::string LED_WEB_SERVER_PATH = "/var/tmp/";
 int fadeTimeMs; //time variable in ms; default is 1000
 
 //init vector which will hold the led-object information

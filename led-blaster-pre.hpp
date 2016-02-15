@@ -23,7 +23,7 @@
 
 using namespace std;
 //******************* VARIABLES ****************************
-extern std::string serverPath;
+extern std::string LED_WEB_SERVER_PATH;
 extern std::vector<LED> leds;
 extern int fadeTimeMs;
 extern int fadeAlgorithm;

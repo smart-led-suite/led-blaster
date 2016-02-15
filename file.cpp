@@ -35,7 +35,7 @@ bool assignConfigValues (std::string key, std::string value)
   }
   if (key.compare("server_path") == 0)
   {
-    serverPath = value;
+    LED_WEB_SERVER_PATH = value;
     return 0;
   }
   return 1;
@@ -80,7 +80,7 @@ void readConfig(void)
     }
     #ifdef DEBUG
     std::cout << "fadetime: " << fadeTimeMs << std::endl;
-  //  std::cout << "server: " << serverPath << std::endl;
+  //  std::cout << "server: " << LED_WEB_SERVER_PATH << std::endl;
     #endif
     configFile.close();
   }
@@ -119,7 +119,7 @@ void readConfig(void)
 void readColorConfig(void)
 {
 	//define filename
- 	 const char *configFileName = (serverPath + "colors.csv").c_str();
+ 	 const char *configFileName = (LED_WEB_SERVER_PATH + "colors.csv").c_str();
   //open file
   ifstream configFile (configFileName , ios::in);
  	if(configFile.is_open())
@@ -134,7 +134,7 @@ void readColorConfig(void)
       string variable_buffer;
       //this string has the size 2 because in led-blaster we only need
       //variable 1 and 2 from the colors.csv file.
-      string variables[1];
+      string variables[2];
       //now we'll read the first two variables
       for (size_t variablesToRead = 0; variablesToRead < 2; variablesToRead++) {
         getline(bufferstream, variable_buffer, ';');
@@ -189,7 +189,7 @@ void readColorConfig(void)
 
 void writeCurrentBrightness (void) {
 	ofstream myfile;
-	myfile.open (serverPath + "brightness.csv");
+	myfile.open (LED_WEB_SERVER_PATH + "brightness.csv");
   	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
@@ -210,9 +210,9 @@ void writeCurrentBrightness (void) {
 
 	void readTargetBrightness(void) {
     std::cout << "reading target Brightness" << std::endl;
-    //define filename, consisting of serverPath and the name and convert it to char
+    //define filename, consisting of LED_WEB_SERVER_PATH and the name and convert it to char
     //with the c_str function
-    const char *brightnessFileName = (serverPath + "brightness.csv").c_str();
+    const char *brightnessFileName = (LED_WEB_SERVER_PATH + "brightness.csv").c_str();
     //open file
     ifstream brightnessFile (brightnessFileName , ios::in);
     if(brightnessFile.is_open())
@@ -227,7 +227,7 @@ void writeCurrentBrightness (void) {
         string variable_buffer;
         //this string array size is 2 because we'll store brightness and colorcode
         //from the brightness.csv file.
-        string variables[1];
+        string variables[2];
         //now we'll read the first two variables
         for (size_t variablesToRead = 0; variablesToRead < 2; variablesToRead++) {
           getline(bufferstream, variable_buffer, ';');
