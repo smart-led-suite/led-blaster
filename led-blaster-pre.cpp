@@ -45,7 +45,9 @@
 #include "config.h"
 #include "file.hpp"
 #include "init.hpp"
+#include "config.hpp"
 #include "led-blaster-pre.hpp"
+
 
 
 //
