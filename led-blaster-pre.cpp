@@ -46,11 +46,11 @@
 #include "file.hpp"
 #include "init.hpp"
 #include "led-blaster-pre.hpp"
-
+#include "fifo.hpp"
 
 
 // MOVE #defines into header
-#define FIFO_FILE	"/dev/led-blaster"
+//#define FIFO_FILE	"/dev/led-blaster"
 
 using namespace std;
 
@@ -144,91 +144,34 @@ int main(int argc, char* argv[]) {
   fifo_file = fopen(FIFO_FILE, "r");
 
 	cout << "led-blaster has successfully started." << endl;
-
+	int oldModeState = mode;
 	while(true) {
-		// READ COMMAND + VALUE
-		if ((numberOfValues = getline(&lineptr, &linelen, fifo_file)) < 0) { // if no lines read -> wait and repeat
-			usleep(sleep);
-			continue;
-		}
-		printf("[%d]%s\n", numberOfValues, lineptr);
-		numberOfValues = sscanf(lineptr, "%[^=]=%d%c", &cmd, &value, &nl);
+		readFifo(waitCounter);
+		if (waitCounter == 0 && mode == 0) {
+		  cout << "fading leds simultaneous..." << endl;
+			//write to file before fading
+			writeCurrentBrightness();
+			fadeSimultaneous(fadeTimeMs);
+			//fadeDirectly(); //for testing purposes
+			//write brightness so php part can read it :-)
+			//writeCurrentBrightness();
+			cout << "fading leds simultaneous finished" << endl;
 
-		printf("numberOfValues: %d, cmd: %s, value: %d\n", numberOfValues, cmd, value);
-		//if we have the variable=value syntax we have 3 returned by sscanf
-		//only in this case we want to do anything.
-		if (numberOfValues == 3)
-		{
-			// PROCESS COMMAND
-		  	if (strcmp("exit", cmd)==0) //strcmp compares c strings and returns 0 if they are the same
-		  	{
-		  		ledBlasterTerminate(0); //terminates LEDBlaster. function needs an int as argument which is useless (but necessary for signal() syntax
-				//return 0;
-		  	}
-		  	else  if (strcmp("mode", cmd)==0)
-		  	{
-		  		mode = value;
-		  	}
-			else if (strcmp("time", cmd)==0)
-		  	{
-				fadeTimeMs = value;
-			}
-			if (mode == 0) { //mode statement is here because we only need these cmds in mode0
-			  	if (strcmp("wait", cmd)==0)
-			  	{
-			  		waitCounter = value;
-			  	}
-			  	else
-			  	{
-						bool commandFound = false;
-						for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
-						{
-							//convert string object to char*
-							const char * c_colorcode = leds[ledsAvailable].getColorCode().c_str();
-							if(strcmp(c_colorcode, cmd) == 0)
-							{
-								leds[ledsAvailable].setTargetBrightness(value);
-								if (waitCounter)
-					  		{
-						  		waitCounter--;
-						  	}
-								commandFound = true;
-
-							}
-						}
-						if (commandFound == false) {
-							std::cout << "couldnt detect input" << std::endl;
-						}
-
-			  	}
-
-
-		  		if (waitCounter == 0) {
-		  			cout << "fading leds simultaneous..." << endl;
-			  		//write to file before fading
-						writeCurrentBrightness();
-						fadeSimultaneous(fadeTimeMs);
-			  		//fadeDirectly(); //for testing purposes
-			  		//write brightness so php part can read it :-)
-			  		//writeCurrentBrightness();
-			  		cout << "fading leds simultaneous finished" << endl;
-			  	}
-			  	//print some debug info of the variables
-					for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-				    cout << leds[ledsAvailable].getColorCode() << " ";
+			//print some debug info of the variables
+			for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
+				cout << leds[ledsAvailable].getColorCode() << " ";
 				    //cout << leds[ledsAvailable].getPin() << " ";
 				    //cout << leds[ledsAvailable].getIsColor() << " ";
 				    //cout << leds[ledsAvailable].getCurrentBrightness() << " ";
-				    cout << leds[ledsAvailable].getTargetBrightness() << endl;
-				  }
-			  cout << "waitCounter: " << waitCounter << endl;
-				cout << "mode: " << mode << endl;
-				cout << "waitCounter: " << waitCounter << endl;
-
-				mode1ThreadActive = false; 	//make it possible to start mode 1 again
+				cout << leds[ledsAvailable].getTargetBrightness() << endl;
 			}
+			cout << "waitCounter: " << waitCounter << endl;
+			cout << "mode: " << mode << endl;
+			cout << "waitCounter: " << waitCounter << endl;
 
-			else if (mode == 1)
+			mode1ThreadActive = false; 	//make it possible to start mode 1 again
+		}
+		else if (mode == 1 && oldModeState == 0)
 		  	{
 		  		if (mode1ThreadActive == false)
 		  		{
@@ -261,16 +204,16 @@ int main(int argc, char* argv[]) {
 			  		else 							//else, the thread was successfully created
 			  		{
 			  		mode1ThreadActive = true; //set variable to true because thread has been created successfully
+						oldModeState = 1;
 			  		cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
 			  		}
 		  		}
 
 			}
-			gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
+			//gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
 			//gpioDelay(10000); //10ms some delay so it won't use that much cpu power
-		}
+		} //INVALID CODE
 
-	} // END NOW-INVALID CODE
 }
 
 
