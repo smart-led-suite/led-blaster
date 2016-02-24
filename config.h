@@ -22,6 +22,8 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 
+#define FIFO_FILE	"/dev/led-blaster"
+
 //CLI fade is the only possible option now and is always active!!!
 #define CLI_FADE //set variables via cli (if ndef its made via input file inputData.txt
 
