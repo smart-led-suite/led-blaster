@@ -36,7 +36,7 @@
 using namespace std;
 
 
-bool assignValues (std::string key, std::string value, uint16_t waitCounter)
+bool assignValues (std::string key, std::string value, uint16_t * waitCounter)
 {
   if (key.compare("time") == 0) {
     fadeTimeMs = std::stoi(value);
@@ -53,7 +53,7 @@ bool assignValues (std::string key, std::string value, uint16_t waitCounter)
 	}
 	else if (key.compare("wait") == 0)
 	{
-		waitCounter = std::stoi(value);
+		*waitCounter =  std::stoi(value);
 		return 0;
 	}
 	else
@@ -69,9 +69,9 @@ bool assignValues (std::string key, std::string value, uint16_t waitCounter)
 			if(key.compare(leds[ledsAvailable].getColorCode()) == 0)
 			{
 				leds[ledsAvailable].setTargetBrightness(stoi(value));
-				if (waitCounter)
+				if (*waitCounter)
 				{
-					waitCounter--;
+					*waitCounter = *waitCounter - 1;
 				}
 				commandFound = true;
 
@@ -87,7 +87,7 @@ bool assignValues (std::string key, std::string value, uint16_t waitCounter)
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
 
-void readFifo (uint16_t waitCounter)
+void readFifo (uint16_t * waitCounter)
  {
 		//open file
 		//this blocks the function until Something can be read from the FIFO

@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 	cout << "led-blaster has successfully started." << endl;
 	int oldModeState = mode;
 	while(true) {
-		readFifo(waitCounter);
+		readFifo(&waitCounter);
 		if (waitCounter == 0 && mode == 0) {
 		  cout << "fading leds simultaneous..." << endl;
 			//write to file before fading
