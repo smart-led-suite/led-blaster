@@ -36,7 +36,19 @@ e.g. `echo w=1000 > /dev/led-blaster`
   time = value
   select the time (in ms) needed until fade is completed
 
-#Installation
+#Installation of a Release
+
+1. create a new folder: `sudo mkdir /opt/led-blaster`
+2. move the downloaded binaries to this folder `mv led-blaster-pre /opt/led-blaster`
+3. now find the DAEMON_INITFILE from the source code .zip and do the following  
+```
+sudo mv DAEMON_INITFILE /etc/init.d/led-blaster #move initfile
+sudo chmod +x /etc/init.d/led-blaster #make it executable
+sudo update-rc.d led-blaster defaults #update
+```
+You have successfully added led-blaster to your autostart!
+
+#Compiling led-blaster
 
 ##Install pipio libary
 led-blaster needs the [pigpio libary](http://abyz.co.uk/rpi/pigpio/)
