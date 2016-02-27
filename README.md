@@ -8,14 +8,15 @@ the following things are on our toDo-list:
 1. assign pins to led colors (i.e. 17 = blue led)
 2. enter desired fade mode (linear, exp., no fade)
 3. enter target brigthness for each led/for all rgbw leds (the program will then fade according to the fade mode
-4. option to connect an sound sensor
+4. option to connect a sound sensor
 5. some additional modes like continious fade to random color w/ defined speed etc.
 6. an alarm clock which fades on all/some leds slowly at a given time (sunrise simulation to wake up easily) (in coordination with some PHP code...)
 7. more to come...
 
 #Commands
 
-echo them into /dev/led-blaster
+echo them into /dev/led-blaster  
+e.g. `echo w=1000 > /dev/led-blaster`
 
 1. RGBW brightnesses:
 
@@ -47,10 +48,10 @@ cd PIGPIO
 make
 sudo make install
 ```
-##Install webeserver (apache) and led-smarthome
+##Install webserver (apache) and led-smarthome
 led-blaster assumes you have a webeserver running and the led-smarthome php files stored there.
 e.g. the information which pins are actually used is stored there.
-so please install the webserver and led-smarthome first.
+so please install the webserver and [led-smarthome](https://github.com/smart-led-suite/led-smarthome) first.
 ##Install led-blaster
 we recommend to install led-blaster at /opt/led-blaster.
 therefore you have to go to /opt via
@@ -82,7 +83,8 @@ if you delete `/etc/init.d/led-blaster` led-blaster is removed from autostart. y
 you can configure led-blaster in various ways:
 
 1. the global config file:  
-  * open the config file at /etc/led-blaster.ledconfig (e.g. `sudo nano /etc/led-blaster.ledconfig`)  
+  * open the config file at /etc/led-blaster.ledconfig (e.g. `sudo nano /etc/led-blaster.ledconfig`) 
+  * you have to set the serverPath to the directory where you've installed [led-smarthome](https://github.com/smart-led-suite/led-smarthome)
   * edit the values then restart led-blaster / reboot your pi.  
 2. configuration via led-smarthome
   * visit [your_pis_ip_adress]/configuration.php  
