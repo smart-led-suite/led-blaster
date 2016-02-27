@@ -45,7 +45,7 @@ bool assignConfigValues (std::string key, std::string value)
 //read general config from config file
 void readConfig(void)
 {
-  const char *configFileName = "/etc/led-blaster.cfg";
+  const char *configFileName = "/etc/led-blaster.ledconfig";
     //open file
   ifstream configFile (configFileName , ios::in);
   if(configFile.is_open())

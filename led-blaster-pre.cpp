@@ -1,23 +1,22 @@
 //============================================================================
-// Name        : hello.cpp
-// Author      : Sandesh
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Name        : led-blaster
+// Author      : sansha
+// Version     : 0.9
+// Description : daemon to fade leds
 // ToDo	       :
 //	(done)		 - new universal initPin
 //	(done)		 - introduce header file so the functions can be placed below the main part
 //	(done)		 - introduce file to save current luminances
 //	(done)		 - introduce simultaneous fadeAlgorithm
-//			 - introduce separate files
+//	(done) 		 - introduce separate files
 //			 - improve simultaneous algorithm
-//			 - move currentBrightness read/write to own function
+//	(done)		 - move currentBrightness read/write to own function
 //			 - introduce other fadeModes (aka exp fade)
-//	(done, untested) - introduce pipes (major)
+//	(done) 		 - introduce pipes (major)
 //		 	 - introduce some other modes (fade w/ overlap of different colors)
 //			 - introduce music mode
-//			 - introduce config file w/ led pins etc.
-//			 - tidying up code changes due to implementation of FIFO (BLOCKER)
+//  (done)		 - introduce config file w/ led pins etc.
+//	(done) 		 - tidying up code changes due to implementation of FIFO (BLOCKER)
 //============================================================================
 
 #include <iostream>
@@ -49,26 +48,21 @@
 #include "fifo.hpp"
 
 
-// MOVE #defines into header
-//#define FIFO_FILE	"/dev/led-blaster"
-
 using namespace std;
 
-
-//pins		w, r, g, b
-//int pins[4] = {25, 17,18,22};
-
-
+//some global variables
+//pigpio pwm generation
 int realPWMrange = 0;
 int PWMrange = 0;
+//mode
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
+//path to the apache server
 std::string serverPath = "/var/www/html/";
 int fadeTimeMs; //time variable in ms; default is 1000
 
 //init vector which will hold the led-object information
 std::vector<LED> leds;
-
 
 
 //***********************************************************************************************
@@ -79,26 +73,10 @@ int main(int argc, char* argv[]) {
 	bool mode1ThreadActive = false; //default is: no thread (obviusly)
 	int threadErrorNumber = 0; //variable for pthread_create, if its 0 there was no problem
 	//init variables to use with the interactive live input
-
-  	uint16_t brightness;
-  	uint16_t waitCounter = 0; //used only in live mode.
-
-
-
-	// FIFO vars
-	FILE *fifo_file;
-
-	char *lineptr = NULL, nl; // pointer to line currently being read
-	size_t linelen; // length of line read
-	int numberOfValues; // needed to check if anything was read, and how many parts were detected during sscanf
-	// Commands are composed as following: "COMMAND=VALUE", e.g. b=50 for blue, brightness 50
-	char cmd[] = "                   "; // command (before "=")
-	int value; // brightness (after "=")
-
-	int sleep = 50000; // us to sleep
-
-	char dummy[] = "hallo"; //for whatever reason the last defined char array will be smashed into rubbish after while(true). so therefore a dummy as last char
-
+	//since we're writing the brightness not simultaneously we want to
+	//wait until we call fadeSimultaneous()
+  uint16_t waitCounter = 0; //used only in live mode.
+	//reading global config
 	readConfig();
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
@@ -107,7 +85,6 @@ int main(int argc, char* argv[]) {
 		cout << "initGeneral failed!" << endl;
 		return 1;
 	}
-
 	//now read the colors.csv and create led.objects based on that
 	readColorConfig();
 	#ifdef DEBUG
@@ -124,7 +101,7 @@ int main(int argc, char* argv[]) {
 	//read brightness and fade to it
 	readTargetBrightness();
 	fadeSimultaneous(fadeTimeMs);
-
+	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user
 	//signal(SIGINT, terminateLedBlaster);
@@ -133,20 +110,19 @@ int main(int argc, char* argv[]) {
 	//open threads a bit faster than if ctrl+c is detected
 	signal(SIGTERM, ledBlasterTerminateFast);
 
-
-
-
 	// FIFO preparations
   //Create the FIFO if it does not exist
   umask(0);
   mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
-  fifo_file = fopen(FIFO_FILE, "r");
-
 	cout << "led-blaster has successfully started." << endl;
+	//var to check if mode was changed so we won
 	int oldModeState = mode;
+	//*********** LOOP *************************************
 	while(true) {
+		//blocking read from fifo
 		readFifo(&waitCounter);
+		//if we're in mode0 we want to fade the pins to their brightness
 		if (waitCounter == 0 && mode == 0) {
 		  cout << "fading leds simultaneous..." << endl;
 			//write to file before fading
@@ -156,7 +132,6 @@ int main(int argc, char* argv[]) {
 			//write brightness so php part can read it :-)
 			//writeCurrentBrightness();
 			cout << "fading leds simultaneous finished" << endl;
-
 			//print some debug info of the variables
 			for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
 				cout << leds[ledsAvailable].getColorCode() << " ";
@@ -168,13 +143,12 @@ int main(int argc, char* argv[]) {
 			cout << "waitCounter: " << waitCounter << endl;
 			cout << "mode: " << mode << endl;
 			cout << "waitCounter: " << waitCounter << endl;
-
 			mode1ThreadActive = false; 	//make it possible to start mode 1 again
 		}
-		else if (mode == 1 && oldModeState == 0)
+		//if mode=1 and we haven't been before we want to start continious fadingc
+		else if (mode == 1 && mode1ThreadActive == false)
 		  	{
-		  		if (mode1ThreadActive == false)
-		  		{
+					//***** THREAD EXPLANATION ************************
 			  		//for documentation about threads see:
 			  		//https://computing.llnl.gov/tutorials/pthreads/
 			  		//and about the pthread_create function see:
@@ -208,16 +182,13 @@ int main(int argc, char* argv[]) {
 			  		cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
 			  		}
 		  		}
-
-			}
-			//gpioSleep(PI_TIME_RELATIVE, 0, 100000); //sleeps for 0.1s
-			//gpioDelay(10000); //10ms some delay so it won't use that much cpu power
-		} //INVALID CODE
+		}
+		 //INVALID CODE
 
 }
 
 
-//***************************************FUNCTIONS***************************************
+//***************************************TERMINATING FUNCTIONS***************************************
 
 //function which is called if ctrl+c is pressed in order to close led-blaster normally
 void ledBlasterTerminate(int dummy)

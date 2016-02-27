@@ -30,8 +30,6 @@
 #include "fifo.hpp"
 #include "led-blaster-pre.hpp"
 
-// MOVE #defines into header
-
 
 using namespace std;
 

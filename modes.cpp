@@ -81,6 +81,7 @@ void *mode1(void* fadeTimePointer)
 			}
 		}
 	}
+  writeCurrentBrightness();
 	//turnLedsOff(1000); //turn all leds off so we can start from the beginning in the next mode
 	mode = 0; //set mode to 0 to be sure, maybe we'll delete this in the future
 	pthread_exit(NULL); //exit this thread
