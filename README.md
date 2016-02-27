@@ -59,7 +59,8 @@ therefore you have to go to /opt via
 cd /opt
 ```
 then clone this repository (run with sudo if necessary)
-```git clone https://github.com/smart-led-suite/led-blaster
+```
+git clone https://github.com/smart-led-suite/led-blaster
 ```
 now into the led-blaster folder and compile the program:
 ```
