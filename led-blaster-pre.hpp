@@ -4,14 +4,6 @@
 //THE TWO READ/WRITE FUNCTIONS DO NOTHING RIGHT NOW
 //theres a rewrite necessary but currently we dont use them anyway
 
-#include "fade.hpp"
-#include "config.h"
-#include "file.hpp"
-#include "init.hpp"
-#include "modes.hpp"
-
-#include <map>
-#include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <pigpio.h>
@@ -24,14 +16,17 @@
 
 using namespace std;
 //******************* VARIABLES ****************************
-extern std::string serverPath;
-extern std::vector<LED> leds;
-extern int fadeTimeMs;
-extern int fadeAlgorithm;
-extern int pwmSteps;
-//extern int PWMrange;
-extern int fadeDelayUs;
-extern uint16_t mode;
+//extern std::vector<LED> leds;
+struct ledInformationStruct {
+  std::vector<LED> leds;
+  int fadeTime;
+  int pwmSteps;
+};
+struct configInformationStruct {
+  uint16_t waitCounter;
+  uint16_t mode;
+  string serverPath;
+};
 
 //**************** FUNCTIONS ********************************
 void ledBlasterTerminate(int dummy); //function which terminates the program safely. needs the dummy variable to be called by the sigHandler!

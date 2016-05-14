@@ -35,4 +35,4 @@ class LED
     uint16_t targetBrightness;
     int pwmSteps;
 };
-#endif
+#endif //EOF

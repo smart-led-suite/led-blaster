@@ -34,15 +34,27 @@
 using namespace std;
 
 
-bool assignValues (std::string key, std::string value, uint16_t * waitCounter)
+bool assignValues (std::string key, std::string value, configInformationStruct * config, ledInformationStruct * led)
 {
+  int valueAsInt = stoi(value);
   if (key.compare("time") == 0) {
-    fadeTimeMs = std::stoi(value);
+    //*fadeTimeMs = valueAsInt;
+    led->fadeTime = valueAsInt;
     return 0;
   }
 	else if (key.compare("mode") == 0)
   {
-    mode = std::stoi(value);
+    switch (valueAsInt) {
+      case 0:
+        config->mode = 0;
+        break;
+      case 1:
+        config->mode = 1;
+        break;
+      default:
+        config->mode = 0;
+        break;
+    }
     return 0;
   }
 	else if (key.compare("exit") == 0)
@@ -51,7 +63,7 @@ bool assignValues (std::string key, std::string value, uint16_t * waitCounter)
 	}
 	else if (key.compare("wait") == 0)
 	{
-		*waitCounter =  std::stoi(value);
+		config->waitCounter =  valueAsInt;
 		return 0;
 	}
 	else
@@ -59,17 +71,26 @@ bool assignValues (std::string key, std::string value, uint16_t * waitCounter)
 		bool commandFound = false;
 		#ifdef DEBUG
 			std::cout << "colorCode: " << key << std::endl;
-			std::cout << "value: " << value << std::endl;
+			std::cout << "value: " << valueAsInt << std::endl;
 		#endif //DEBUG
-		for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+		for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
 		{
 			//if colorCode = key then we'll update the target brightness
-			if(key.compare(leds[ledsAvailable].getColorCode()) == 0)
+			if(key.compare(led->leds[ledsAvailable].getColorCode()) == 0)
 			{
-				leds[ledsAvailable].setTargetBrightness(stoi(value));
-				if (*waitCounter)
+        //value needs to be greater than 0 and mustn't be larger than the number of steps
+        if (valueAsInt >= 0 && valueAsInt <= led->pwmSteps)
+        {
+          led->leds[ledsAvailable].setTargetBrightness(valueAsInt);
+        }
+        else
+        {
+          std::cout << "according to todays physics, a negative brightness is not possible. ;)" << std::endl;
+          std::cout << "please set a brightness between 0 and " << led->pwmSteps << std::endl;
+        }
+				if (config->waitCounter)
 				{
-					*waitCounter = *waitCounter - 1;
+					config->waitCounter = config->waitCounter - 1;
 				}
 				commandFound = true;
 
@@ -86,7 +107,7 @@ bool assignValues (std::string key, std::string value, uint16_t * waitCounter)
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
 
-void readFifo (uint16_t * waitCounter)
+void readFifo (configInformationStruct * config, ledInformationStruct * led)
  {
 		//open file
 		//this blocks the function until Something can be read from the FIFO
@@ -117,7 +138,7 @@ void readFifo (uint16_t * waitCounter)
 	        std::string value;
 	        if( std::getline(this_line, value) )
 	          std::cout << "key/value recieved " << key << " " << value << std::endl;
-	          if (assignValues(key, value, waitCounter))
+	          if (assignValues(key, value, config, led))
 	          {
 	            std::cerr << "configFile read error at" << line << std::endl;
 	          }

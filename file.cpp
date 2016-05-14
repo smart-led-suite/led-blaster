@@ -27,24 +27,28 @@
 #include <unistd.h>
 #include <linux/stat.h>
 
+#include "config.h"
+
+//path to the apache server
+std::string serverPath = "/var/www/html/";
 
 //own private function so we have the config values at the top
-bool assignConfigValues (std::string key, std::string value)
+bool assignConfigValues (std::string key, std::string value, ledInformationStruct * ledInfo, configInformationStruct * config)
 {
   if (key.compare("time") == 0) {
-    fadeTimeMs = std::stoi(value);
+    ledInfo->fadeTime = std::stoi(value);
     return 0;
   }
   if (key.compare("server_path") == 0)
   {
-    serverPath = value;
+    config->serverPath = value;
     return 0;
   }
   return 1;
 }
 
 //read general config from config file
-void readConfig(void)
+void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config)
 {
   const char *configFileName = "/etc/led-blaster.ledconfig";
     //open file
@@ -74,14 +78,14 @@ void readConfig(void)
           #ifdef DEBUG
           std::cout << "key/value recieved " << key << " " << value << std::endl;
           #endif
-          if (assignConfigValues(key, value))
+          if (assignConfigValues(key, value, ledInfo, config))
           {
             std::cerr << "configFile read error at" << line << std::endl;
           }
       }
     }
     #ifdef DEBUG
-    std::cout << "fadetime: " << fadeTimeMs << std::endl;
+    std::cout << "fadetime: " << *fadeTimeMs << std::endl;
   //  std::cout << "server: " << serverPath << std::endl;
     #endif
     configFile.close();
@@ -110,7 +114,7 @@ void readConfig(void)
          std::cerr << "no file could be created. check your rights. using defaults now." << std::endl;
 
        }
-       fadeTimeMs = FADE_TIME_MS;
+       ledInfo->fadeTime = FADE_TIME_MS;
 
    }
 }
@@ -118,8 +122,10 @@ void readConfig(void)
 
 
 //READING COLORS.CSV -> color config
-void readColorConfig(void)
+bool readColorConfig(ledInformationStruct * ledInfo)
 {
+  //struct ledInformationStruct fadeInfo;
+  //struct ledInformationStruct ledInfo;
 	//define filename
  	 const char *configFileName = (serverPath + "colors.csv").c_str();
   //open file
@@ -154,7 +160,8 @@ void readColorConfig(void)
         ledIsColor = false;
       }
       //add this as a new element in leds vector element
-      leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
+    //  leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
+      ledInfo->leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
       #ifdef DEBUG
       cout << variables[0] << endl;
       cout << variables[1] << endl;
@@ -182,25 +189,31 @@ void readColorConfig(void)
 
       }
       //enter defaults for basic functionality
-      leds.push_back(LED("w", 25, 0, 0, 0));
+    /*  leds.push_back(LED("w", 25, 0, 0, 0));
       leds.push_back(LED("r", 17, 0, 0, 0));
       leds.push_back(LED("g", 18, 0, 0, 0));
-      leds.push_back(LED("b", 22, 0, 0, 0));
+      leds.push_back(LED("b", 22, 0, 0, 0));*/
+      ledInfo->leds.push_back(LED("w", 25, 0, 0, 0));
+      ledInfo->leds.push_back(LED("r", 17, 0, 0, 0));
+      ledInfo->leds.push_back(LED("g", 18, 0, 0, 0));
+      ledInfo->leds.push_back(LED("b", 22, 0, 0, 0));
+      return 1;
  	}
+  return 0;
 }
 
-void writeCurrentBrightness (void) {
+void writeCurrentBrightness (ledInformationStruct * ledInfo) {
 	ofstream myfile;
 	myfile.open (serverPath + "brightness.csv");
   	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
-			for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+			for (size_t ledsAvailable = 0; ledsAvailable < ledInfo->leds.size(); ledsAvailable++)
 			{
         //write colorcode and targetBrightness to file
-				myfile << leds[ledsAvailable].getColorCode() << ";";
+				myfile << ledInfo->leds[ledsAvailable].getColorCode() << ";";
 				//myfile << colors.second << ";";
-				myfile << leds[ledsAvailable].getTargetBrightness() <<"\n";
+				myfile << ledInfo->leds[ledsAvailable].getTargetBrightness() <<"\n";
 		}
 	}
 	else
@@ -210,7 +223,7 @@ void writeCurrentBrightness (void) {
 	myfile.close();
 }
 
-	void readTargetBrightness(void) {
+	void readTargetBrightness(ledInformationStruct * ledInfo) {
     std::cout << "reading target Brightness" << std::endl;
     //define filename, consisting of serverPath and the name and convert it to char
     //with the c_str function
@@ -239,10 +252,10 @@ void writeCurrentBrightness (void) {
           //and save them in an array of strings
           variables[variablesToRead] = variable_buffer;
         }
-        for (size_t currentLed = 0; currentLed < leds.size(); currentLed++) {
+        for (size_t currentLed = 0; currentLed < ledInfo->leds.size(); currentLed++) {
           //check if the current led matches the colorcode of the line of the brightnessFile we read
-          if (leds[currentLed].getColorCode() == variables[0]) {
-            leds[currentLed].setTargetBrightness(stoi(variables[1]));
+          if (ledInfo->leds[currentLed].getColorCode() == variables[0]) {
+            ledInfo->leds[currentLed].setTargetBrightness(stoi(variables[1]));
           }
         }
         //some debug info
@@ -253,8 +266,8 @@ void writeCurrentBrightness (void) {
         #endif*/
       }
       //print new brightnesses
-        for (size_t currentLed = 0; currentLed < leds.size(); currentLed++) {
-          std::cout << "targetBrightness of " << leds[currentLed].getColorCode() << " is " << leds[currentLed].getTargetBrightness() << std::endl;
+        for (size_t currentLed = 0; currentLed < ledInfo->leds.size(); currentLed++) {
+          std::cout << "targetBrightness of " << ledInfo->leds[currentLed].getColorCode() << " is " << ledInfo->leds[currentLed].getTargetBrightness() << std::endl;
         }
         //close the config file
         brightnessFile.close();

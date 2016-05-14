@@ -54,21 +54,39 @@ void LED::setIsColor(bool newisColor)
 }
 void LED::setCurrentBrightness(uint16_t new_cBrightness)
 {
+  if (new_cBrightness >= pwmSteps)
+  {
+    this->currentBrightness = pwmSteps;
+  }
+  else if (new_cBrightness < 0)
+  {
+    this->currentBrightness = 0;
+  }
+  else
+  {
   this->currentBrightness = new_cBrightness;
+  }
+  //set pin to the new brightness
+  gpioPWM(this->pin, this->currentBrightness);
 }
 void LED::setTargetBrightness(uint16_t new_tBrightness)
 {
+  if (new_tBrightness >= pwmSteps)
+  {
+    this->targetBrightness = pwmSteps;
+  }
+  else if (new_tBrightness < 0)
+  {
+    this->targetBrightness = 0;
+  }
+  else
+  {
   this->targetBrightness = new_tBrightness;
+  }
 }
-//functions
-void LED::writeBrightnessToPin(uint16_t brightness)
-{
-  gpioPWM(pin, brightness);
-}
+
 
 //***************************PINS INIT******************************************************
-
-
 int LED::initPin(void)
 {
   int PWMrange = 0; //variable to check the pwm range against the realpwm range

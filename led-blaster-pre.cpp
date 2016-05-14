@@ -50,34 +50,34 @@
 
 using namespace std;
 
-//some global variables
-//pigpio pwm generation
-//int pwmSteps = 0;
-//int PWMrange = 0;
-//mode
-uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
+//std::vector<LED> leds;
 
-//path to the apache server
-std::string serverPath = "/var/www/html/";
-int fadeTimeMs; //time variable in ms; default is 1000
+/*struct ledInformation {
+  std::vector<LED> leds;
+  int fadeTime;
 
-//init vector which will hold the led-object information
-std::vector<LED> leds;
-
-
+};*/
+struct ledInformationStruct fadeInfo;
 //***********************************************************************************************
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
 
 int main(int argc, char* argv[]) {
+  struct configInformationStruct config;
+
+//  int fadeTimeMs; //time variable in ms; default is 1000
+  //FADEMODE 1 variables
+  //uint16_t mode = 0; //set mode to 0 (default)
+  //as fademode 1 runs in a seperate thread we need a few more variables here
+  pthread_t mode1Thread; //create reference variable for the thread
 	bool mode1ThreadActive = false; //default is: no thread (obviusly)
 	int threadErrorNumber = 0; //variable for pthread_create, if its 0 there was no problem
 	//init variables to use with the interactive live input
 	//since we're writing the brightness not simultaneously we want to
 	//wait until we call fadeSimultaneous()
-  uint16_t waitCounter = 0; //used only in live mode.
+//  uint16_t waitCounter = 0; //used only in live mode.
 	//reading global config
-	readConfig();
+	readConfig(&fadeInfo, &config);
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(initGeneral()) {
@@ -86,24 +86,29 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	//now read the colors.csv and create led.objects based on that
-	readColorConfig();
+	if(readColorConfig( &fadeInfo))
+  {
+    std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
+  }
+  //fadeInfo.fadeTime = fadeTimeMs;
+
 	#ifdef DEBUG
 		//test if it worked
 		//print the leds vector
 	  for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-	    cout << leds[ledsAvailable].getColorCode() << " ";
-	    cout << leds[ledsAvailable].getPin() << " ";
-	    cout << leds[ledsAvailable].getIsColor() << " ";
-	    cout << leds[ledsAvailable].getCurrentBrightness() << " ";
-	    cout << leds[ledsAvailable].getTargetBrightness() << endl;
+	    cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
+	    cout << fadeInfo.leds[ledsAvailable].getPin() << " ";
+	    cout << fadeInfo.leds[ledsAvailable].getIsColor() << " ";
+	    cout << fadeInfo.leds[ledsAvailable].getCurrentBrightness() << " ";
+	    cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
 	  }
 	#endif
 	//read brightness and fade to it
-	readTargetBrightness();
+	readTargetBrightness(&fadeInfo);
   //at the first time we have to set the number of steps
-  int pwmSteps = leds[0].getPwmSteps(); //should be the same for every led so we just use the first one
-  setFadeSteps(&pwmSteps);
-	fadeSimultaneous(fadeTimeMs);
+  fadeInfo.pwmSteps = fadeInfo.leds[0].getPwmSteps(); //should be the same for every led so we just use the first one
+  //setFadeSteps(&pwmSteps);
+	fadeSimultaneous(&fadeInfo);
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user
@@ -119,44 +124,56 @@ int main(int argc, char* argv[]) {
   mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
 	cout << "led-blaster has successfully started." << endl;
-	//var to check if mode was changed so we won
-	int oldModeState = mode;
+
+    config.mode = 0;
+	//var to check if mode was changed
+	int oldModeState = config.mode;
 	//*********** LOOP *************************************
 	while(true) {
 		//blocking read from fifo
-		readFifo(&waitCounter);
+		readFifo(&config, &fadeInfo);
 		//if we're in mode0 we want to fade the pins to their brightness
-		if (waitCounter == 0 && mode == 0) {
-		  cout << "fading leds simultaneous..." << endl;
+		if (config.waitCounter == 0 && config.mode == 0) {
+      //kill mode1 if active
+      if (mode1ThreadActive)
+      {
+        pthread_cancel(mode1Thread);
+        #ifdef DEBUG
+          std::cout << "mode 1 canceled" << std::endl;
+        #endif
+        mode1ThreadActive = false; 	//make it possible to start mode 1 again
+      }
+
 			//write to file before fading
-			writeCurrentBrightness();
-			fadeSimultaneous(fadeTimeMs);
+			writeCurrentBrightness(&fadeInfo);
+      cout << "fading leds simultaneous..." << endl;
+			fadeSimultaneous(&fadeInfo);
 			//fadeDirectly(); //for testing purposes
 			//write brightness so php part can read it :-)
 			//writeCurrentBrightness();
 			cout << "fading leds simultaneous finished" << endl;
 			//print some debug info of the variables
-			for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-				cout << leds[ledsAvailable].getColorCode() << " ";
+			for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
+				cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
 				    //cout << leds[ledsAvailable].getPin() << " ";
 				    //cout << leds[ledsAvailable].getIsColor() << " ";
 				    //cout << leds[ledsAvailable].getCurrentBrightness() << " ";
-				cout << leds[ledsAvailable].getTargetBrightness() << endl;
+				cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
 			}
-			cout << "waitCounter: " << waitCounter << endl;
-			cout << "mode: " << mode << endl;
-			cout << "waitCounter: " << waitCounter << endl;
-			mode1ThreadActive = false; 	//make it possible to start mode 1 again
+			//cout << "waitCounter: " << waitCounter << endl;
+			cout << "mode: " << config.mode << endl;
+			cout << "waitCounter: " << config.waitCounter << endl;
+
 		}
 		//if mode=1 and we haven't been before we want to start continious fadingc
-		else if (mode == 1 && mode1ThreadActive == false)
+		else if (config.mode == 1 && mode1ThreadActive == false)
 		  	{
 					//***** THREAD EXPLANATION ************************
 			  		//for documentation about threads see:
 			  		//https://computing.llnl.gov/tutorials/pthreads/
 			  		//and about the pthread_create function see:
 			  		//https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
-			  		pthread_t mode1Thread; //create reference variable for the thread
+
 			  		//it is recommended to not use a address as attribute because the value
 			  		//may change until the thread is started (it's listed as bad example in the documentation.
 			  		//but as we WANT to change it after the thread has started we're using it anyway.
@@ -164,13 +181,13 @@ int main(int argc, char* argv[]) {
 			  		#ifndef MODE_LIVE_MANIPULATING
 			  			//init the new thread, it can be adressed by mode1Thread, the fadeTimeUs variable will
 			  			//be sent as attribute, the main function of the new thread is mode1
-			  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) fadeTimeMs);
+			  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeInfo);
 			  		#endif
 			  		#ifdef MODE_LIVE_MANIPULATING
 			  			//init the new thread, it can be adressed by mode1Thread
 			  			//the fadeTimeUs variable will be sent as attribute
 			  			//the main function of the new thread is mode1
-			  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeTimeMs);
+			  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeInfo);
 			  		#endif
 			  		if (threadErrorNumber != 0)  //if it is successfull it returns 0, otherwise an error code
 			  		{
@@ -196,10 +213,11 @@ int main(int argc, char* argv[]) {
 //function which is called if ctrl+c is pressed in order to close led-blaster normally
 void ledBlasterTerminate(int dummy)
 {
-	mode = 0; //so we won't have any problems with threads and so on
+	//mode = 0; //so we won't have any problems with threads and so on
   printf("\nUser pressed Ctrl+C || SIGINT detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  turnLedsOff(SIGINT_PIBLASTER_TERMINATE_TIME_VALUE); //turn all leds off in 1000ms = 1s so it won't take too long
+  fadeInfo.fadeTime = SIGINT_PIBLASTER_TERMINATE_TIME_VALUE;
+  turnLedsOff(&fadeInfo); //turn all leds off in 1000ms = 1s so it won't take too long
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
@@ -211,10 +229,11 @@ void ledBlasterTerminate(int dummy)
 //function which is called when a SIGTERM is sended, i.e. by the kill command. it will close led-blaster FAST
 void ledBlasterTerminateFast(int dummy)
 {
-	mode = 0; //so we won't have any problems with threads and so on
+	//mode = 0; //so we won't have any problems with threads and so on
   printf("\nSIGTERM detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  turnLedsOff(SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
+  fadeInfo.fadeTime = SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE;
+  turnLedsOff(&fadeInfo); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off

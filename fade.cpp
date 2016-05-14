@@ -20,15 +20,16 @@ int setFadeSteps(int *pwmSteps)
 }
 
 //fade Directly (basically NOFADE)
-void fadeDirectly(void)
+void fadeDirectly(ledInformationStruct * led)
 {
-	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
-		gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getTargetBrightness());
+	for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
+  {
+		gpioPWM(led->leds[ledsAvailable].getPin(), led->leds[ledsAvailable].getTargetBrightness());
 	}
 }
 
 //fade LEDs as simultaneously as possible (without too many complicated algorithms)
-void fadeSimultaneous(uint32_t time)
+void fadeSimultaneous(ledInformationStruct * led)
 {
 
 	int totalSteps = 0; //total number of steps (used to calculate the delaytime)
@@ -43,19 +44,18 @@ void fadeSimultaneous(uint32_t time)
 
 
 	//for every color we have to know the number of steps
-	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+	for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
 	{
 		// check which of the two is bigger so we won't get a 'negative difference'
-		if ( leds[ledsAvailable].getTargetBrightness() <  leds[ledsAvailable].getCurrentBrightness())
+		if ( led->leds[ledsAvailable].getTargetBrightness() <  led->leds[ledsAvailable].getCurrentBrightness())
 		{
 			//if target is smaller than current, we need to subtract current from target
-			brightnessDifference =  leds[ledsAvailable].getCurrentBrightness() -  leds[ledsAvailable].getTargetBrightness();
-
+			brightnessDifference =  led->leds[ledsAvailable].getCurrentBrightness() -  led->leds[ledsAvailable].getTargetBrightness();
 		}
-		if ( leds[ledsAvailable].getTargetBrightness() >  leds[ledsAvailable].getCurrentBrightness())
+		if ( led->leds[ledsAvailable].getTargetBrightness() >  led->leds[ledsAvailable].getCurrentBrightness())
 		{
 			//same as above but vice versa
-			brightnessDifference =  leds[ledsAvailable].getTargetBrightness() -  leds[ledsAvailable].getCurrentBrightness();
+			brightnessDifference =  led->leds[ledsAvailable].getTargetBrightness() -  led->leds[ledsAvailable].getCurrentBrightness();
 		}
 		//if the difference is bigger than the current difference we'll save it
 		if (brightnessDifference > totalSteps)
@@ -65,30 +65,27 @@ void fadeSimultaneous(uint32_t time)
 	}
 
 	//goes step-by-step; 1000 steps right now.
-	for (int step = 0; step < fadeSteps; step++)
+	for (int step = 0; step < led->pwmSteps; step++)
 	{
 		// for each individual color at each individual step
 		//using the object vector
-		for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+		for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
 		{
 
 			//if brightness has to be increased (current is lower than target)
-			if (leds[ledsAvailable].getCurrentBrightness() < leds[ledsAvailable].getTargetBrightness())
+			if (led->leds[ledsAvailable].getCurrentBrightness() < led->leds[ledsAvailable].getTargetBrightness())
 			{
-				//increase currentBRIGHTNESS of that color
-				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() + 1);
-				//write updated brightness to pin
-				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
+				//increase currentBRIGHTNESS of that color and write it to the pin
+				led->leds[ledsAvailable].setCurrentBrightness( led->leds[ledsAvailable].getCurrentBrightness() + 1);
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
 			//if brightness has to be decreased (current is higher than target)
-			else if (leds[ledsAvailable].getCurrentBrightness() > leds[ledsAvailable].getTargetBrightness())
+			else if (led->leds[ledsAvailable].getCurrentBrightness() > led->leds[ledsAvailable].getTargetBrightness())
 			{
-				//decrease brightness of that color
-				leds[ledsAvailable].setCurrentBrightness( leds[ledsAvailable].getCurrentBrightness() - 1);
-				//write updated brightness to pin
-				gpioPWM(leds[ledsAvailable].getPin(), leds[ledsAvailable].getCurrentBrightness());
+				//decrease brightness of that color and write it to the pin
+				led->leds[ledsAvailable].setCurrentBrightness( led->leds[ledsAvailable].getCurrentBrightness() - 1);
+
 				//as the brightness was changed, we'll want to make a delay after updating all colors
 				brightnessWasChanged = true;
 			}
@@ -96,15 +93,13 @@ void fadeSimultaneous(uint32_t time)
 		//if the brightness was changed we want to make a delay in order to actually SEE the fade ;-)
 		if (brightnessWasChanged)
 		{
-			//calculate the delayUs needed to archieve the specified time
-
-
-			//steps * delayUs * 1000 = time [in ms]
-			//time is the variable which sets the time needed to fade
+			//calculate the delayUs needed to archieve the specified fadeTime
+			//steps * delayUs * 1000 = fadeTime [in ms]
+			//fadeTime is the variable which sets the Time needed to fade
 			//the calculation is always correct because if brightnessWasChanged is true the totalSteps MUST be non-zero
-			if (time > 0)
+			if (led->fadeTime > 0)
 			{
-				delayUs = time * 1000 / totalSteps; //calculate delay in us
+				delayUs = led->fadeTime * 1000 / totalSteps; //calculate delay in us
 			}
 			else
 			{
@@ -115,7 +110,7 @@ void fadeSimultaneous(uint32_t time)
 			brightnessWasChanged = false;				//set value to false again so it won't make a delay every time :)
 		}
 	}
-	fadeDirectly(); 					//to make sure everything is at the right brightness
+	fadeDirectly(led); 					//to make sure everything is at the right brightness
 	endTime = gpioTick(); //time needed for the fade
 	#ifdef DEBUG
 		printf("time variable for fade: %d \n", time);
@@ -123,12 +118,13 @@ void fadeSimultaneous(uint32_t time)
 	#endif
 }
 
-void turnLedsOff(uint32_t time)
+void turnLedsOff(ledInformationStruct * led)
 {
 	//set targetBrightness of all colors to 0
-	for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++)
+	for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
 	{
-		leds[ledsAvailable].setTargetBrightness(0);
+		led->leds[ledsAvailable].setTargetBrightness(0);
 	}
-	fadeSimultaneous(time); //fade leds in time to off.
+	fadeSimultaneous(led);//fade leds in time to off.
+
 }

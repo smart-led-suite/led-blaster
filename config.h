@@ -30,7 +30,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 //#define DETAILED_PIN_INIT_INFORMATION //detailed info in pin init
 
 #define FADE_TIME_MS 1000 //default value of fadeDelayMs
-#define FADE_DELAY_US 1000 //default value of fadeDelayUs
+#define FADE_DELAY_US 0 //default value of fadeDelayUs
 #define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode (useful?)
 
 #define COLORS 4 //number of different leds, currently wrgb, maybe soon w/ autodetect

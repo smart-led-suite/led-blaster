@@ -22,7 +22,7 @@ using namespace std;
 
 //continious fade w/random color (mode = 1)
 // this function is initialized w/ a pointer in order to create a separate thread in main()
-void *mode1(void* fadeTimePointer)
+void *mode1(void* fadeInfo)
 {
 	 /* initialize random seed: */
   	srand (time(NULL));
@@ -31,13 +31,13 @@ void *mode1(void* fadeTimePointer)
 	//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.)
 	//but as we WANT to change it after the thread has started we're using it anyway. if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
 	#ifndef MODE_LIVE_MANIPULATING
-		if ((int)fadeTimePointer < 1) //if the fadeTime is 0 (i.e. no fade, just flickering) we'll set it to 1000 (default delay)
+		if (((ledInformationStruct *)fadeInfo)->fadeTime < 1) //if the fadeTime is 0 (i.e. no fade, just flickering) we'll set it to 1000 (default delay)
 		{
-			fadeTime = 1000; //1000 as default
+			fadeTime = 10; //1000 as default
 		}
 		else
 		{
-			fadeTime = (int)fadeTimePointer; // turn fadeTimePointer pointer in a int and save it as fadeTime
+			fadeTime = ((ledInformationStruct *)fadeInfo)->fadeTime; // turn fadeTimePointer pointer in a int and save it as fadeTime
 		}
 	#endif
 	//turnLedsOff(1000);
@@ -49,24 +49,22 @@ void *mode1(void* fadeTimePointer)
 	signal(SIGTERM, ledBlasterTerminateFast);
 
 
-	while(mode == 1) // so this thread will be deleted if the mode is changed
+	while(true) // until thread gets canceled by main thread
 	{
 		//generate random brightness for every color
 
-		for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
+		for (size_t ledsAvailable = 0; ledsAvailable < ((ledInformationStruct *)fadeInfo)->leds.size(); ledsAvailable++) {
 			//exept white because that doesn't look nice.
-			//the find function returns string::npos if theres no result
-			//only if theres no result -> no white we want to continue
-			if (leds[ledsAvailable].getIsColor() == true)
+			if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].getIsColor() == true)
 			{
 				//rand % 1000 creates numbers between 0 and 999, ...
 				//% 1001 should create nubers between 0 and 1000
-				leds[ledsAvailable].setTargetBrightness(rand() % 1001);
+				((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].setTargetBrightness(rand() % 1001);
 
 				#ifdef MODE_LIVE_MANIPULATING
 					//if the fadeTime is 0 (i.e. no fade, just flickering)
 					//we'll set it to 1 (default delay)
-					if (* (int *)fadeTimePointer < 800)
+					if (((ledInformationStruct *)fadeInfo)->fadeTime < 800)
 					{
 						fadeTime = 800;
 					}
@@ -74,16 +72,14 @@ void *mode1(void* fadeTimePointer)
 					{
 						// turn fadeTimePointer pointer in a int
 						// and save it as fadeTime
-						fadeTime = * (int*)fadeTimePointer;
+						fadeTime = ((ledInformationStruct *)fadeInfo)->fadeTime;
 					}
 				#endif
-				fadeSimultaneous(fadeTime);
+				fadeSimultaneous((ledInformationStruct *)fadeInfo);
 			}
 		}
 	}
-  writeCurrentBrightness();
-	//turnLedsOff(1000); //turn all leds off so we can start from the beginning in the next mode
-	mode = 0; //set mode to 0 to be sure, maybe we'll delete this in the future
+  //INVALID CODE
 	pthread_exit(NULL); //exit this thread
 
 }

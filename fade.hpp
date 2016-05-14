@@ -5,12 +5,14 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <stdint.h> //libary which includes uint8_t etc.ti
+#include "led-blaster-pre.hpp"
 
+using namespace std;
 
 int setFadeSteps(int *pwmSteps);
 void fadeSuccessively(uint16_t delay);
-void fadeSimultaneous(uint32_t time);
-void fadeDirectly(void);
-void turnLedsOff(uint32_t time);
+void fadeSimultaneous(ledInformationStruct * led);
+void fadeDirectly(ledInformationStruct * led);
+void turnLedsOff(ledInformationStruct * led);
 
 #endif //fade.hpp
