@@ -28,14 +28,10 @@ extern std::string serverPath;
 extern std::vector<LED> leds;
 extern int fadeTimeMs;
 extern int fadeAlgorithm;
-extern int realPWMrange;
-extern int PWMrange;
+extern int pwmSteps;
+//extern int PWMrange;
 extern int fadeDelayUs;
 extern uint16_t mode;
-
-extern map < string, int> pin;
-extern map < string, int> ledsTarget;
-extern map < string, int> ledsCurrent;
 
 //**************** FUNCTIONS ********************************
 void ledBlasterTerminate(int dummy); //function which terminates the program safely. needs the dummy variable to be called by the sigHandler!

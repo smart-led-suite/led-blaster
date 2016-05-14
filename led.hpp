@@ -16,7 +16,7 @@ class LED
     bool getIsColor();
     uint16_t getCurrentBrightness();
     uint16_t getTargetBrightness();
-
+    int getPwmSteps();
     //setter
     void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
@@ -27,10 +27,12 @@ class LED
     void writeBrightnessToPin(uint16_t brightness);
 
   private:
+    int initPin(void);
     std::string colorcode;
     uint16_t pin;
     bool isColor;
     uint16_t currentBrightness;
     uint16_t targetBrightness;
+    int pwmSteps;
 };
 #endif

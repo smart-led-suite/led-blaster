@@ -18,7 +18,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //************************* DEFINE PROGRAM OPTIONS (comment to disable unless otherwise noted)******************************+
 
-#define DEBUG //define DEBUG information
+//#define DEBUG //define DEBUG information
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 
@@ -62,7 +62,7 @@ alternative: 255 steps (=8bit-rgb mixing)
 	as far as I understand its realized like that in the pigpio libary:
 	you set the frequency to whatever you like (w/ SetPWMFrequency)
 	you set the pwm_range to whatever you like (w/ SetPWMRange)
-	now you can check the realPWMRange to see how many steps you actually have
+	now you can check the pwmSteps to see how many steps you actually have
 	(i.e. if you set your frequency to 200Hz and the range to 5000 this will return 1000 (see calculations above))
 	BUT if I understand it correctly it uses the range you set (5000 in this example) so 5000 is the maximum brightness BUT
 	between 0 and 4 there's no real step!

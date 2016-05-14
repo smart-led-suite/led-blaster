@@ -12,6 +12,12 @@
 #include <stdint.h> //libary which includes uint8_t etc.
 #include <utility>
 
+int fadeSteps = 1000; //1000 as a default (same value as we expect due to the #defines)
+
+int setFadeSteps(int *pwmSteps)
+{
+  fadeSteps = *pwmSteps;
+}
 
 //fade Directly (basically NOFADE)
 void fadeDirectly(void)
@@ -59,7 +65,7 @@ void fadeSimultaneous(uint32_t time)
 	}
 
 	//goes step-by-step; 1000 steps right now.
-	for (int step = 0; step < realPWMrange; step++)
+	for (int step = 0; step < fadeSteps; step++)
 	{
 		// for each individual color at each individual step
 		//using the object vector

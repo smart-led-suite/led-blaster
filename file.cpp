@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <linux/stat.h>
 
+
 //own private function so we have the config values at the top
 bool assignConfigValues (std::string key, std::string value)
 {

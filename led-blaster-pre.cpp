@@ -52,8 +52,8 @@ using namespace std;
 
 //some global variables
 //pigpio pwm generation
-int realPWMrange = 0;
-int PWMrange = 0;
+//int pwmSteps = 0;
+//int PWMrange = 0;
 //mode
 uint16_t mode = 0; // mode is now a global variable! set mode to 0 (default)
 
@@ -100,6 +100,9 @@ int main(int argc, char* argv[]) {
 	#endif
 	//read brightness and fade to it
 	readTargetBrightness();
+  //at the first time we have to set the number of steps
+  int pwmSteps = leds[0].getPwmSteps(); //should be the same for every led so we just use the first one
+  setFadeSteps(&pwmSteps);
 	fadeSimultaneous(fadeTimeMs);
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
@@ -194,9 +197,9 @@ int main(int argc, char* argv[]) {
 void ledBlasterTerminate(int dummy)
 {
 	mode = 0; //so we won't have any problems with threads and so on
-  	printf("\nUser pressed Ctrl+C || SIGINT detected. Turn LEDs off.\n");
+  printf("\nUser pressed Ctrl+C || SIGINT detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  	turnLedsOff(SIGINT_PIBLASTER_TERMINATE_TIME_VALUE); //turn all leds off in 1000ms = 1s so it won't take too long
+  turnLedsOff(SIGINT_PIBLASTER_TERMINATE_TIME_VALUE); //turn all leds off in 1000ms = 1s so it won't take too long
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
@@ -209,9 +212,9 @@ void ledBlasterTerminate(int dummy)
 void ledBlasterTerminateFast(int dummy)
 {
 	mode = 0; //so we won't have any problems with threads and so on
-  	printf("\nSIGTERM detected. Turn LEDs off.\n");
+  printf("\nSIGTERM detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  	turnLedsOff(SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
+  turnLedsOff(SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
 	//writeCurrentBrightness(); //useless but we'll save it anyway
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off

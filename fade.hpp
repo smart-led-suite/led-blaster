@@ -7,7 +7,7 @@
 #include <stdint.h> //libary which includes uint8_t etc.ti
 
 
-
+int setFadeSteps(int *pwmSteps);
 void fadeSuccessively(uint16_t delay);
 void fadeSimultaneous(uint32_t time);
 void fadeDirectly(void);
