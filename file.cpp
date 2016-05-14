@@ -36,7 +36,20 @@ std::string serverPath = "/var/www/html/";
 bool assignConfigValues (std::string key, std::string value, ledInformationStruct * ledInfo, configInformationStruct * config)
 {
   if (key.compare("time") == 0) {
-    ledInfo->fadeTime = std::stoi(value);
+    int valueAsInt = std::stoi(value);
+    if (valueAsInt < 0 )
+    {
+      ledInfo->fadeTime = 0;
+    }
+    else if (valueAsInt > ledInfo->pwmSteps)
+    {
+      ledInfo->fadeTime = ledInfo->pwmSteps;
+    }
+    else
+    {
+      ledInfo->fadeTime = valueAsInt;
+    }
+
     return 0;
   }
   if (key.compare("server_path") == 0)

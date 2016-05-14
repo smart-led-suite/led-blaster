@@ -58,10 +58,6 @@ void LED::setCurrentBrightness(uint16_t new_cBrightness)
   {
     this->currentBrightness = pwmSteps;
   }
-  else if (new_cBrightness < 0)
-  {
-    this->currentBrightness = 0;
-  }
   else
   {
   this->currentBrightness = new_cBrightness;
@@ -74,10 +70,6 @@ void LED::setTargetBrightness(uint16_t new_tBrightness)
   if (new_tBrightness >= pwmSteps)
   {
     this->targetBrightness = pwmSteps;
-  }
-  else if (new_tBrightness < 0)
-  {
-    this->targetBrightness = 0;
   }
   else
   {

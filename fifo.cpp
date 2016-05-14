@@ -29,6 +29,7 @@
 #include "config.h"
 #include "fifo.hpp"
 #include "led-blaster-pre.hpp"
+#include "led.hpp"
 
 
 using namespace std;
