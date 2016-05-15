@@ -63,7 +63,6 @@
 #include <linux/stat.h>
 
 #include <limits.h>
-#include "sample1.h"
 #include "gtest/gtest.h"
 #include "../led.hpp"
 #include "../modes.hpp"

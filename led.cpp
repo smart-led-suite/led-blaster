@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <pthread.h>
 
 
 using namespace std;
@@ -23,21 +24,29 @@ uint16_t LED::getPin()
 {
   return this->pin;
 }
-bool LED::getIsColor()
+bool LED::IsColor()
 {
   return this->isColor;
 }
-uint16_t LED::getCurrentBrightness()
+bool LED::isFading()
+{
+  return this->fading;
+}
+int LED::getCurrentBrightness()
 {
   return this->currentBrightness;
 }
-uint16_t LED::getTargetBrightness()
+int LED::getTargetBrightness()
 {
   return this->targetBrightness;
 }
 int LED::getPwmSteps()
 {
   return this->pwmSteps;
+}
+pthread_t LED::getFadeThread()
+{
+  return this->fadeThread;
 }
 //setter
 void LED::setColorCode(std::string new_colorcode)
@@ -52,11 +61,15 @@ void LED::setIsColor(bool newisColor)
 {
   this->isColor = newisColor;
 }
-void LED::setCurrentBrightness(uint16_t new_cBrightness)
+void LED::setCurrentBrightness(int new_cBrightness)
 {
   if (new_cBrightness >= pwmSteps)
   {
     this->currentBrightness = pwmSteps;
+  }
+  else if (new_cBrightness < 0)
+  {
+    this->currentBrightness = 0;
   }
   else
   {
@@ -65,11 +78,15 @@ void LED::setCurrentBrightness(uint16_t new_cBrightness)
   //set pin to the new brightness
   gpioPWM(this->pin, this->currentBrightness);
 }
-void LED::setTargetBrightness(uint16_t new_tBrightness)
+void LED::setTargetBrightness(int new_tBrightness)
 {
   if (new_tBrightness >= pwmSteps)
   {
     this->targetBrightness = pwmSteps;
+  }
+  else if (new_tBrightness < 0)
+  {
+    this->targetBrightness = 0;
   }
   else
   {
@@ -77,6 +94,105 @@ void LED::setTargetBrightness(uint16_t new_tBrightness)
   }
 }
 
+//FADE
+/*struct fadeThreadStruct {
+  LED * led;
+  int fadeTime;
+}*/
+
+
+void LED::fadeInThread(int fadeTime)
+{
+  fadeThreadStruct * fadeStruct = new fadeThreadStruct;
+  //fadeStruct.led = this;
+  fadeStruct->fadeTime = fadeTime;
+  //fadehandler: starts and stops thread and so on
+  std::cout << "fadetime is: " << fadeTime <<  std::endl;
+  std::cout << "fadetime struct is: " << fadeStruct->fadeTime <<  std::endl;
+  std::cout << "start fadeLauncher" << std::endl;
+  int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) fadeStruct);
+  //fadeStruct->fadeTime = fadeTime;
+  if(err != 0)
+  {
+    std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
+  }
+  delete fadeStruct;
+}
+
+//as pthread_create doesn't support non-static methods we'll need a workaround
+//found here: http://stackoverflow.com/questions/1151582/pthread-function-from-a-class
+//because we do not only need the led object but also the fadeTime I had to modify the implementation
+
+
+void * LED::fadeLauncher(void *context)
+{
+  //convert the context pointer into a struct pointer to get the fadeTime
+  //then convert it back into a void pointer
+  std::cout << "in fadeLauncher" << std::endl;
+  if (context != NULL)
+  {
+    fadeThreadStruct * fadeStruct = ((fadeThreadStruct *)context);
+    if(fadeStruct != NULL)
+    {
+      int fadeTimeVariable = fadeStruct->fadeTime;
+      fadeStruct->fadeTime = 200;
+      void * fadeTimePointer = (void *)&fadeTimeVariable;
+      std::cout << "fadetime is: " << fadeTimeVariable <<  std::endl;
+      std::cout << "fadetimepointer is: " << *(int*)fadeTimePointer <<  std::endl;
+      fadeTimeVariable = fadeStruct->fadeTime;
+      fadeTimePointer = (void *)&fadeTimeVariable;
+      std::cout << "fadetime is: " << fadeTimeVariable <<  std::endl;
+      std::cout << "fadetimepointer is: " << *(int*)fadeTimePointer <<  std::endl;
+    }
+  }
+
+  //call fade(void * fadeTime) and return the value to pthread
+  return (void*)1;//(((fadeThreadStruct *)context)->led)->fade(fadeTimePointer);
+}
+
+void * LED::fade(void * fadeTime)
+{
+  //#define DEBUG
+  //calculate the delayUs needed to archieve the specified fadeTime
+  //steps * delayUs * 1000 = fadeTime [in ms]
+  //fadeTime is the variable which sets the Time needed to fade
+  int totalSteps = ((this->targetBrightness) - (this->currentBrightness));
+  //we want to have a positive steps number
+  if (totalSteps < 0)
+  {
+    totalSteps = -totalSteps;
+  }
+  if (totalSteps > 0)
+  {
+    int delayUs = (*(int*)fadeTime) * 1000 / (totalSteps); //calculate delay in us
+    #ifdef DEBUG
+      uint32_t startTime = 0; //time to check if there's any overhead
+      uint32_t endTime = 0; //time to check if there's any overhead
+      startTime = gpioTick();
+    #endif
+    //fading to target brightness
+  	for (int current = this->currentBrightness; current < this->targetBrightness; current++)
+  	{
+  				//increase currentBRIGHTNESS of that color and write it to the pin
+  				this->setCurrentBrightness(current + 1); //we use +1 so it will actually reach the targetBrightness
+          gpioDelay(delayUs); 		//make a delay
+  	}
+    for (int current = this->currentBrightness; current > this->targetBrightness; current--)
+    {
+          //decrease currentBRIGHTNESS of that color and write it to the pin
+          this->setCurrentBrightness(current - 1); //we use -1 so it will actually reach the targetBrightness
+          gpioDelay(delayUs); 		//make a delay
+    }
+
+  	#ifdef DEBUG
+      endTime = gpioTick(); //time needed for the fade
+  		printf("time variable for fade: %d \n", (*(int*)fadeTime));
+      //end-start gives elapsed time in micros; divided by 1000 we have it in millis to compare
+  		cout << "real time needed for fade: " << ((endTime - startTime) / 1000) << endl;
+  	#endif
+  }
+  return 0;
+}
 
 //***************************PINS INIT******************************************************
 int LED::initPin(void)
@@ -157,7 +273,6 @@ int LED::initPin(void)
     std::cout << "pwmrange: " << PWMrange << " pwmSteps: " << pwmSteps << std::endl;
   }
 
-
 	gpioPWM(this->pin, 0); //set brightness to 0
 	cout << "pwm set to 0 correctly" << endl;
 
@@ -166,13 +281,14 @@ int LED::initPin(void)
 }
 
 
-LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_targetBrightness)
+LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_targetBrightness)
 {
   this->colorcode = led_colorcode;
   this->pin = led_pin;
   this->isColor = led_isColor;
   this->currentBrightness = led_currentBrightness;
   this->targetBrightness = led_targetBrightness;
+  this->fading = false;
   //initializes each pin. returns 0 if everything went ok
   std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   this->pwmSteps = LED::initPin();
@@ -183,4 +299,9 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t
     //and exit the program
     exit(EXIT_FAILURE);
   }
+}
+
+LED::~LED(void)
+{
+  this->setCurrentBrightness(0);
 }

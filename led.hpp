@@ -9,30 +9,42 @@ class LED
 {
   public:
     //constructor
-    LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, uint16_t led_currentBrightness, uint16_t led_argetBrightness);
+    LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_argetBrightness);
+    //destructor
+    ~LED(void);
     //getter
     std::string getColorCode();
     uint16_t getPin();
-    bool getIsColor();
-    uint16_t getCurrentBrightness();
-    uint16_t getTargetBrightness();
+    bool IsColor();
+    bool isFading();
+    int getCurrentBrightness();
+    int getTargetBrightness();
     int getPwmSteps();
+    pthread_t getFadeThread();
     //setter
     void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
     void setIsColor(bool newisColor);
-    void setCurrentBrightness(uint16_t new_cBrightness);
-    void setTargetBrightness(uint16_t new_tBrightness);
+    void setCurrentBrightness(int new_cBrightness);
+    void setTargetBrightness(int new_tBrightness);
     //functions
-    void writeBrightnessToPin(uint16_t brightness);
+    void fadeInThread(int fadeTime); //fades via threads
+    void * fade(void * fadeTime);
 
   private:
+    struct fadeThreadStruct {
+    //  LED * led;
+      int fadeTime;
+    };
+    static void * fadeLauncher(void *context);
     int initPin(void);
+    pthread_t fadeThread;
+    bool fading;
     std::string colorcode;
     uint16_t pin;
     bool isColor;
-    uint16_t currentBrightness;
-    uint16_t targetBrightness;
+    int currentBrightness;
+    int targetBrightness;
     int pwmSteps;
 };
 #endif //EOF

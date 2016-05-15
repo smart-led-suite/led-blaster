@@ -63,7 +63,6 @@
 #include <linux/stat.h>
 
 #include <limits.h>
-#include "sample1.h"
 #include "gtest/gtest.h"
 
 #include "pigpio.h"
@@ -133,36 +132,130 @@ struct ledClassConstructorTest : testing::Test
   }
 };
 
-struct ledTest : ledClassConstructorTest
+struct ledTest : testing::Test
  {
-   struct ledInformationStruct * fadeInfo2;
-   struct configInformationStruct * config2;
+  LED * led[4] = {NULL, NULL, NULL, NULL};
   ledTest()
   {
-    fadeInfo2 = new ledInformationStruct;
-    config2 = new configInformationStruct;
+    if(initGeneral())
+    {
+      std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
+      exit(0);
+    }
+    led[0] = new LED("b", 25, true, 0, 0);
+    led[1] = new LED("w", 17, false, 0, 0);
+    led[2] = new LED("r", 18, true, 0, 0);
+    led[3] = new LED("g", 22, true, 0, 0);
   }
   ~ledTest()
   {
-    delete fadeInfo2;
-    delete config2;
+    //delete[] led;
+    gpioTerminate();
   }
 };
 
 
 TEST_F(ledClassConstructorTest, ledConstructor)
 {
-  LED led("w", 25, 0, 0, 0);
-  EXPECT_EQ(25,led.getPin());
-  EXPECT_EQ("w",led.getColorCode());
-  EXPECT_EQ(false, led.getIsColor());
-  EXPECT_EQ(0, led.getCurrentBrightness());
-  EXPECT_EQ(0, led.getTargetBrightness());
-  EXPECT_EQ(PWM_RANGE, led.getPwmSteps());
+  LED ledObject("w", 25, 0, 0, 0);
+  EXPECT_EQ(25,ledObject.getPin());
+  EXPECT_EQ("w",ledObject.getColorCode());
+  EXPECT_EQ(false, ledObject.IsColor());
+  EXPECT_EQ(0, ledObject.getCurrentBrightness());
+  EXPECT_EQ(0, ledObject.getTargetBrightness());
+  EXPECT_EQ(PWM_RANGE, ledObject.getPwmSteps());
 }
 
+TEST_F(ledTest, setTargetBrightnessTest)
+{
+  for (size_t ledNumber = 0; ledNumber < 1; ledNumber++)
+  {
+    //set targetBrightness to a valid value ( the maximum possible value)
+    led[ledNumber]->setTargetBrightness( led[ledNumber]->getPwmSteps() );
+    EXPECT_EQ(led[ledNumber]->getPwmSteps(), led[ledNumber]->getTargetBrightness()) << "normal assignment doesn't work";
+    //set it to a negative value
+    led[ledNumber]->setTargetBrightness( -100 );
+    EXPECT_EQ(0, led[ledNumber]->getTargetBrightness()) << "negative values produce an error";
+    //set it to a too big number
+    led[ledNumber]->setTargetBrightness( led[ledNumber]->getPwmSteps() + 1);
+    EXPECT_EQ(led[ledNumber]->getPwmSteps(), led[ledNumber]->getTargetBrightness()) << "values which are too big produce an error";
+  }
 
+}
 
+TEST_F(ledTest, setCurrentBrightnessTest)
+{
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    //set CurrentBrightness to a valid value ( the maximum possible value)
+    led[ledNumber]->setCurrentBrightness( led[ledNumber]->getPwmSteps() );
+    EXPECT_EQ(led[ledNumber]->getPwmSteps(), led[ledNumber]->getCurrentBrightness()) << "normal assignment doesn't work";
+    //set it to a negative value
+    led[ledNumber]->setCurrentBrightness( -100 );
+    EXPECT_EQ(0, led[ledNumber]->getCurrentBrightness()) << "negative values produce an error";
+    //set it to a too big number
+    led[ledNumber]->setCurrentBrightness( led[ledNumber]->getPwmSteps() + 1);
+    EXPECT_EQ(led[ledNumber]->getPwmSteps(), led[ledNumber]->getCurrentBrightness()) << "values which are too big produce an error";
+    led[ledNumber]->setCurrentBrightness(0);
+  }
+
+}
+
+TEST_F(ledTest, fadeFunctionTest)
+{
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    int fadeTime = 400;
+
+    led[ledNumber]->setTargetBrightness(0);
+    led[ledNumber]->fade((void *)&fadeTime);
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fade((void *)&fadeTime);
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    led[ledNumber]->setTargetBrightness(0);
+    led[ledNumber]->fade((void *)&fadeTime);
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+  }
+}
+
+TEST_F(ledTest, fadeThreadsOneThreadTest)
+{
+  //int fadeTime = 1000;
+    led[0]->setCurrentBrightness(1000);
+    led[0]->setTargetBrightness(0);
+    led[0]->fadeInThread(1000);
+  //  void ** p = NULL;
+    //pthread_join(  led[0]->getFadeThread(), NULL);
+    //EXPECT_EQ(led[0]->getCurrentBrightness(), led[0]->getTargetBrightness());
+    //usleep(1000);
+  /*  led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fadeInThread(200);
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    led[ledNumber]->setTargetBrightness(0);
+    led[ledNumber]->fadeInThread(fadeTime);
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());*/
+//  }
+}
+TEST_F(ledTest, fadeThreadsTest)
+{
+
+  /*  int fadeTime = 1000;
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    led[ledNumber]->setTargetBrightness(0);
+    led[ledNumber]->fadeInThread(fadeTime);
+  /*  void ** p = NULL;
+    pthread_join(  led[ledNumber]->getFadeThread(), p);*/
+    //EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+  /*  led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fadeInThread(200);
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    led[ledNumber]->setTargetBrightness(0);
+    led[ledNumber]->fadeInThread(fadeTime);
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+  }*/
+}
 // Step 3. Call RUN_ALL_TESTS() in main().
 //
 // We do this by linking in src/gtest_main.cc file, which consists of

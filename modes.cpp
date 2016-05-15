@@ -55,7 +55,7 @@ void *mode1(void* fadeInfo)
 
 		for (size_t ledsAvailable = 0; ledsAvailable < ((ledInformationStruct *)fadeInfo)->leds.size(); ledsAvailable++) {
 			//exept white because that doesn't look nice.
-			if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].getIsColor() == true)
+			if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].IsColor() == true)
 			{
 				//rand % 1000 creates numbers between 0 and 999, ...
 				//% 1001 should create nubers between 0 and 1000

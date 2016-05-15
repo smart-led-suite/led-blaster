@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 	  for (size_t ledsAvailable = 0; ledsAvailable < leds.size(); ledsAvailable++) {
 	    cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
 	    cout << fadeInfo.leds[ledsAvailable].getPin() << " ";
-	    cout << fadeInfo.leds[ledsAvailable].getIsColor() << " ";
+	    cout << fadeInfo.leds[ledsAvailable].IsColor() << " ";
 	    cout << fadeInfo.leds[ledsAvailable].getCurrentBrightness() << " ";
 	    cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
 	  }
@@ -109,6 +109,7 @@ int main(int argc, char* argv[]) {
   fadeInfo.pwmSteps = fadeInfo.leds[0].getPwmSteps(); //should be the same for every led so we just use the first one
   //setFadeSteps(&pwmSteps);
 	fadeSimultaneous(&fadeInfo);
+  //fadeInfo.leds[0].fadeInThread(fadeInfo.fadeTime);
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user
@@ -148,6 +149,7 @@ int main(int argc, char* argv[]) {
 			writeCurrentBrightness(&fadeInfo);
       cout << "fading leds simultaneous..." << endl;
 			fadeSimultaneous(&fadeInfo);
+
 			//fadeDirectly(); //for testing purposes
 			//write brightness so php part can read it :-)
 			//writeCurrentBrightness();
@@ -156,7 +158,7 @@ int main(int argc, char* argv[]) {
 			for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
 				cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
 				    //cout << leds[ledsAvailable].getPin() << " ";
-				    //cout << leds[ledsAvailable].getIsColor() << " ";
+				    //cout << leds[ledsAvailable].IsColor() << " ";
 				    //cout << leds[ledsAvailable].getCurrentBrightness() << " ";
 				cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
 			}
