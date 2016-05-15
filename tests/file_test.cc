@@ -65,18 +65,16 @@
 #include <limits.h>
 #include "sample1.h"
 #include "gtest/gtest.h"
-#include "led.hpp"
-#include "modes.hpp"
-#include "fade.hpp"
-#include "config.h"
+#include "../led.hpp"
+#include "../modes.hpp"
+#include "../fade.hpp"
+#include "../config.h"
 
-#include "file.hpp"
+#include "../file.hpp"
 
-#include "init.hpp"
-#include "led-blaster-pre.hpp"
-#include "fifo.hpp"
-
-//#define TESTING
+#include "../init.hpp"
+#include "../led-blaster-pre.hpp"
+#include "../fifo.hpp"
 
 // Step 2. Use the TEST macro to define your tests.
 //
@@ -105,55 +103,56 @@
 
 // Tests Factorial().
 
+struct fileTest : testing::Test
+ {
+  struct ledInformationStruct * fadeInfo;
+  struct configInformationStruct * config;
+  fileTest()
+  {
+    fadeInfo = new ledInformationStruct;
+    config = new configInformationStruct;
+  }
+  ~fileTest()
+  {
+    delete fadeInfo;
+    delete config;
+  }
+};
 
-int main(int argc, char **argv) {
-
-  printf("Running main() from gtest_main.cc\n");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
-
-TEST(fileTest, assignValuesSimple)
+TEST_F(fileTest, assignValuesSimple)
 {
   //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
 //  EXPECT_EQ(0, readColorConfig(&fadeInfo));
-  EXPECT_EQ(0, assignConfigValues("server_path", "whatever", &fadeInfo, &config));
-  EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", &fadeInfo, &config));
+  EXPECT_EQ(0, assignConfigValues("server_path", "whatever", fadeInfo, config));
+  EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", fadeInfo, config));
 }
 
-TEST(fileTest, assignValuesNormal)
+TEST_F(fileTest, assignValuesNormal)
 {
   //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("time", "1000", &fadeInfo, &config);
-  EXPECT_EQ(1000, fadeInfo.fadeTime);
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("server_path", "/dev/bla", &fadeInfo, &config);
-  EXPECT_EQ("/dev/bla", config.serverPath);
+  fadeInfo->fadeTime = 0;
+  fadeInfo->pwmSteps = 1000;
+  assignConfigValues("time", "1000", fadeInfo, config);
+  EXPECT_EQ(1000, fadeInfo->fadeTime);
+  assignConfigValues("server_path", "/dev/bla", fadeInfo, config);
+  EXPECT_EQ("/dev/bla", config->serverPath);
 }
-TEST(fileTest, assignValuesNegative)
+TEST_F(fileTest, assignValuesNegative)
 {
   //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("time", "-1000", &fadeInfo, &config);
-  EXPECT_EQ(0, fadeInfo.fadeTime);;
+  fadeInfo->fadeTime = 2;
+  assignConfigValues("time", "-1000", fadeInfo, config);
+  EXPECT_EQ(0, fadeInfo->fadeTime);;
 }
-TEST(fileTest, assignValuesToHigh)
+TEST_F(fileTest, assignValuesToHigh)
 {
   //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.pwmSteps = 500;
-  assignConfigValues("time", "1000", &fadeInfo, &config);
-  EXPECT_EQ(500, fadeInfo.fadeTime);
+  fadeInfo->pwmSteps = 500;
+  assignConfigValues("time", "1000", fadeInfo, config);
+  EXPECT_EQ(500, fadeInfo->fadeTime);
 }
+
+
 
 // Step 3. Call RUN_ALL_TESTS() in main().
 //

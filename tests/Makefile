@@ -29,7 +29,7 @@ CXXFLAGS += -g -std=c++0x -Wall -Wextra -pthread -lpigpio -lrt
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = sample1_unittest
+TESTS = led_test file_test all_tests
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -80,9 +80,35 @@ file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre
 led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led.cpp
 
-sample1_unittest.o : $(USER_DIR)/sample1_unittest.cc \
-                     $(USER_DIR)/file.hpp $(USER_DIR)/led.hpp $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1_unittest.cc
+init.o :  $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp  $(USER_DIR)/led-blaster-pre.hpp
+				$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/init.cpp
 
-sample1_unittest : led.o file.o sample1_unittest.o gtest.a
+#led-blaster-pre.o :  $(USER_DIR)/led-blaster-pre.cpp $(USER_DIR)/led-blaster-pre.hpp
+#					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led-blaster-pre.cpp
+
+fade.o :  $(USER_DIR)/fade.cpp $(USER_DIR)/fade.hpp  $(USER_DIR)/led-blaster-pre.hpp
+					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fade.cpp
+
+fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster-pre.hpp
+					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fifo.cpp
+
+modes.o :  $(USER_DIR)/modes.cpp $(USER_DIR)/modes.hpp  $(USER_DIR)/led-blaster-pre.hpp
+					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/modes.cpp
+
+
+file_test.o : $(USER_DIR)/tests/file_test.cc \
+							$(USER_DIR)/file.hpp $(USER_DIR)/led.hpp $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
+							$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/file_test.cc
+
+led_test.o : $(USER_DIR)/tests/led_test.cc \
+						 $(USER_DIR)/led.hpp $(USER_DIR)/init.hpp $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
+						 $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/led_test.cc
+
+file_test : led.o file.o file_test.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+led_test : led.o init.o led_test.o gtest_main.a
+		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+all_tests: led.o led_test.o init.o file.o file_test.o gtest_main.a
+		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

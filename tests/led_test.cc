@@ -65,18 +65,24 @@
 #include <limits.h>
 #include "sample1.h"
 #include "gtest/gtest.h"
-#include "led.hpp"
-#include "modes.hpp"
-#include "fade.hpp"
-#include "config.h"
 
-#include "file.hpp"
+#include "pigpio.h"
+#include "../led.hpp"
 
-#include "init.hpp"
-#include "led-blaster-pre.hpp"
-#include "fifo.hpp"
+//#include "../file.hpp"
+#include "../init.hpp"
+#include "../config.h"
+/*
+#include "../modes.hpp"
+#include "../fade.hpp"
+#include "../config.h"
 
-//#define TESTING
+
+#include "../init.hpp"
+
+#include "../fifo.hpp"
+*/
+#include "../led-blaster-pre.hpp"
 
 // Step 2. Use the TEST macro to define your tests.
 //
@@ -103,57 +109,59 @@
 // </TechnicalDetails>
 
 
-// Tests Factorial().
+struct ledClassConstructorTest : testing::Test
+ {
+
+  ledClassConstructorTest()
+  {
+    //EXPECT_EQ(0, initGeneral());
+
+    if(initGeneral())
+    {
+      std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
+      exit(0);
+    }
+  }
+  ~ledClassConstructorTest()
+  {
+    //mode = 0; //so we won't have any problems with threads and so on
+    //printf("\nUser pressed Ctrl+C || SIGINT detected. Turn LEDs off.\n");
+    // we want to turn all GPIOs of to avoid some strange stuff
+    //writeCurrentBrightness(); //useless but we'll save it anyway
+    //printf("terminate gpio \n");
+    gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+  }
+};
+
+struct ledTest : ledClassConstructorTest
+ {
+   struct ledInformationStruct * fadeInfo2;
+   struct configInformationStruct * config2;
+  ledTest()
+  {
+    fadeInfo2 = new ledInformationStruct;
+    config2 = new configInformationStruct;
+  }
+  ~ledTest()
+  {
+    delete fadeInfo2;
+    delete config2;
+  }
+};
 
 
-int main(int argc, char **argv) {
-
-  printf("Running main() from gtest_main.cc\n");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
-
-TEST(fileTest, assignValuesSimple)
+TEST_F(ledClassConstructorTest, ledConstructor)
 {
-  //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-//  EXPECT_EQ(0, readColorConfig(&fadeInfo));
-  EXPECT_EQ(0, assignConfigValues("server_path", "whatever", &fadeInfo, &config));
-  EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", &fadeInfo, &config));
+  LED led("w", 25, 0, 0, 0);
+  EXPECT_EQ(25,led.getPin());
+  EXPECT_EQ("w",led.getColorCode());
+  EXPECT_EQ(false, led.getIsColor());
+  EXPECT_EQ(0, led.getCurrentBrightness());
+  EXPECT_EQ(0, led.getTargetBrightness());
+  EXPECT_EQ(PWM_RANGE, led.getPwmSteps());
 }
 
-TEST(fileTest, assignValuesNormal)
-{
-  //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("time", "1000", &fadeInfo, &config);
-  EXPECT_EQ(1000, fadeInfo.fadeTime);
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("server_path", "/dev/bla", &fadeInfo, &config);
-  EXPECT_EQ("/dev/bla", config.serverPath);
-}
-TEST(fileTest, assignValuesNegative)
-{
-  //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.fadeTime = 0;
-  assignConfigValues("time", "-1000", &fadeInfo, &config);
-  EXPECT_EQ(0, fadeInfo.fadeTime);;
-}
-TEST(fileTest, assignValuesToHigh)
-{
-  //0 means value was assigned
-  struct ledInformationStruct fadeInfo;
-  struct configInformationStruct config;
-  fadeInfo.pwmSteps = 500;
-  assignConfigValues("time", "1000", &fadeInfo, &config);
-  EXPECT_EQ(500, fadeInfo.fadeTime);
-}
+
 
 // Step 3. Call RUN_ALL_TESTS() in main().
 //
