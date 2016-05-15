@@ -222,7 +222,7 @@ void ledBlasterTerminate(int dummy)
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
-	pthread_exit(NULL);
+	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");
   	exit(1);
 }
@@ -238,7 +238,7 @@ void ledBlasterTerminateFast(int dummy)
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
-	pthread_exit(NULL);
+	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");
   	exit(1);
 }
