@@ -37,19 +37,7 @@ bool assignConfigValues (std::string key, std::string value, ledInformationStruc
 {
   if (key.compare("time") == 0) {
     int valueAsInt = std::stoi(value);
-    if (valueAsInt < 0 )
-    {
-      ledInfo->fadeTime = 0;
-    }
-    else if (valueAsInt > ledInfo->pwmSteps)
-    {
-      ledInfo->fadeTime = ledInfo->pwmSteps;
-    }
-    else
-    {
-      ledInfo->fadeTime = valueAsInt;
-    }
-
+    LED::setFadeTime(valueAsInt);
     return 0;
   }
   if (key.compare("server_path") == 0)
@@ -98,7 +86,7 @@ void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config
       }
     }
     #ifdef DEBUG
-    std::cout << "fadetime: " << *fadeTimeMs << std::endl;
+    std::cout << "fadetime: " << LED::getFadeTime() << std::endl;
   //  std::cout << "server: " << serverPath << std::endl;
     #endif
     configFile.close();
@@ -177,6 +165,7 @@ bool readColorConfig(ledInformationStruct * ledInfo)
       ledInfo->leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
       #ifdef DEBUG
       cout << variables[0] << endl;
+      std::cout << "is color: " << ledIsColor << std::endl;
       cout << variables[1] << endl;
       std::cout << buffer << std::endl;
       #endif

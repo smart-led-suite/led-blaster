@@ -19,32 +19,44 @@ class LED
     bool isFading();
     int getCurrentBrightness();
     int getTargetBrightness();
-    int getPwmSteps();
+    static int getPwmSteps();
+    static int getFadeTime();
     pthread_t getFadeThread();
     //setter
+    static void setFadeTime(int newFadeTime);
     void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
     void setIsColor(bool newisColor);
+    //this also writes the brightness to the pin
     void setCurrentBrightness(int new_cBrightness);
+    //this only "prepares" it because to apply it you have to call fadeInThread()
     void setTargetBrightness(int new_tBrightness);
     //functions
-    void fadeInThread(int fadeTime); //fades via threads
-    void * fade(void * fadeTime);
+    //call this function to fade in a thread
+    void fadeInThread(void); //fades via threads
+    //internal fade function. NOT in a thread
+    void * fade(void);
+    //cancel fade
+    void fadeCancel(void);
+    //wait until fade is done
+    void fadeWait(void);
 
   private:
     struct fadeThreadStruct {
-    //  LED * led;
+      LED * led;
       int fadeTime;
     };
+    //internal thread launcher
     static void * fadeLauncher(void *context);
     int initPin(void);
     pthread_t fadeThread;
+    static int fadeTime;
     bool fading;
     std::string colorcode;
     uint16_t pin;
     bool isColor;
     int currentBrightness;
     int targetBrightness;
-    int pwmSteps;
+    static int pwmSteps;
 };
 #endif //EOF

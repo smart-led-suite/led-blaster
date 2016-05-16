@@ -75,9 +75,19 @@ void *mode1(void* fadeInfo)
 						fadeTime = ((ledInformationStruct *)fadeInfo)->fadeTime;
 					}
 				#endif
-				fadeSimultaneous((ledInformationStruct *)fadeInfo);
+        //start fading
+        ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeInThread();
+				//fadeSimultaneous((ledInformationStruct *)fadeInfo);
 			}
 		}
+    //wait for fade to finish
+    for (size_t ledsAvailable = 0; ledsAvailable < ((ledInformationStruct *)fadeInfo)->leds.size(); ledsAvailable++) {
+      if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].IsColor() == true)
+			{
+        ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeWait();
+      }
+    }
+
 	}
   //INVALID CODE
 	pthread_exit(NULL); //exit this thread

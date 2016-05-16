@@ -62,6 +62,9 @@
 #include <unistd.h>
 #include <linux/stat.h>
 
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
 #include <limits.h>
 #include "gtest/gtest.h"
 
@@ -155,6 +158,7 @@ struct ledTest : testing::Test
 };
 
 
+
 TEST_F(ledClassConstructorTest, ledConstructor)
 {
   LED ledObject("w", 25, 0, 0, 0);
@@ -205,57 +209,173 @@ TEST_F(ledTest, fadeFunctionTest)
 {
   for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
-    int fadeTime = 400;
-
+    LED::setFadeTime(400);
     led[ledNumber]->setTargetBrightness(0);
-    led[ledNumber]->fade((void *)&fadeTime);
+    led[ledNumber]->fade();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
     led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
-    led[ledNumber]->fade((void *)&fadeTime);
+    led[ledNumber]->fade();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
     led[ledNumber]->setTargetBrightness(0);
-    led[ledNumber]->fade((void *)&fadeTime);
+    led[ledNumber]->fade();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
   }
 }
 
-TEST_F(ledTest, fadeThreadsOneThreadTest)
-{
-  //int fadeTime = 1000;
-    led[0]->setCurrentBrightness(1000);
-    led[0]->setTargetBrightness(0);
-    led[0]->fadeInThread(1000);
-  //  void ** p = NULL;
-    //pthread_join(  led[0]->getFadeThread(), NULL);
-    //EXPECT_EQ(led[0]->getCurrentBrightness(), led[0]->getTargetBrightness());
-    //usleep(1000);
-  /*  led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
-    led[ledNumber]->fadeInThread(200);
-    EXPECT_EQ(true, led[ledNumber]->isFading());
-    led[ledNumber]->setTargetBrightness(0);
-    led[ledNumber]->fadeInThread(fadeTime);
-    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());*/
-//  }
-}
 TEST_F(ledTest, fadeThreadsTest)
 {
 
-  /*  int fadeTime = 1000;
   for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
-    led[ledNumber]->setTargetBrightness(0);
-    led[ledNumber]->fadeInThread(fadeTime);
-  /*  void ** p = NULL;
-    pthread_join(  led[ledNumber]->getFadeThread(), p);*/
-    //EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
-  /*  led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
-    led[ledNumber]->fadeInThread(200);
+    LED::setFadeTime(400);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    //now fade to max brightness in a separate thread
+    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fadeInThread();
+    //wait until thread is finished
     EXPECT_EQ(true, led[ledNumber]->isFading());
-    led[ledNumber]->setTargetBrightness(0);
-    led[ledNumber]->fadeInThread(fadeTime);
+    led[ledNumber]->fadeWait();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
-  }*/
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+    //now check if fade down works
+    led[ledNumber]->setTargetBrightness(0);
+    //fade On
+    led[ledNumber]->fadeInThread();
+    //wait until thread is finished
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    led[ledNumber]->fadeWait();
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+
+  }
 }
+
+//check if simultaneous fading works
+TEST_F(ledTest, fadeThreadsSimultaneous)
+{
+  LED::setFadeTime(400);
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    //now fade to max brightness in a separate thread
+    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+  }
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    led[ledNumber]->fadeInThread();
+  }
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    //every thread should be busy with fading
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+  }
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    //wait until thread is finished
+    led[ledNumber]->fadeWait();
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+  }
+    //now check if fade down works
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //now fade to max brightness in a separate thread
+      led[ledNumber]->setTargetBrightness(0);
+      led[ledNumber]->fadeInThread();
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+
+      EXPECT_EQ(true, led[ledNumber]->isFading());
+
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //wait until thread is finished
+      led[ledNumber]->fadeWait();
+      EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+      EXPECT_EQ(false, led[ledNumber]->isFading());
+    }
+}
+//check they are fading for the same amount of time
+TEST_F(ledTest, fadeThreadsSimultaneousToDifferentBrightness)
+{
+  /* initialize random seed: */
+  srand (time(NULL));
+  //because of the randomization we want to run this test multiple times
+  for (size_t repetitions = 0; repetitions < 6; repetitions++) {
+    LED::setFadeTime(400);
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //turn leds off at the beginning
+      led[ledNumber]->setCurrentBrightness(0);
+      //now fade to max brightness in a separate thread
+      //this makes sure that they have different target brightnesses
+      //nontheless every led should be done with fading (roughly) at the same time
+      //the brightness shouldnt be greater than the number of pwm steps
+      int randomBrightness = rand() % led[ledNumber]->getPwmSteps();
+      led[ledNumber]->setTargetBrightness(randomBrightness);
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      led[ledNumber]->fadeInThread();
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //every thread should be busy with fading
+      EXPECT_EQ(true, led[ledNumber]->isFading());
+    }
+    //we'll wait for one randomly chosen thread to finish
+    //generate random number between 0 and 4
+    int randomLed = rand() % 4;
+    std::cout << "check lednumber: " << randomLed << std::endl;
+    led[randomLed]->fadeWait();
+    //wait 100ms so some calc overhead is not a big deal
+    int milisec = 100; // length of time to sleep, in miliseconds
+    struct timespec req;
+    req.tv_sec = 0;
+    req.tv_nsec = milisec * 1000000L;
+    nanosleep(&req, (struct timespec *)NULL);
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //and check if all threads are finished at the same time
+      EXPECT_EQ(false, led[ledNumber]->isFading());
+    }
+    //hard-turning leds off again
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      //turn leds off
+      led[ledNumber]->setCurrentBrightness(0);
+    }
+  }
+  std::cout << "if this test fails, please run it again because sometimes it takes longer to process and this test is time-critical" << std::endl;
+}
+
+//check fadeCancel
+TEST_F(ledTest, fadeCancel)
+{
+
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    LED::setFadeTime(400);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    //now fade to max brightness in a separate thread
+    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fadeInThread();
+    //check if thread exists
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    //cancel it
+    led[ledNumber]->fadeCancel();
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+    //if this doesn't work we wait until the thread exits normally so the test can continue
+    led[ledNumber]->fadeWait();
+
+  }
+}
+
 // Step 3. Call RUN_ALL_TESTS() in main().
 //
 // We do this by linking in src/gtest_main.cc file, which consists of

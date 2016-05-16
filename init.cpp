@@ -20,7 +20,9 @@ bool initGeneral(void)
 	}
 	else
 	{
+    #ifdef DEBUG
 	   cout << "pigpio initialised okay. initGeneral successful." << endl;
+     #endif
 	   return 0;
 	}
 }

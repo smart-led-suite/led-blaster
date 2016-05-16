@@ -15,6 +15,10 @@
 
 
 using namespace std;
+
+//init of static variables
+int LED::pwmSteps = 1000;
+int LED::fadeTime = 1000;
 //getter
 std::string LED::getColorCode()
 {
@@ -42,13 +46,29 @@ int LED::getTargetBrightness()
 }
 int LED::getPwmSteps()
 {
-  return this->pwmSteps;
+  return LED::pwmSteps;
 }
 pthread_t LED::getFadeThread()
 {
   return this->fadeThread;
 }
+int LED::getFadeTime(void)
+{
+  return LED::fadeTime;
+}
 //setter
+void LED::setFadeTime(int newFadeTime)
+{
+  //we won't accept smaller numbers because we dont want to waste too much cpu power
+  if (newFadeTime > 0)
+  {
+    LED::fadeTime = newFadeTime;
+  }
+  else
+  {
+    std::cerr << "please set a fadetime greater than zero" << std::endl;
+  }
+}
 void LED::setColorCode(std::string new_colorcode)
 {
   this->colorcode = new_colorcode;
@@ -63,9 +83,9 @@ void LED::setIsColor(bool newisColor)
 }
 void LED::setCurrentBrightness(int new_cBrightness)
 {
-  if (new_cBrightness >= pwmSteps)
+  if (new_cBrightness >= LED::pwmSteps)
   {
-    this->currentBrightness = pwmSteps;
+    this->currentBrightness = LED::pwmSteps;
   }
   else if (new_cBrightness < 0)
   {
@@ -80,9 +100,9 @@ void LED::setCurrentBrightness(int new_cBrightness)
 }
 void LED::setTargetBrightness(int new_tBrightness)
 {
-  if (new_tBrightness >= pwmSteps)
+  if (new_tBrightness >= LED::pwmSteps)
   {
-    this->targetBrightness = pwmSteps;
+    this->targetBrightness = LED::pwmSteps;
   }
   else if (new_tBrightness < 0)
   {
@@ -101,22 +121,24 @@ void LED::setTargetBrightness(int new_tBrightness)
 }*/
 
 
-void LED::fadeInThread(int fadeTime)
+void LED::fadeInThread(void)
 {
+  this->fading = true;
   fadeThreadStruct * fadeStruct = new fadeThreadStruct;
-  //fadeStruct.led = this;
+  fadeStruct->led = this;
   fadeStruct->fadeTime = fadeTime;
+  LED *led = this;
   //fadehandler: starts and stops thread and so on
-  std::cout << "fadetime is: " << fadeTime <<  std::endl;
-  std::cout << "fadetime struct is: " << fadeStruct->fadeTime <<  std::endl;
-  std::cout << "start fadeLauncher" << std::endl;
-  int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) fadeStruct);
+  //std::cout << "fadetime is: " << fadeTime <<  std::endl;
+  //std::cout << "fadetime struct is: " << fadeStruct->fadeTime <<  std::endl;
+  //std::cout << "start fadeLauncher" << std::endl;
+  int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) led);
   //fadeStruct->fadeTime = fadeTime;
   if(err != 0)
   {
     std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
   }
-  delete fadeStruct;
+  //delete fadeStruct;
 }
 
 //as pthread_create doesn't support non-static methods we'll need a workaround
@@ -128,30 +150,30 @@ void * LED::fadeLauncher(void *context)
 {
   //convert the context pointer into a struct pointer to get the fadeTime
   //then convert it back into a void pointer
-  std::cout << "in fadeLauncher" << std::endl;
-  if (context != NULL)
-  {
-    fadeThreadStruct * fadeStruct = ((fadeThreadStruct *)context);
-    if(fadeStruct != NULL)
-    {
-      int fadeTimeVariable = fadeStruct->fadeTime;
-      fadeStruct->fadeTime = 200;
-      void * fadeTimePointer = (void *)&fadeTimeVariable;
-      std::cout << "fadetime is: " << fadeTimeVariable <<  std::endl;
-      std::cout << "fadetimepointer is: " << *(int*)fadeTimePointer <<  std::endl;
-      fadeTimeVariable = fadeStruct->fadeTime;
-      fadeTimePointer = (void *)&fadeTimeVariable;
-      std::cout << "fadetime is: " << fadeTimeVariable <<  std::endl;
-      std::cout << "fadetimepointer is: " << *(int*)fadeTimePointer <<  std::endl;
-    }
-  }
-
-  //call fade(void * fadeTime) and return the value to pthread
-  return (void*)1;//(((fadeThreadStruct *)context)->led)->fade(fadeTimePointer);
+  //call fade() and return the value to pthread
+  return ((LED *)context)->fade();
 }
 
-void * LED::fade(void * fadeTime)
+void LED::fadeCancel(void)
 {
+  if(this->fading)
+  {
+    pthread_cancel(this->fadeThread);
+    this->fading = false;
+  }
+}
+
+void LED::fadeWait(void)
+{
+  if(this->fading)
+  {
+    pthread_join(this->fadeThread, NULL);
+  }
+}
+
+void * LED::fade(void)
+{
+  this->fading = true;
   //#define DEBUG
   //calculate the delayUs needed to archieve the specified fadeTime
   //steps * delayUs * 1000 = fadeTime [in ms]
@@ -164,7 +186,7 @@ void * LED::fade(void * fadeTime)
   }
   if (totalSteps > 0)
   {
-    int delayUs = (*(int*)fadeTime) * 1000 / (totalSteps); //calculate delay in us
+    int delayUs = (LED::fadeTime) * 1000 / (totalSteps); //calculate delay in us
     #ifdef DEBUG
       uint32_t startTime = 0; //time to check if there's any overhead
       uint32_t endTime = 0; //time to check if there's any overhead
@@ -186,11 +208,12 @@ void * LED::fade(void * fadeTime)
 
   	#ifdef DEBUG
       endTime = gpioTick(); //time needed for the fade
-  		printf("time variable for fade: %d \n", (*(int*)fadeTime));
+  		printf("time variable for fade: %d \n", LED::fadeTime);
       //end-start gives elapsed time in micros; divided by 1000 we have it in millis to compare
   		cout << "real time needed for fade: " << ((endTime - startTime) / 1000) << endl;
   	#endif
   }
+  this->fading = false;
   return 0;
 }
 
@@ -274,9 +297,10 @@ int LED::initPin(void)
   }
 
 	gpioPWM(this->pin, 0); //set brightness to 0
-	cout << "pwm set to 0 correctly" << endl;
-
+	//cout << "pwm set to 0 correctly" << endl;
+  #ifdef DEBUG
 	cout << "init of pin " << this->pin << " finished successfully." << endl;
+  #endif
 	return pwmSteps;
 }
 
@@ -290,9 +314,10 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
   this->targetBrightness = led_targetBrightness;
   this->fading = false;
   //initializes each pin. returns 0 if everything went ok
-  std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
-  this->pwmSteps = LED::initPin();
-  if(pwmSteps == 0) {
+  //std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
+  //pwmSteps is static and should have the same value for every pin
+  LED::pwmSteps = LED::initPin();
+  if(LED::pwmSteps == 0) {
     //print that there has been an error if this happens (very unlikely)
     cout << "error in initPin " << pin;
     cout << "which is used by color " << colorcode << endl;
@@ -303,5 +328,6 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
 
 LED::~LED(void)
 {
-  this->setCurrentBrightness(0);
+  //std::cout << "destroy led object" << std::endl;
+  //this->setCurrentBrightness(0);
 }

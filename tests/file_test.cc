@@ -132,7 +132,7 @@ TEST_F(fileTest, assignValuesNormal)
   fadeInfo->fadeTime = 0;
   fadeInfo->pwmSteps = 1000;
   assignConfigValues("time", "1000", fadeInfo, config);
-  EXPECT_EQ(1000, fadeInfo->fadeTime);
+  EXPECT_EQ(1000, LED::getFadeTime());
   assignConfigValues("server_path", "/dev/bla", fadeInfo, config);
   EXPECT_EQ("/dev/bla", config->serverPath);
 }
@@ -141,15 +141,9 @@ TEST_F(fileTest, assignValuesNegative)
   //0 means value was assigned
   fadeInfo->fadeTime = 2;
   assignConfigValues("time", "-1000", fadeInfo, config);
-  EXPECT_EQ(0, fadeInfo->fadeTime);;
+  EXPECT_EQ(1000, LED::getFadeTime());;
 }
-TEST_F(fileTest, assignValuesToHigh)
-{
-  //0 means value was assigned
-  fadeInfo->pwmSteps = 500;
-  assignConfigValues("time", "1000", fadeInfo, config);
-  EXPECT_EQ(500, fadeInfo->fadeTime);
-}
+
 
 
 

@@ -40,7 +40,7 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
   int valueAsInt = stoi(value);
   if (key.compare("time") == 0) {
     //*fadeTimeMs = valueAsInt;
-    led->fadeTime = valueAsInt;
+    LED::setFadeTime(valueAsInt);
     return 0;
   }
 	else if (key.compare("mode") == 0)
