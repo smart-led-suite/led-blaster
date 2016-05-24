@@ -123,20 +123,23 @@ void LED::setTargetBrightness(int new_tBrightness)
 
 void LED::fadeInThread(void)
 {
-  this->fading = true;
-  fadeThreadStruct * fadeStruct = new fadeThreadStruct;
-  fadeStruct->led = this;
-  fadeStruct->fadeTime = fadeTime;
-  LED *led = this;
-  //fadehandler: starts and stops thread and so on
-  //std::cout << "fadetime is: " << fadeTime <<  std::endl;
-  //std::cout << "fadetime struct is: " << fadeStruct->fadeTime <<  std::endl;
-  //std::cout << "start fadeLauncher" << std::endl;
-  int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) led);
-  //fadeStruct->fadeTime = fadeTime;
-  if(err != 0)
+  if (this->fading)
   {
-    std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
+    fadeCancel();
+  }
+  else
+  {
+    //std::cout << "start fading" << std::endl;
+    this->fading = true;
+    LED *led = this;
+    //fadehandler: starts and stops thread and so on
+    int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) led);
+    //fadeStruct->fadeTime = fadeTime;
+    if(err != 0)
+    {
+      std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
+      exit(1);
+    }
   }
   //delete fadeStruct;
 }
@@ -151,7 +154,10 @@ void * LED::fadeLauncher(void *context)
   //convert the context pointer into a struct pointer to get the fadeTime
   //then convert it back into a void pointer
   //call fade() and return the value to pthread
-  return ((LED *)context)->fade();
+  void * returnValue = ((LED *)context)->fade();
+  ((LED *)context)->fading = false;
+  pthread_exit(NULL);
+  return returnValue;
 }
 
 void LED::fadeCancel(void)
@@ -165,15 +171,20 @@ void LED::fadeCancel(void)
 
 void LED::fadeWait(void)
 {
-  if(this->fading)
-  {
-    pthread_join(this->fadeThread, NULL);
-  }
+    int err = pthread_join(this->fadeThread, NULL);
+    if (err)
+    {
+      std::cerr << "error while joining thread. errno: " << err << std::endl;
+    }
+    else
+    {
+      this->fading = false;
+    }
 }
 
 void * LED::fade(void)
 {
-  this->fading = true;
+  //this->fading = true;
   //#define DEBUG
   //calculate the delayUs needed to archieve the specified fadeTime
   //steps * delayUs * 1000 = fadeTime [in ms]
@@ -213,7 +224,7 @@ void * LED::fade(void)
   		cout << "real time needed for fade: " << ((endTime - startTime) / 1000) << endl;
   	#endif
   }
-  this->fading = false;
+  //this->fading = false;
   return 0;
 }
 

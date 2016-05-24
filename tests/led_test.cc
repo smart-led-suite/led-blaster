@@ -145,7 +145,7 @@ struct ledTest : testing::Test
       std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
       exit(0);
     }
-    led[0] = new LED("b", 25, true, 0, 0);
+    led[0] = new LED("b", 26, true, 0, 0);
     led[1] = new LED("w", 17, false, 0, 0);
     led[2] = new LED("r", 18, true, 0, 0);
     led[3] = new LED("g", 22, true, 0, 0);
@@ -227,7 +227,7 @@ TEST_F(ledTest, fadeThreadsTest)
 
   for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
-    LED::setFadeTime(400);
+    LED::setFadeTime(200);
     //turn leds off at the beginning
     led[ledNumber]->setCurrentBrightness(0);
     //now fade to max brightness in a separate thread
@@ -254,7 +254,7 @@ TEST_F(ledTest, fadeThreadsTest)
 //check if simultaneous fading works
 TEST_F(ledTest, fadeThreadsSimultaneous)
 {
-  LED::setFadeTime(400);
+  LED::setFadeTime(200);
   for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
     //turn leds off at the beginning
@@ -306,7 +306,7 @@ TEST_F(ledTest, fadeThreadsSimultaneousToDifferentBrightness)
   srand (time(NULL));
   //because of the randomization we want to run this test multiple times
   for (size_t repetitions = 0; repetitions < 6; repetitions++) {
-    LED::setFadeTime(400);
+    LED::setFadeTime(200);
     for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
     {
       //turn leds off at the beginning
@@ -359,7 +359,7 @@ TEST_F(ledTest, fadeCancel)
 
   for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
-    LED::setFadeTime(400);
+    LED::setFadeTime(200);
     //turn leds off at the beginning
     led[ledNumber]->setCurrentBrightness(0);
     //now fade to max brightness in a separate thread
@@ -376,6 +376,30 @@ TEST_F(ledTest, fadeCancel)
   }
 }
 
+//check fadeCancel
+TEST_F(ledTest, threadErrorNumber11MaxThreads)
+{
+  for (size_t repetitions = 0; repetitions <= 1000; repetitions++)
+  {
+    //we'll start 4 threads and wait for them to finish (close)
+    //we hope this won't cause errno 11 in thread creating because of too
+    //many threads
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      LED::setFadeTime(10);
+      //turn leds off at the beginning
+      led[ledNumber]->setCurrentBrightness(0);
+      //now fade to max brightness in a separate thread
+      led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+      led[ledNumber]->fadeInThread();
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      led[ledNumber]->fadeWait();
+      //pthread_join(led[ledNumber]->getFadeThread(), NULL);
+    }
+  }
+}
 // Step 3. Call RUN_ALL_TESTS() in main().
 //
 // We do this by linking in src/gtest_main.cc file, which consists of

@@ -42,10 +42,6 @@ class LED
     void fadeWait(void);
 
   private:
-    struct fadeThreadStruct {
-      LED * led;
-      int fadeTime;
-    };
     //internal thread launcher
     static void * fadeLauncher(void *context);
     int initPin(void);

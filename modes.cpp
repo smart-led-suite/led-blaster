@@ -64,9 +64,9 @@ void *mode1(void* fadeInfo)
 				#ifdef MODE_LIVE_MANIPULATING
 					//if the fadeTime is 0 (i.e. no fade, just flickering)
 					//we'll set it to 1 (default delay)
-					if (((ledInformationStruct *)fadeInfo)->fadeTime < 800)
+					if (((ledInformationStruct *)fadeInfo)->fadeTime < 10)
 					{
-						fadeTime = 800;
+						fadeTime = 10;
 					}
 					else
 					{
@@ -76,15 +76,17 @@ void *mode1(void* fadeInfo)
 					}
 				#endif
         //start fading
+        //std::cout << "start fading" << std::endl;
         ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeInThread();
 				//fadeSimultaneous((ledInformationStruct *)fadeInfo);
 			}
 		}
     //wait for fade to finish
     for (size_t ledsAvailable = 0; ledsAvailable < ((ledInformationStruct *)fadeInfo)->leds.size(); ledsAvailable++) {
-      if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].IsColor() == true)
+      if ((((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].IsColor()) == true)
 			{
         ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeWait();
+        //std::cout << "waiting for fade to finish" << std::endl;
       }
     }
 
