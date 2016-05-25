@@ -1,9 +1,8 @@
 //MODES
 #include "modes.hpp"
-#include "fade.hpp"
+//#include "fade.hpp"
 #include "config.h"
 #include "file.hpp"
-#include "init.hpp"
 #include "led-blaster-pre.hpp"
 
 #include <iostream>
@@ -24,8 +23,6 @@ using namespace std;
 // this function is initialized w/ a pointer in order to create a separate thread in main()
 void *mode1(void* fadeInfo)
 {
-	 /* initialize random seed: */
-  	srand (time(NULL));
 
 	int fadeTime = 0;
 	//it is recommended to not use a address as attribute because the value may change until the thread is started (it's listed as bad example in the documentation.)
@@ -57,28 +54,7 @@ void *mode1(void* fadeInfo)
 			//exept white because that doesn't look nice.
 			if (((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].IsColor() == true)
 			{
-				//rand % 1000 creates numbers between 0 and 999, ...
-				//% 1001 should create nubers between 0 and 1000
-				((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].setTargetBrightness(rand() % 1001);
-
-				#ifdef MODE_LIVE_MANIPULATING
-					//if the fadeTime is 0 (i.e. no fade, just flickering)
-					//we'll set it to 1 (default delay)
-					if (((ledInformationStruct *)fadeInfo)->fadeTime < 10)
-					{
-						fadeTime = 10;
-					}
-					else
-					{
-						// turn fadeTimePointer pointer in a int
-						// and save it as fadeTime
-						fadeTime = ((ledInformationStruct *)fadeInfo)->fadeTime;
-					}
-				#endif
-        //start fading
-        //std::cout << "start fading" << std::endl;
-        ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeInThread();
-				//fadeSimultaneous((ledInformationStruct *)fadeInfo);
+        ((ledInformationStruct *)fadeInfo)->leds[ledsAvailable].fadeRandomInThread();
 			}
 		}
     //wait for fade to finish

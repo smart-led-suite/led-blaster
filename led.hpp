@@ -12,17 +12,18 @@ class LED
     LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_argetBrightness);
     //destructor
     ~LED(void);
-    //getter
+    //*********getter************************
     std::string getColorCode();
     uint16_t getPin();
     bool IsColor();
     bool isFading();
+    bool isRandomlyFading();
     int getCurrentBrightness();
     int getTargetBrightness();
     static int getPwmSteps();
     static int getFadeTime();
     pthread_t getFadeThread();
-    //setter
+    //************setter*********************+
     static void setFadeTime(int newFadeTime);
     void setColorCode(std::string new_colorcode);
     void setPin(uint16_t newpin);
@@ -31,7 +32,8 @@ class LED
     void setCurrentBrightness(int new_cBrightness);
     //this only "prepares" it because to apply it you have to call fadeInThread()
     void setTargetBrightness(int new_tBrightness);
-    //functions
+    //***********functions****************
+    static bool initGeneral(void); //initializes the libary
     //call this function to fade in a thread
     void fadeInThread(void); //fades via threads
     //internal fade function. NOT in a thread
@@ -40,14 +42,17 @@ class LED
     void fadeCancel(void);
     //wait until fade is done
     void fadeWait(void);
+    void fadeRandomInThread(void); //fade randomly
 
   private:
     //internal thread launcher
     static void * fadeLauncher(void *context);
+    static void * fadeRandom(void *context);
     int initPin(void);
     pthread_t fadeThread;
     static int fadeTime;
     bool fading;
+    bool randomlyFading;
     std::string colorcode;
     uint16_t pin;
     bool isColor;

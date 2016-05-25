@@ -80,8 +80,8 @@ file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre
 led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led.cpp
 
-init.o :  $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp  $(USER_DIR)/led-blaster-pre.hpp
-				$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/init.cpp
+#init.o :  $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp  $(USER_DIR)/led-blaster-pre.hpp
+#				$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/init.cpp
 
 #led-blaster-pre.o :  $(USER_DIR)/led-blaster-pre.cpp $(USER_DIR)/led-blaster-pre.hpp
 #					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led-blaster-pre.cpp
@@ -101,14 +101,14 @@ file_test.o : $(USER_DIR)/tests/file_test.cc \
 							$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/file_test.cc
 
 led_test.o : $(USER_DIR)/tests/led_test.cc \
-						 $(USER_DIR)/led.hpp $(USER_DIR)/init.hpp $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
+						 $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
 						 $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/led_test.cc
 
 file_test : led.o file.o file_test.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-led_test : led.o init.o led_test.o gtest_main.a
+led_test : led.o  led_test.o gtest_main.a
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-all_tests: led.o led_test.o init.o file.o file_test.o gtest_main.a
+all_tests: led.o led_test.o file.o file_test.o gtest_main.a
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

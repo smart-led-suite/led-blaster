@@ -72,7 +72,7 @@
 #include "../led.hpp"
 
 //#include "../file.hpp"
-#include "../init.hpp"
+//#include "../init.hpp"
 #include "../config.h"
 /*
 #include "../modes.hpp"
@@ -118,7 +118,7 @@ struct ledClassConstructorTest : testing::Test
   {
     //EXPECT_EQ(0, initGeneral());
 
-    if(initGeneral())
+    if(LED::initGeneral())
     {
       std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
       exit(0);
@@ -140,7 +140,7 @@ struct ledTest : testing::Test
   LED * led[4] = {NULL, NULL, NULL, NULL};
   ledTest()
   {
-    if(initGeneral())
+    if(LED::initGeneral())
     {
       std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
       exit(0);
@@ -152,6 +152,9 @@ struct ledTest : testing::Test
   }
   ~ledTest()
   {
+    for (size_t i = 0; i < 4; i++) {
+      led[i]->setCurrentBrightness(0);
+    }
     //delete[] led;
     gpioTerminate();
   }
@@ -374,9 +377,100 @@ TEST_F(ledTest, fadeCancel)
     led[ledNumber]->fadeWait();
 
   }
+  //now check the random fade
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    LED::setFadeTime(200);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    led[ledNumber]->fadeRandomInThread();
+    //check if thread exists
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    //cancel it
+    led[ledNumber]->fadeCancel();
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+    //if this doesn't work we wait until the thread exits normally so the test can continue
+    led[ledNumber]->fadeWait();
+  }
+}
+//check fadeWait
+TEST_F(ledTest, fadeWait)
+{
+  //normal fade
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    LED::setFadeTime(200);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    //now fade to max brightness in a separate thread
+    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->fadeInThread();
+    //check if thread exists
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    //wait
+    led[ledNumber]->fadeWait();
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+  }
+  //now check the random fade
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    LED::setFadeTime(200);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    led[ledNumber]->fadeRandomInThread();
+    //check if thread exists
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    //wait
+    led[ledNumber]->fadeWait();
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+  }
 }
 
-//check fadeCancel
+//check random fade
+TEST_F(ledTest, fadeRandomly)
+{
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+  {
+    LED::setFadeTime(200);
+    //turn leds off at the beginning
+    led[ledNumber]->setCurrentBrightness(0);
+    led[ledNumber]->fadeRandomInThread();
+    //check if thread exists
+    EXPECT_EQ(true, led[ledNumber]->isFading());
+    EXPECT_EQ(true, led[ledNumber]->isRandomlyFading());
+    //wait
+    led[ledNumber]->fadeWait();
+    EXPECT_EQ(false, led[ledNumber]->isRandomlyFading());
+    EXPECT_EQ(false, led[ledNumber]->isFading());
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//check if threads are closed after fading
 TEST_F(ledTest, threadErrorNumber11MaxThreads)
 {
   for (size_t repetitions = 0; repetitions <= 1000; repetitions++)

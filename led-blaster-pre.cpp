@@ -43,7 +43,7 @@
 #include "fade.hpp"
 #include "config.h"
 #include "file.hpp"
-#include "init.hpp"
+//#include "init.hpp"
 #include "led-blaster-pre.hpp"
 #include "fifo.hpp"
 
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 	readConfig(&fadeInfo, &config);
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
-	if(initGeneral()) {
+	if(LED::initGeneral()) {
 		//if there's a problem print it out and exit the program
 		cout << "initGeneral failed!" << endl;
 		return 1;
@@ -145,7 +145,13 @@ int main(int argc, char* argv[]) {
       //kill mode1 if active
       if (mode1ThreadActive)
       {
-        pthread_cancel(mode1Thread);
+        //pthread_cancel(mode1Thread);
+        for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
+          while (fadeInfo.leds[ledNumber].isRandomlyFading())
+          {
+            fadeInfo.leds[ledNumber].fadeCancel();
+          }
+        }
         #ifdef DEBUG
           std::cout << "mode 1 canceled" << std::endl;
         #endif
@@ -195,6 +201,16 @@ int main(int argc, char* argv[]) {
       //if no thread is active we'll want to start one
       if (mode1ThreadActive == false)
       {
+
+        for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
+          //exept white because that doesn't look nice.
+          if (fadeInfo.leds[ledsAvailable].IsColor() == true)
+          {
+            fadeInfo.leds[ledsAvailable].fadeRandomInThread();
+          }
+        }
+        mode1ThreadActive = true;
+        /*
   			//***** THREAD EXPLANATION ************************
   			//for documentation about threads see:
   			//https://computing.llnl.gov/tutorials/pthreads/
@@ -228,6 +244,7 @@ int main(int argc, char* argv[]) {
   				oldModeState = 1;
   				cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
   			}
+        */
 		  }
     }
 	}

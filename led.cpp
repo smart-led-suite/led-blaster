@@ -3,7 +3,7 @@
 #include <stdint.h> //libary which includes uint16_t etc.
 #include "config.h"
 #include "led.hpp"
-#include "init.hpp"
+//#include "init.hpp"
 
 //#include <stdio.h>
 #include <pigpio.h>
@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <pthread.h>
+#include <time.h>       /* for the random function :time */
 
 
 using namespace std;
@@ -19,7 +20,7 @@ using namespace std;
 //init of static variables
 int LED::pwmSteps = 1000;
 int LED::fadeTime = 1000;
-//getter
+//********++getter*****************
 std::string LED::getColorCode()
 {
   return this->colorcode;
@@ -35,6 +36,10 @@ bool LED::IsColor()
 bool LED::isFading()
 {
   return this->fading;
+}
+bool LED::isRandomlyFading()
+{
+  return this->randomlyFading;
 }
 int LED::getCurrentBrightness()
 {
@@ -56,7 +61,7 @@ int LED::getFadeTime(void)
 {
   return LED::fadeTime;
 }
-//setter
+//************************setter************************************************
 void LED::setFadeTime(int newFadeTime)
 {
   //we won't accept smaller numbers because we dont want to waste too much cpu power
@@ -114,12 +119,33 @@ void LED::setTargetBrightness(int new_tBrightness)
   }
 }
 
-//FADE
-/*struct fadeThreadStruct {
-  LED * led;
-  int fadeTime;
-}*/
+//************************FUNCTIONS*************************************************+
 
+//*********************************general INIT*******************************************
+bool LED::initGeneral(void)
+{
+	gpioTerminate(); //shut down all DMA channels and stuff so we can start fresh and easy ;-)
+
+	if (gpioInitialise() < 0) //initializes the gpio libary
+	{
+	   cout << "pigpio initialisation failed." << endl;
+	   return 1;
+	}
+	else
+	{
+    #ifdef DEBUG
+	   cout << "pigpio initialised okay. initGeneral successful." << endl;
+     #endif
+	   return 0;
+	}
+}
+
+//************************FADE***************************************************
+//***** THREAD EXPLANATION ************************
+//for documentation about threads see:
+//https://computing.llnl.gov/tutorials/pthreads/
+//and about the pthread_create function see:
+//https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
 
 void LED::fadeInThread(void)
 {
@@ -129,12 +155,10 @@ void LED::fadeInThread(void)
   }
   else
   {
-    //std::cout << "start fading" << std::endl;
     this->fading = true;
     LED *led = this;
-    //fadehandler: starts and stops thread and so on
+    //fadeLauncher: starts and stops thread and so on
     int err = pthread_create(&(this->fadeThread), NULL, fadeLauncher, (void *) led);
-    //fadeStruct->fadeTime = fadeTime;
     if(err != 0)
     {
       std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
@@ -146,9 +170,6 @@ void LED::fadeInThread(void)
 
 //as pthread_create doesn't support non-static methods we'll need a workaround
 //found here: http://stackoverflow.com/questions/1151582/pthread-function-from-a-class
-//because we do not only need the led object but also the fadeTime I had to modify the implementation
-
-
 void * LED::fadeLauncher(void *context)
 {
   //convert the context pointer into a struct pointer to get the fadeTime
@@ -162,15 +183,18 @@ void * LED::fadeLauncher(void *context)
 
 void LED::fadeCancel(void)
 {
-  if(this->fading)
+  if(this->fading || this->randomlyFading)
   {
     pthread_cancel(this->fadeThread);
     this->fading = false;
+    this->randomlyFading = false;
   }
 }
 
 void LED::fadeWait(void)
 {
+  if (this->randomlyFading == false)
+  {
     int err = pthread_join(this->fadeThread, NULL);
     if (err)
     {
@@ -180,6 +204,13 @@ void LED::fadeWait(void)
     {
       this->fading = false;
     }
+  }
+  else
+  {
+    //if we're randomly fading we'd have to wait infinitely
+    this->fadeCancel();
+    this->randomlyFading = false;
+  }
 }
 
 void * LED::fade(void)
@@ -226,6 +257,49 @@ void * LED::fade(void)
   }
   //this->fading = false;
   return 0;
+}
+
+//****random fade*****
+void LED::fadeRandomInThread(void)
+{
+  if (this->fading || this->randomlyFading)
+  {
+    fadeCancel();
+  }
+  else
+  {
+    this->fading = true;
+    this->randomlyFading = true;
+    LED *led = this;
+    //fadeLauncher: starts and stops thread and so on
+    int err = pthread_create(&(this->fadeThread), NULL, fadeRandom, (void *) led);
+    if(err != 0)
+    {
+      std::cerr << "creating fadeRandomThread not possible. errorcode: " << err << std::endl;
+      exit(1);
+    }
+  }
+  //delete fadeStruct;
+}
+
+//as pthread_create doesn't support non-static methods we'll need a workaround
+//found here: http://stackoverflow.com/questions/1151582/pthread-function-from-a-class
+void * LED::fadeRandom(void *context)
+{
+  //instead of this-> we'll use ((LED *)context)
+  ((LED *)context)->fading = true;
+  ((LED *)context)->randomlyFading = true;
+  /* initialize random seed: */
+  srand (time(NULL));
+  while (true)
+  {
+		//rand % 1000 creates numbers between 0 and 999, ...
+		//% 1001 should create nubers between 0 and 1000
+		((LED *)context)->setTargetBrightness(rand() % 1001);
+    //start fading (fade() is a blocking fade)
+    ((LED *)context)->fade();
+  }
+  //INVALID CODE
 }
 
 //***************************PINS INIT******************************************************
@@ -324,6 +398,7 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
   this->currentBrightness = led_currentBrightness;
   this->targetBrightness = led_targetBrightness;
   this->fading = false;
+  this->randomlyFading = false;
   //initializes each pin. returns 0 if everything went ok
   //std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   //pwmSteps is static and should have the same value for every pin
