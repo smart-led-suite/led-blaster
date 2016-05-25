@@ -65,7 +65,7 @@
 #include <limits.h>
 #include "gtest/gtest.h"
 #include "../led.hpp"
-#include "../modes.hpp"
+//#include "../modes.hpp"
 //#include "../fade.hpp"
 #include "../config.h"
 
@@ -122,25 +122,24 @@ TEST_F(fileTest, assignValuesSimple)
 {
   //0 means value was assigned
 //  EXPECT_EQ(0, readColorConfig(&fadeInfo));
-  EXPECT_EQ(0, assignConfigValues("server_path", "whatever", fadeInfo, config));
-  EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", fadeInfo, config));
+  EXPECT_EQ(0, assignConfigValues("server_path", "whatever", config));
+  EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", config));
 }
 
 TEST_F(fileTest, assignValuesNormal)
 {
   //0 means value was assigned
-  fadeInfo->fadeTime = 0;
-  fadeInfo->pwmSteps = 1000;
-  assignConfigValues("time", "1000", fadeInfo, config);
+  LED::setFadeTime(0);
+  assignConfigValues("time", "1000", config);
   EXPECT_EQ(1000, LED::getFadeTime());
-  assignConfigValues("server_path", "/dev/bla", fadeInfo, config);
+  assignConfigValues("server_path", "/dev/bla", config);
   EXPECT_EQ("/dev/bla", config->serverPath);
 }
 TEST_F(fileTest, assignValuesNegative)
 {
   //0 means value was assigned
   fadeInfo->fadeTime = 2;
-  assignConfigValues("time", "-1000", fadeInfo, config);
+  assignConfigValues("time", "-1000", config);
   EXPECT_EQ(1000, LED::getFadeTime());;
 }
 

@@ -92,8 +92,8 @@ fade.o :  $(USER_DIR)/fade.cpp $(USER_DIR)/fade.hpp  $(USER_DIR)/led-blaster-pre
 fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster-pre.hpp
 					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fifo.cpp
 
-modes.o :  $(USER_DIR)/modes.cpp $(USER_DIR)/modes.hpp  $(USER_DIR)/led-blaster-pre.hpp
-					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/modes.cpp
+#modes.o :  $(USER_DIR)/modes.cpp $(USER_DIR)/modes.hpp  $(USER_DIR)/led-blaster-pre.hpp
+#					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/modes.cpp
 
 
 file_test.o : $(USER_DIR)/tests/file_test.cc \

@@ -13,14 +13,14 @@
 
 case "$1" in 
 	start)
-		/opt/led-blaster/led-blaster-pre
+		/opt/led-blaster/led-blaster
 		;;
 	stop)
 		killall led-blaster
 		;;
 	restart)
 		killall led-blaster
-		/opt/led-blaster
+		/opt/led-blaster/led-blaster
 		;;
 esac
 

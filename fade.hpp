@@ -9,10 +9,6 @@
 
 using namespace std;
 
-int setFadeSteps(int *pwmSteps);
-void fadeSuccessively(uint16_t delay);
-void fadeSimultaneous(ledInformationStruct * led);
-void fadeDirectly(ledInformationStruct * led);
 void turnLedsOff(ledInformationStruct * led);
 
 #endif //fade.hpp

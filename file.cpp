@@ -33,7 +33,7 @@
 std::string serverPath = "/var/www/html/";
 
 //own private function so we have the config values at the top
-bool assignConfigValues (std::string key, std::string value, ledInformationStruct * ledInfo, configInformationStruct * config)
+bool assignConfigValues (std::string key, std::string value, configInformationStruct * config)
 {
   if (key.compare("time") == 0) {
     int valueAsInt = std::stoi(value);
@@ -49,7 +49,7 @@ bool assignConfigValues (std::string key, std::string value, ledInformationStruc
 }
 
 //read general config from config file
-void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config)
+void readConfig(configInformationStruct * config)
 {
   const char *configFileName = "/etc/led-blaster.ledconfig";
     //open file
@@ -79,7 +79,7 @@ void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config
           #ifdef DEBUG
           std::cout << "key/value recieved " << key << " " << value << std::endl;
           #endif
-          if (assignConfigValues(key, value, ledInfo, config))
+          if (assignConfigValues(key, value, config))
           {
             std::cerr << "configFile read error at" << line << std::endl;
           }
@@ -115,7 +115,7 @@ void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config
          std::cerr << "no file could be created. check your rights. using defaults now." << std::endl;
 
        }
-       ledInfo->fadeTime = FADE_TIME_MS;
+       LED::setFadeTime(FADE_TIME_MS);
 
    }
 }

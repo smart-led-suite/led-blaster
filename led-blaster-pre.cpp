@@ -9,11 +9,10 @@
 //	(done)		 - introduce file to save current luminances
 //	(done)		 - introduce simultaneous fadeAlgorithm
 //	(done) 		 - introduce separate files
-//			 - improve simultaneous algorithm
+//	(done)		 - improve simultaneous algorithm
 //	(done)		 - move currentBrightness read/write to own function
 //			 - introduce other fadeModes (aka exp fade)
 //	(done) 		 - introduce pipes (major)
-//		 	 - introduce some other modes (fade w/ overlap of different colors)
 //			 - introduce music mode
 //  (done)		 - introduce config file w/ led pins etc.
 //	(done) 		 - tidying up code changes due to implementation of FIFO (BLOCKER)
@@ -39,7 +38,6 @@
 #include <linux/stat.h>
 
 #include "led.hpp"
-#include "modes.hpp"
 #include "fade.hpp"
 #include "config.h"
 #include "file.hpp"
@@ -77,7 +75,7 @@ int main(int argc, char* argv[]) {
 	//wait until we call fadeSimultaneous()
 //  uint16_t waitCounter = 0; //used only in live mode.
 	//reading global config
-	readConfig(&fadeInfo, &config);
+	readConfig(&config);
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(LED::initGeneral()) {
@@ -145,7 +143,6 @@ int main(int argc, char* argv[]) {
       //kill mode1 if active
       if (mode1ThreadActive)
       {
-        //pthread_cancel(mode1Thread);
         for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
           while (fadeInfo.leds[ledNumber].isRandomlyFading())
           {
@@ -157,21 +154,15 @@ int main(int argc, char* argv[]) {
         #endif
         mode1ThreadActive = false; 	//make it possible to start mode 1 again
       }
-
-
+      //fade
       cout << "stop previous fade and start fading leds simultaneous..." << endl;
       for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
         fadeInfo.leds[ledNumber].fadeCancel();
         fadeInfo.leds[ledNumber].fadeInThread();
       }
-			//fadeSimultaneous(&fadeInfo);
       //write to file
 			writeCurrentBrightness(&fadeInfo);
-			//fadeDirectly(); //for testing purposes
-			//write brightness so php part can read it :-)
-			//writeCurrentBrightness();
-			//cout << "fading leds simultaneous finished" << endl;
-			//print some debug info of the variables
+
 			for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
 				cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
 				    //cout << leds[ledsAvailable].getPin() << " ";
@@ -209,42 +200,8 @@ int main(int argc, char* argv[]) {
             fadeInfo.leds[ledsAvailable].fadeRandomInThread();
           }
         }
+        std::cout << "start random fade." << std::endl;
         mode1ThreadActive = true;
-        /*
-  			//***** THREAD EXPLANATION ************************
-  			//for documentation about threads see:
-  			//https://computing.llnl.gov/tutorials/pthreads/
-  			//and about the pthread_create function see:
-  			//https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
-
-  		  //it is recommended to not use a address as attribute because the value
-  			//may change until the thread is started (it's listed as bad example in the documentation.
-  			//but as we WANT to change it after the thread has started we're using it anyway.
-  			//if there are any problems we comment MODE_LIVE_MANIPULATING and everything is as its recommended.
-  			#ifndef MODE_LIVE_MANIPULATING
-  			//init the new thread, it can be adressed by mode1Thread, the fadeTimeUs variable will
-  			//be sent as attribute, the main function of the new thread is mode1
-  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeInfo);
-  			#endif
-  			#ifdef MODE_LIVE_MANIPULATING
-  			//init the new thread, it can be adressed by mode1Thread
-  			//the fadeTimeUs variable will be sent as attribute
-  			//the main function of the new thread is mode1
-  			threadErrorNumber = pthread_create(&mode1Thread, NULL, mode1 , (void *) &fadeInfo);
-  			#endif
-  			if (threadErrorNumber != 0)  //if it is successfull it returns 0, otherwise an error code
-  			{
-  				cout << "Something happened while starting the mode1 Thread" << endl;
-  				cout << "error no: " << threadErrorNumber << endl;		//print the errorcode if one occurs
-  				threadErrorNumber = 0; //reset error number for future restarts
-  			}
-  			else 							//else, the thread was successfully created
-  			{
-  				mode1ThreadActive = true; //set variable to true because thread has been created successfully
-  				oldModeState = 1;
-  				cout << "start continuos, random fade on all pins (wrgb successively) exit with mode = 0 or Ctrl+C, DO NOT CHANGE ANY OTHER VALUE OR YOU HAVE TO REBOOT YOUR PI" << endl;
-  			}
-        */
 		  }
     }
 	}

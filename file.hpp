@@ -3,10 +3,10 @@
 #include "led-blaster-pre.hpp"
 //#include "led.hpp"
 
-void readConfig(ledInformationStruct * ledInfo, configInformationStruct * config);
+void readConfig(configInformationStruct * config);
 bool readColorConfig(ledInformationStruct * ledInfo);
 void readTargetBrightness(ledInformationStruct * ledInfo);
 void writeCurrentBrightness (ledInformationStruct * ledInfo);
-bool assignConfigValues (std::string key, std::string value, ledInformationStruct * ledInfo, configInformationStruct * config);
+bool assignConfigValues (std::string key, std::string value, configInformationStruct * config);
 
 #endif
