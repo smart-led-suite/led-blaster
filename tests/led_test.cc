@@ -86,6 +86,7 @@
 */
 #include "../led-blaster-pre.hpp"
 
+using namespace led;
 // Step 2. Use the TEST macro to define your tests.
 //
 // TEST has two parameters: the test case name and the test name.
@@ -172,6 +173,31 @@ TEST_F(ledClassConstructorTest, ledConstructor)
   EXPECT_EQ(0, ledObject.getTargetBrightness());
   EXPECT_EQ(PWM_RANGE, ledObject.getPwmSteps());
 }
+
+TEST_F(ledClassConstructorTest, ledMap)
+{
+  //LED ledObject("w", 25, 0, 0, 0);
+  LED::ledMap[25] = new LED("w", 25, false, 0, 0);
+  LED::ledMap[17] = new LED("r", 17, true, 0, 0);
+
+  EXPECT_EQ(2, LED::ledMap.size());
+  EXPECT_EQ(17,LED::ledMap.find(17)->second->getPin());
+  EXPECT_EQ("r",LED::ledMap.find(17)->second->getColorCode());
+  EXPECT_EQ(true, LED::ledMap.find(17)->second->IsColor());
+  EXPECT_EQ(0, LED::ledMap.find(17)->second->getCurrentBrightness());
+  EXPECT_EQ(0, LED::ledMap.find(17)->second->getTargetBrightness());
+  EXPECT_EQ(LED::getPwmSteps(), LED::ledMap.find(17)->second->getPwmSteps());
+
+  EXPECT_EQ(25,LED::ledMap.find(25)->second->getPin());
+  EXPECT_EQ("w",LED::ledMap.find(25)->second->getColorCode());
+  EXPECT_EQ(false, LED::ledMap.find(25)->second->IsColor());
+  EXPECT_EQ(0, LED::ledMap.find(25)->second->getCurrentBrightness());
+  EXPECT_EQ(0, LED::ledMap.find(25)->second->getTargetBrightness());
+  EXPECT_EQ(LED::getPwmSteps(), LED::ledMap.find(25)->second->getPwmSteps());
+  delete LED::ledMap[25];
+  delete LED::ledMap[17];
+}
+
 
 TEST_F(ledTest, setTargetBrightnessTest)
 {

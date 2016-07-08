@@ -1,25 +1,3 @@
-//============================================================================
-// Name        : hello.cpp
-// Author      : Sandesh
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-// ToDo	       :
-//	(done)		 - new universal initPin
-//	(done)		 - introduce header file so the functions can be placed below the main part
-//	(done)		 - introduce file to save current luminances
-//	(done)		 - introduce simultaneous fadeAlgorithm
-//			 - introduce separate files
-//			 - improve simultaneous algorithm
-//			 - move currentBrightness read/write to own function
-//			 - introduce other fadeModes (aka exp fade)
-//	(done, untested) - introduce pipes (major)
-//		 	 - introduce some other modes (fade w/ overlap of different colors)
-//			 - introduce music mode
-//			 - introduce config file w/ led pins etc.
-//			 - tidying up code changes due to implementation of FIFO (BLOCKER)
-//============================================================================
-
 #include <iostream>
 #include <fstream>
 #include <string>

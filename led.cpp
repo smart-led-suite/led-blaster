@@ -16,10 +16,11 @@
 
 
 using namespace std;
-
+using namespace led;
 //init of static variables
 int LED::pwmSteps = 1000;
 int LED::fadeTime = 1000;
+std::map<int, led::LED*> LED::ledMap;
 //********++getter*****************
 std::string LED::getColorCode()
 {

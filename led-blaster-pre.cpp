@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "led-blaster has successfully started." << endl;
 
-    config.mode = 0;
+  config.mode = 0;
 	//var to check if mode was changed
 	int oldModeState = config.mode;
 	//*********** LOOP *************************************

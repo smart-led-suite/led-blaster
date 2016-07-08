@@ -15,10 +15,11 @@
 #include "led.hpp"
 
 using namespace std;
+using namespace led;
 //******************* VARIABLES ****************************
 //extern std::vector<LED> leds;
 struct ledInformationStruct {
-  std::vector<LED> leds;
+  std::vector<led::LED> leds;
   int fadeTime;
   int pwmSteps;
 };
