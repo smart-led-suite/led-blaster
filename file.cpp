@@ -161,7 +161,7 @@ bool readColorConfig(void)
       }
       if (variables[0].find("b") != std::string::npos)
       {
-        trueColorAdjust = 20;
+        trueColorAdjust = BLUE_ADJUSTMENT;
       }
       //add this as a new element in leds vector element
     //  leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));

@@ -46,6 +46,10 @@ int LED::getTargetBrightness()
 {
   return this->targetBrightness;
 }
+int LED::getTrueColorMultipier()
+{
+  return this->trueColorMultiplier;
+}
 int LED::getPwmSteps()
 {
   return LED::pwmSteps;
@@ -78,7 +82,7 @@ void LED::setColorCode(std::string new_colorcode)
 void LED::setTrueColorMultipier(int new_Multiplier)
 {
   trueColorMultiplier = 0;
-  if (trueColorMultiplier < 0 && trueColorMultiplier < 100)
+  if (new_Multiplier > 0 && new_Multiplier < 100)
   {
     this->trueColorMultiplier = new_Multiplier;
   }
@@ -93,9 +97,9 @@ void LED::setIsColor(bool newisColor)
 }
 void LED::setCurrentBrightness(int new_cBrightness)
 {
-  if (new_cBrightness >= LED::pwmSteps)
+  if (new_cBrightness >= LED::getPwmSteps())
   {
-    this->currentBrightness = LED::pwmSteps;
+    this->currentBrightness = LED::getPwmSteps();
   }
   else if (new_cBrightness < 0)
   {
@@ -112,26 +116,17 @@ void LED::setTargetBrightness(int new_tBrightness)
 {
   //new exception for blue, other treatment for blue colored strips as they are
   //brighter than other leds
-  if (new_tBrightness >= LED::pwmSteps)
+  if (new_tBrightness > LED::getPwmSteps())
   {
-    this->targetBrightness = LED::pwmSteps;
+    this->targetBrightness = LED::getPwmSteps();
   }
   else if (new_tBrightness < 0)
   {
     this->targetBrightness = 0;
   }
   else
-  //apply color
   {
-    if (trueColorMultiplier > 0 && trueColorMultiplier < 100)
-    {
-      //lower the brightness of the color by a factor (0 = 0%, at 100% [not allowed] there wouldnt be any light)
-      this->targetBrightness = new_tBrightness - ((new_tBrightness * trueColorMultiplier) / 100);
-    }
-    else
-    {
-      this->targetBrightness = new_tBrightness;
-    }
+    this->targetBrightness = new_tBrightness;
   }
 }
 
@@ -254,10 +249,23 @@ void * LED::fade(void)
 {
   //this->fading = true;
   //#define DEBUG
+  //calculate the real target brightness it will have (after the trueColorAdjust)
+  int trueTargetBrightness;
+  if (trueColorMultiplier > 0 && trueColorMultiplier < 100 && this->targetBrightness > 0)
+  {
+    //lower the brightness of the color by a factor (0 = 0%, at 100% [not allowed] there wouldnt be any light)
+    trueTargetBrightness = this->targetBrightness - ((this->targetBrightness * trueColorMultiplier) / 100);
+  }
+  else
+  {
+    trueTargetBrightness = this->targetBrightness;
+  }
+  std::cout << "true brightness: " << trueTargetBrightness << std::endl;
   //calculate the delayUs needed to archieve the specified fadeTime
   //steps * delayUs * 1000 = fadeTime [in ms]
   //fadeTime is the variable which sets the Time needed to fade
-  int totalSteps = ((this->targetBrightness) - (this->currentBrightness));
+
+  int totalSteps = ((trueTargetBrightness) - (this->currentBrightness));
   //we want to have a positive steps number
   if (totalSteps < 0)
   {
@@ -272,13 +280,13 @@ void * LED::fade(void)
       startTime = gpioTick();
     #endif
     //fading to target brightness
-  	for (int current = this->currentBrightness; current < this->targetBrightness; current++)
+  	for (int current = this->currentBrightness; current < trueTargetBrightness; current++)
   	{
   				//increase currentBRIGHTNESS of that color and write it to the pin
   				this->setCurrentBrightness(current + 1); //we use +1 so it will actually reach the targetBrightness
           gpioDelay(delayUs); 		//make a delay
   	}
-    for (int current = this->currentBrightness; current > this->targetBrightness; current--)
+    for (int current = this->currentBrightness; current > trueTargetBrightness; current--)
     {
           //decrease currentBRIGHTNESS of that color and write it to the pin
           this->setCurrentBrightness(current - 1); //we use -1 so it will actually reach the targetBrightness
