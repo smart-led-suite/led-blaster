@@ -11,17 +11,17 @@ USER_DIR = /opt/led-blaster
 led-blaster : led.o file.o led-blaster-pre.o fifo.o
 	$(CXX) $(CXXFLAGS) -lpthread $^ -o $@
 
-file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre.hpp
+file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
 			$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/file.cpp
 
-led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp
+led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
 			$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led.cpp
 
 	#init.o :  $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp  $(USER_DIR)/led-blaster-pre.hpp
 	#				$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/init.cpp
 
-led-blaster-pre.o :  $(USER_DIR)/led-blaster-pre.cpp $(USER_DIR)/led-blaster-pre.hpp
+led-blaster-pre.o :  $(USER_DIR)/led-blaster-pre.cpp $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
 						$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led-blaster-pre.cpp
 
-fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster-pre.hpp
+fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
 						$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fifo.cpp
