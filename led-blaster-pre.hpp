@@ -18,11 +18,12 @@ using namespace std;
 using namespace led;
 //******************* VARIABLES ****************************
 //extern std::vector<LED> leds;
+/*
 struct ledInformationStruct {
   std::vector<led::LED> leds;
   int fadeTime;
   int pwmSteps;
-};
+};*/
 struct configInformationStruct {
   uint16_t waitCounter;
   uint16_t mode;

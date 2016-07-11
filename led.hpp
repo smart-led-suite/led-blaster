@@ -10,12 +10,11 @@ namespace led {
   {
     public:
       //constructor
-      LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_argetBrightness);
+      LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_argetBrightness, int led_trueColorMultiplier);
       //destructor
       ~LED(void);
       //static led map for every led
       static std::map<int, led::LED*> ledMap;
-
       //*********getter************************
       std::string getColorCode();
       uint16_t getPin();
@@ -32,11 +31,16 @@ namespace led {
       void setColorCode(std::string new_colorcode);
       void setPin(uint16_t newpin);
       void setIsColor(bool newisColor);
+      void setTrueColorMultipier(int new_Multiplier);
       //this also writes the brightness to the pin
       void setCurrentBrightness(int new_cBrightness);
       //this only "prepares" it because to apply it you have to call fadeInThread()
       void setTargetBrightness(int new_tBrightness);
       //***********functions****************
+      //turns all leds instantly off
+      static void turnAllLedsOff(void);
+      //fades all leds with fadeTime off
+      static void fadeAllLedsOff(void);
       static bool initGeneral(void); //initializes the libary
       //call this function to fade in a thread
       void fadeInThread(void); //fades via threads
@@ -46,12 +50,16 @@ namespace led {
       void fadeCancel(void);
       //wait until fade is done
       void fadeWait(void);
-      void fadeRandomInThread(void); //fade randomly
+      //fade randomly
+      void fadeRandomInThread(void);
     private:
       //internal thread launcher
       static void * fadeLauncher(void *context);
       static void * fadeRandom(void *context);
+      //initializes pin. called by constructor
       int initPin(void);
+      //number in % that lowers the brightness of a specific color
+      int trueColorMultiplier;
       pthread_t fadeThread;
       static int fadeTime;
       bool fading;

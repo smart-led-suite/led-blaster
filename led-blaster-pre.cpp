@@ -16,6 +16,9 @@
 //			 - introduce music mode
 //  (done)		 - introduce config file w/ led pins etc.
 //	(done) 		 - tidying up code changes due to implementation of FIFO (BLOCKER)
+//	(done)		 - make it object oriented
+//	(done)		 - move fade into led-class
+//	(done)		 - introduce fading in seperate threads
 //============================================================================
 
 #include <iostream>
@@ -38,7 +41,6 @@
 #include <linux/stat.h>
 
 #include "led.hpp"
-#include "fade.hpp"
 #include "config.h"
 #include "file.hpp"
 //#include "init.hpp"
@@ -48,32 +50,16 @@
 
 using namespace std;
 
-//std::vector<LED> leds;
 
-/*struct ledInformation {
-  std::vector<LED> leds;
-  int fadeTime;
-
-};*/
-struct ledInformationStruct fadeInfo;
 //***********************************************************************************************
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
 
-int main(int argc, char* argv[]) {
+int main() {
   struct configInformationStruct config;
-
-//  int fadeTimeMs; //time variable in ms; default is 1000
-  //FADEMODE 1 variables
-  //uint16_t mode = 0; //set mode to 0 (default)
-  //as fademode 1 runs in a seperate thread we need a few more variables here
-  pthread_t mode1Thread; //create reference variable for the thread
+  //set mode to 0 at the beginning
+  config.mode = 0;
 	bool mode1ThreadActive = false; //default is: no thread (obviusly)
-	int threadErrorNumber = 0; //variable for pthread_create, if its 0 there was no problem
-	//init variables to use with the interactive live input
-	//since we're writing the brightness not simultaneously we want to
-	//wait until we call fadeSimultaneous()
-//  uint16_t waitCounter = 0; //used only in live mode.
 	//reading global config
 	readConfig(&config);
 	//init pwm
@@ -84,41 +70,34 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	//now read the colors.csv and create led.objects based on that
-	if(readColorConfig( &fadeInfo))
+	if(readColorConfig())
   {
     std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
   }
-  //fadeInfo.fadeTime = fadeTimeMs;
 
-	#ifdef DEBUG
-		//test if it worked
-		//print the leds vector
-	  for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
-	    cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
-	    cout << fadeInfo.leds[ledsAvailable].getPin() << " ";
-	    cout << fadeInfo.leds[ledsAvailable].IsColor() << " ";
-	    cout << fadeInfo.leds[ledsAvailable].getCurrentBrightness() << " ";
-	    cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
+
+	//read brightness
+	readTargetBrightness();
+  //iterate through all leds and fade to the targetBrightness from brightness.csv
+  for(auto const &iterator : LED::ledMap)
+  {
+    iterator.second->fadeInThread();
+  }
+  #ifdef DEBUG
+		//print all led objects
+    for(auto const &iterator : LED::ledMap)
+    {
+	    cout << iterator.second->getColorCode() << " ";
+	    cout << iterator.second->getPin() << " ";
+	    cout << iterator.second->IsColor() << " ";
+	    cout << iterator.second->getCurrentBrightness() << " ";
+	    cout << iterator.second->getTargetBrightness() << endl;
 	  }
 	#endif
-	//read brightness and fade to it
-	readTargetBrightness(&fadeInfo);
-  //at the first time we have to set the number of steps
-  fadeInfo.pwmSteps = LED::getPwmSteps(); //should be the same for every led so we just use the first one
-  //setFadeSteps(&pwmSteps);
-	//fadeSimultaneous(&fadeInfo);
-  for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
-    fadeInfo.leds[ledNumber].fadeInThread();
-  }
-  //wait until fade is finished
-  for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
-    fadeInfo.leds[ledNumber].fadeWait();
-  }
-  //fadeInfo.leds[0].fadeInThread(fadeInfo.fadeTime);
+
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user
-	//signal(SIGINT, terminateLedBlaster);
 	signal(SIGINT, ledBlasterTerminate);
 	//if the kill command is send (SIGTERM) we want to terminate the gpios and close all
 	//open threads a bit faster than if ctrl+c is detected
@@ -129,24 +108,27 @@ int main(int argc, char* argv[]) {
   umask(0);
   mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
-	cout << "led-blaster has successfully started." << endl;
-
-  config.mode = 0;
-	//var to check if mode was changed
-	int oldModeState = config.mode;
+  //wait until fade is finished
+  for(auto const &iterator : LED::ledMap)
+  {
+    iterator.second->fadeWait();
+  }
+  cout << "led-blaster has successfully started." << endl;
 	//*********** LOOP *************************************
 	while(true) {
 		//blocking read from fifo
-		readFifo(&config, &fadeInfo);
+		readFifo(&config);
 		//if we're in mode0 we want to fade the pins to their brightness
 		if (config.waitCounter == 0 && config.mode == 0) {
       //kill mode1 if active
       if (mode1ThreadActive)
       {
-        for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
-          while (fadeInfo.leds[ledNumber].isRandomlyFading())
+        //iterate through all leds
+        for(auto const &iterator : LED::ledMap)
+        {
+          while (iterator.second->isRandomlyFading())
           {
-            fadeInfo.leds[ledNumber].fadeCancel();
+            iterator.second->fadeCancel();
           }
         }
         #ifdef DEBUG
@@ -156,57 +138,64 @@ int main(int argc, char* argv[]) {
       }
       //fade
       cout << "stop previous fade and start fading leds simultaneous..." << endl;
-      for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++) {
-        fadeInfo.leds[ledNumber].fadeCancel();
-        fadeInfo.leds[ledNumber].fadeInThread();
+      for(auto const &iterator : LED::ledMap)
+      {
+        iterator.second->fadeCancel();
+        iterator.second->fadeInThread();
       }
-      //write to file
-			writeCurrentBrightness(&fadeInfo);
-
-			for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
-				cout << fadeInfo.leds[ledsAvailable].getColorCode() << " ";
-				    //cout << leds[ledsAvailable].getPin() << " ";
-				    //cout << leds[ledsAvailable].IsColor() << " ";
-				    //cout << leds[ledsAvailable].getCurrentBrightness() << " ";
-				cout << fadeInfo.leds[ledsAvailable].getTargetBrightness() << endl;
-			}
-			//cout << "waitCounter: " << waitCounter << endl;
-			cout << "mode: " << config.mode << endl;
-			cout << "waitCounter: " << config.waitCounter << endl;
-
+      //write to file (so you can see it in the GUI)
+			writeCurrentBrightness();
+      #ifdef DEBUG
+  			for(auto const &iterator : LED::ledMap)
+        {
+  				cout << iterator.second->getColorCode() << " ";
+  				cout << iterator.second->getPin() << " ";
+  				cout << iterator.second->IsColor() << " ";
+  				cout << iterator.second->getCurrentBrightness() << " ";
+  				cout << iterator.second->getTargetBrightness() << endl;
+  			}
+  			cout << "mode: " << config.mode << endl;
+  			cout << "waitCounter: " << config.waitCounter << endl;
+      #endif
 		}
-		//if mode=1 and we haven't been before we want to start continious fadingc
+		//if mode=1 we want to start continious fading as long at this hasn't happened before
 		else if (config.mode == 1)
 		{
       //fade leds which are white (no color)
-      for (size_t ledNumber = 0; ledNumber < fadeInfo.leds.size(); ledNumber++)
+      bool whiteBrightnessChanged = false;
+      for(auto const &iterator : LED::ledMap)
       {
-        if (fadeInfo.leds[ledNumber].IsColor() == false)
+        if (iterator.second->IsColor() == false)
         {
-          fadeInfo.leds[ledNumber].fadeCancel();
-          fadeInfo.leds[ledNumber].fadeInThread();
+          iterator.second->fadeCancel();
+          iterator.second->fadeInThread();
+          whiteBrightnessChanged = true;
         }
       }
-      //and save the new brightness
-      writeCurrentBrightness(&fadeInfo);
+      //if there was a fade we want to save the brightness
+      if (whiteBrightnessChanged)
+      {
+        writeCurrentBrightness();
+      }
       //if no thread is active we'll want to start one
       if (mode1ThreadActive == false)
       {
-
-        for (size_t ledsAvailable = 0; ledsAvailable < fadeInfo.leds.size(); ledsAvailable++) {
+        for(auto const &iterator : LED::ledMap)
+        {
           //exept white because that doesn't look nice.
-          if (fadeInfo.leds[ledsAvailable].IsColor() == true)
+          if (iterator.second->IsColor() == true)
           {
-            fadeInfo.leds[ledsAvailable].fadeRandomInThread();
+            iterator.second->fadeRandomInThread();
           }
         }
-        std::cout << "start random fade." << std::endl;
+        #ifdef DEBUG
+          std::cout << "start random fade." << std::endl;
+        #endif
         mode1ThreadActive = true;
 		  }
     }
 	}
-		 //INVALID CODE
-
+ //INVALID CODE
 }
 
 
@@ -218,15 +207,18 @@ void ledBlasterTerminate(int dummy)
 	//mode = 0; //so we won't have any problems with threads and so on
   printf("\nUser pressed Ctrl+C || SIGINT detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  fadeInfo.fadeTime = SIGINT_PIBLASTER_TERMINATE_TIME_VALUE;
-  turnLedsOff(&fadeInfo); //turn all leds off in 1000ms = 1s so it won't take too long
-	//writeCurrentBrightness(); //useless but we'll save it anyway
+  LED::setFadeTime(SIGINT_PIBLASTER_TERMINATE_TIME_VALUE);
+  LED::fadeAllLedsOff();
+  for(auto const &iterator : LED::ledMap)
+  {
+    delete iterator.second;
+  }
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
 	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");
-  	exit(1);
+  exit(1);
 }
 //function which is called when a SIGTERM is sended, i.e. by the kill command. it will close led-blaster FAST
 void ledBlasterTerminateFast(int dummy)
@@ -234,13 +226,16 @@ void ledBlasterTerminateFast(int dummy)
 	//mode = 0; //so we won't have any problems with threads and so on
   printf("\nSIGTERM detected. Turn LEDs off.\n");
 	// we want to turn all GPIOs of to avoid some strange stuff.
-  fadeInfo.fadeTime = SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE;
-  turnLedsOff(&fadeInfo); //turn all leds off in 50ms its fast. ;-). if that's not enough we may decrease it to 0
-	//writeCurrentBrightness(); //useless but we'll save it anyway
+  LED::setFadeTime(SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE);
+  LED::fadeAllLedsOff();
+  for(auto const &iterator : LED::ledMap)
+  {
+    delete iterator.second;
+  }
 	printf("terminate gpio \n");
 	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
 	printf("close all threads \n");
 	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");
-  	exit(1);
+	exit(1);
 }

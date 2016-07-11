@@ -1,11 +1,7 @@
 #include <iostream>
-//#include <map>
 #include <stdint.h> //libary which includes uint16_t etc.
 #include "config.h"
 #include "led.hpp"
-//#include "init.hpp"
-
-//#include <stdio.h>
 #include <pigpio.h>
 #include <vector>
 #include <fstream>
@@ -79,6 +75,14 @@ void LED::setColorCode(std::string new_colorcode)
 {
   this->colorcode = new_colorcode;
 }
+void LED::setTrueColorMultipier(int new_Multiplier)
+{
+  trueColorMultiplier = 0;
+  if (trueColorMultiplier < 0 && trueColorMultiplier < 100)
+  {
+    this->trueColorMultiplier = new_Multiplier;
+  }
+}
 void LED::setPin(uint16_t newpin)
 {
   this->pin = newpin;
@@ -106,6 +110,8 @@ void LED::setCurrentBrightness(int new_cBrightness)
 }
 void LED::setTargetBrightness(int new_tBrightness)
 {
+  //new exception for blue, other treatment for blue colored strips as they are
+  //brighter than other leds
   if (new_tBrightness >= LED::pwmSteps)
   {
     this->targetBrightness = LED::pwmSteps;
@@ -115,10 +121,20 @@ void LED::setTargetBrightness(int new_tBrightness)
     this->targetBrightness = 0;
   }
   else
+  //apply color
   {
-  this->targetBrightness = new_tBrightness;
+    if (trueColorMultiplier > 0 && trueColorMultiplier < 100)
+    {
+      //lower the brightness of the color by a factor (0 = 0%, at 100% [not allowed] there wouldnt be any light)
+      this->targetBrightness = new_tBrightness - ((new_tBrightness * trueColorMultiplier) / 100);
+    }
+    else
+    {
+      this->targetBrightness = new_tBrightness;
+    }
   }
 }
+
 
 //************************FUNCTIONS*************************************************+
 
@@ -142,20 +158,42 @@ bool LED::initGeneral(void)
 }
 
 //************************FADE***************************************************
+
+//fade all leds off. called before terminating the programm
+void LED::fadeAllLedsOff(void)
+{
+  for(auto const &iterator : LED::ledMap)
+  {
+    iterator.second->setTargetBrightness(0);
+    iterator.second->fadeInThread();
+  }
+  for(auto const &iterator : LED::ledMap)
+  {
+    iterator.second->fadeWait();
+  }
+}
+//turn all leds off instantly
+void LED::turnAllLedsOff(void)
+{
+  for(auto const &iterator : LED::ledMap)
+  {
+    iterator.second->setCurrentBrightness(0);
+  }
+
+}
+
 //***** THREAD EXPLANATION ************************
 //for documentation about threads see:
 //https://computing.llnl.gov/tutorials/pthreads/
 //and about the pthread_create function see:
 //https://computing.llnl.gov/tutorials/pthreads/man/pthread_create.txt
-
+//************************************************
+//fading in seperate threads allows us to make true simultaneous fading and handling each color individually
+//the user can call the fadeCancel function itself, if he want's to start a new fading it is not necessary
+//because every fade function checks if theres a fade going on at that moment
 void LED::fadeInThread(void)
 {
-  if (this->fading)
-  {
     fadeCancel();
-  }
-  else
-  {
     this->fading = true;
     LED *led = this;
     //fadeLauncher: starts and stops thread and so on
@@ -165,8 +203,6 @@ void LED::fadeInThread(void)
       std::cerr << "creating fadeThread not possible. errorcode: " << err << std::endl;
       exit(1);
     }
-  }
-  //delete fadeStruct;
 }
 
 //as pthread_create doesn't support non-static methods we'll need a workaround
@@ -263,12 +299,7 @@ void * LED::fade(void)
 //****random fade*****
 void LED::fadeRandomInThread(void)
 {
-  if (this->fading || this->randomlyFading)
-  {
     fadeCancel();
-  }
-  else
-  {
     this->fading = true;
     this->randomlyFading = true;
     LED *led = this;
@@ -279,7 +310,6 @@ void LED::fadeRandomInThread(void)
       std::cerr << "creating fadeRandomThread not possible. errorcode: " << err << std::endl;
       exit(1);
     }
-  }
   //delete fadeStruct;
 }
 
@@ -391,7 +421,7 @@ int LED::initPin(void)
 }
 
 
-LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_targetBrightness)
+LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_targetBrightness, int led_trueColorMultiplier)
 {
   this->colorcode = led_colorcode;
   this->pin = led_pin;
@@ -400,6 +430,7 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
   this->targetBrightness = led_targetBrightness;
   this->fading = false;
   this->randomlyFading = false;
+  setTrueColorMultipier(led_trueColorMultiplier);
   //initializes each pin. returns 0 if everything went ok
   //std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   //pwmSteps is static and should have the same value for every pin

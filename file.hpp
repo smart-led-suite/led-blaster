@@ -4,9 +4,9 @@
 //#include "led.hpp"
 
 void readConfig(configInformationStruct * config);
-bool readColorConfig(ledInformationStruct * ledInfo);
-void readTargetBrightness(ledInformationStruct * ledInfo);
-void writeCurrentBrightness (ledInformationStruct * ledInfo);
+bool readColorConfig(void);
+void readTargetBrightness(void);
+void writeCurrentBrightness (void);
 bool assignConfigValues (std::string key, std::string value, configInformationStruct * config);
 
 #endif

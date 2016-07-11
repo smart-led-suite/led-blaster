@@ -13,7 +13,7 @@
 using namespace std;
 
 
-bool assignValues (std::string key, std::string value, configInformationStruct * config, ledInformationStruct * led)
+bool assignValues (std::string key, std::string value, configInformationStruct * config)
 {
   int valueAsInt = stoi(value);
   if (key.compare("time") == 0) {
@@ -52,20 +52,20 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
 			std::cout << "colorCode: " << key << std::endl;
 			std::cout << "value: " << valueAsInt << std::endl;
 		#endif //DEBUG
-		for (size_t ledsAvailable = 0; ledsAvailable < led->leds.size(); ledsAvailable++)
-		{
+    for(auto const &iterator : LED::ledMap)
+    {
 			//if colorCode = key then we'll update the target brightness
-			if(key.compare(led->leds[ledsAvailable].getColorCode()) == 0)
+			if(key.compare(iterator.second->getColorCode()) == 0)
 			{
         //value needs to be greater than 0 and mustn't be larger than the number of steps
-        if (valueAsInt >= 0 && valueAsInt <= led->pwmSteps)
+        if (valueAsInt >= 0 && valueAsInt <= LED::getPwmSteps())
         {
-          led->leds[ledsAvailable].setTargetBrightness(valueAsInt);
+          iterator.second->setTargetBrightness(valueAsInt);
         }
         else
         {
           std::cout << "according to todays physics, a negative brightness is not possible. ;)" << std::endl;
-          std::cout << "please set a brightness between 0 and " << led->pwmSteps << std::endl;
+          std::cout << "please set a brightness between 0 and " << LED::getPwmSteps() << std::endl;
         }
 				if (config->waitCounter)
 				{
@@ -86,7 +86,7 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
 
-void readFifo (configInformationStruct * config, ledInformationStruct * led)
+void readFifo (configInformationStruct * config)
  {
 		//open file
 		//this blocks the function until Something can be read from the FIFO
@@ -117,7 +117,7 @@ void readFifo (configInformationStruct * config, ledInformationStruct * led)
 	        std::string value;
 	        if( std::getline(this_line, value) )
 	          std::cout << "key/value recieved " << key << " " << value << std::endl;
-	          if (assignValues(key, value, config, led))
+	          if (assignValues(key, value, config))
 	          {
 	            std::cerr << "configFile read error at" << line << std::endl;
 	          }

@@ -104,16 +104,13 @@
 
 struct fileTest : testing::Test
  {
-  struct ledInformationStruct * fadeInfo;
   struct configInformationStruct * config;
   fileTest()
   {
-    fadeInfo = new ledInformationStruct;
     config = new configInformationStruct;
   }
   ~fileTest()
   {
-    delete fadeInfo;
     delete config;
   }
 };
@@ -121,7 +118,6 @@ struct fileTest : testing::Test
 TEST_F(fileTest, assignValuesSimple)
 {
   //0 means value was assigned
-//  EXPECT_EQ(0, readColorConfig(&fadeInfo));
   EXPECT_EQ(0, assignConfigValues("server_path", "whatever", config));
   EXPECT_EQ(1, assignConfigValues("bdfkgjsd", "shsg", config));
 }
@@ -138,7 +134,7 @@ TEST_F(fileTest, assignValuesNormal)
 TEST_F(fileTest, assignValuesNegative)
 {
   //0 means value was assigned
-  fadeInfo->fadeTime = 2;
+  LED::setFadeTime(0);
   assignConfigValues("time", "-1000", config);
   EXPECT_EQ(1000, LED::getFadeTime());;
 }

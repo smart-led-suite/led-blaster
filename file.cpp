@@ -123,10 +123,8 @@ void readConfig(configInformationStruct * config)
 
 
 //READING COLORS.CSV -> color config
-bool readColorConfig(ledInformationStruct * ledInfo)
+bool readColorConfig(void)
 {
-  //struct ledInformationStruct fadeInfo;
-  //struct ledInformationStruct ledInfo;
 	//define filename
  	 const char *configFileName = (serverPath + "colors.csv").c_str();
   //open file
@@ -156,13 +154,19 @@ bool readColorConfig(ledInformationStruct * ledInfo)
       //for now we'll just use the color code to specify wheter its a color or not
       //if we find a 'w' we'll assume its white and therefore no color attached
       bool ledIsColor = true;
+      int trueColorAdjust = 0;
       if (variables[0].find("w") != std::string::npos)
       {
         ledIsColor = false;
       }
+      if (variables[0].find("b") != std::string::npos)
+      {
+        trueColorAdjust = 20;
+      }
       //add this as a new element in leds vector element
     //  leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
-      ledInfo->leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
+      int pin = stoi(variables[1],nullptr);
+      LED::ledMap[pin] = new LED(variables[0], pin, ledIsColor, 0, 0, trueColorAdjust);
       #ifdef DEBUG
       cout << variables[0] << endl;
       std::cout << "is color: " << ledIsColor << std::endl;
@@ -195,28 +199,29 @@ bool readColorConfig(ledInformationStruct * ledInfo)
       leds.push_back(LED("r", 17, 0, 0, 0));
       leds.push_back(LED("g", 18, 0, 0, 0));
       leds.push_back(LED("b", 22, 0, 0, 0));*/
-      ledInfo->leds.push_back(LED("w", 25, 0, 0, 0));
-      ledInfo->leds.push_back(LED("r", 17, 0, 0, 0));
-      ledInfo->leds.push_back(LED("g", 18, 0, 0, 0));
-      ledInfo->leds.push_back(LED("b", 22, 0, 0, 0));
+      LED::ledMap[25] = new LED("w", 25, 0, 0, 0, 0);
+      LED::ledMap[17] = new LED("r", 17, 0, 0, 0, 0);
+      LED::ledMap[18] = new LED("g", 18, 0, 0, 0, 0);
+      LED::ledMap[22] = new LED("b", 22, 0, 0, 0, 0);
+
       return 1;
  	}
   return 0;
 }
 
-void writeCurrentBrightness (ledInformationStruct * ledInfo) {
+void writeCurrentBrightness (void) {
 	ofstream myfile;
 	myfile.open (serverPath + "brightness.csv");
   	if (myfile.is_open())
   	{
   		cout << "writing current brightness to file..." << endl;
-			for (size_t ledsAvailable = 0; ledsAvailable < ledInfo->leds.size(); ledsAvailable++)
-			{
+			for(auto const &iterator : LED::ledMap)
+      {
         //write colorcode and targetBrightness to file
-				myfile << ledInfo->leds[ledsAvailable].getColorCode() << ";";
+				myfile << iterator.second->getColorCode() << ";";
 				//myfile << colors.second << ";";
-				myfile << ledInfo->leds[ledsAvailable].getTargetBrightness() <<"\n";
-		}
+				myfile << iterator.second->getTargetBrightness() <<"\n";
+		  }
 	}
 	else
 	{
@@ -225,7 +230,7 @@ void writeCurrentBrightness (ledInformationStruct * ledInfo) {
 	myfile.close();
 }
 
-	void readTargetBrightness(ledInformationStruct * ledInfo) {
+	void readTargetBrightness(void) {
     std::cout << "reading target Brightness" << std::endl;
     //define filename, consisting of serverPath and the name and convert it to char
     //with the c_str function
@@ -254,27 +259,29 @@ void writeCurrentBrightness (ledInformationStruct * ledInfo) {
           //and save them in an array of strings
           variables[variablesToRead] = variable_buffer;
         }
-        for (size_t currentLed = 0; currentLed < ledInfo->leds.size(); currentLed++) {
-          //check if the current led matches the colorcode of the line of the brightnessFile we read
-          if (ledInfo->leds[currentLed].getColorCode() == variables[0]) {
-            ledInfo->leds[currentLed].setTargetBrightness(stoi(variables[1]));
+        for(auto const &iterator : LED::ledMap)
+        {
+          if (iterator.second->getColorCode() == variables[0]) {
+            iterator.second->setTargetBrightness(stoi(variables[1]));
           }
         }
+      }
         //some debug info
         /*#ifdef DEBUG
         cout << variables[0] << endl; //this is the colorcode
         cout << variables[1] << endl; //this is the current brightness (which will be the target brightness at init)
         std::cout << buffer << std::endl;
         #endif*/
-      }
       //print new brightnesses
-        for (size_t currentLed = 0; currentLed < ledInfo->leds.size(); currentLed++) {
-          std::cout << "targetBrightness of " << ledInfo->leds[currentLed].getColorCode() << " is " << ledInfo->leds[currentLed].getTargetBrightness() << std::endl;
-        }
+      for(auto const &iterator : LED::ledMap)
+      {
+        std::cout << "targetBrightness of " << iterator.second->getColorCode() << " is " << iterator.second->getTargetBrightness() << std::endl;
+      }
         //close the config file
         brightnessFile.close();
-      }
-    else {
+    }
+    else
+    {
       //if opening of the file doesnt work, print an error
       cerr << "Unable to open file \"" << brightnessFileName << "\"" << endl;
       cout << "we'll ignore that we couldnt read brightness file because its not that important for basic functionality" << endl;
