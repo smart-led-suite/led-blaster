@@ -18,7 +18,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //************************* DEFINE PROGRAM OPTIONS (comment to disable unless otherwise noted)******************************+
 
-#define DEBUG //define DEBUG information
+//#define DEBUG //define DEBUG information
 
 #define PWM_CONFIG 0  //0 to config via #define; 1 to config with cli
 
@@ -29,7 +29,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 //#define DETAILED_PIN_INIT_INFORMATION //detailed info in pin init
 //blue is normally the brightest color so we'll decrease its brightness in software by this amount
-#define BLUE_ADJUSTMENT 20 //20 = 20%
+#define BLUE_ADJUSTMENT 40 //20 = 20%
 #define FADE_TIME_MS 1000 //default value of fadeDelayMs
 #define FADE_DELAY_US 0 //default value of fadeDelayUs
 #define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode (useful?)

@@ -125,16 +125,16 @@ TEST_F(fileTest, assignValuesSimple)
 TEST_F(fileTest, assignValuesNormal)
 {
   //0 means value was assigned
-  LED::setFadeTime(0);
+  led::LED::setFadeTime(0);
   assignConfigValues("time", "1000", config);
-  EXPECT_EQ(1000, LED::getFadeTime());
+  EXPECT_EQ(1000, led::LED::getFadeTime());
   assignConfigValues("server_path", "/dev/bla", config);
   EXPECT_EQ("/dev/bla", config->serverPath);
 }
 TEST_F(fileTest, assignValuesNegative)
 {
   //0 means value was assigned
-  LED::setFadeTime(0);
+  led::LED::setFadeTime(0);
   assignConfigValues("time", "-1000", config);
   EXPECT_EQ(1000, LED::getFadeTime());;
 }

@@ -157,7 +157,7 @@ struct ledTest : testing::Test
       std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
       exit(0);
     }
-    led[0] = new LED("b", 26, true, 0, 0, 0);
+    led[0] = new LED("b", 26, true, 0, 0, 20);
     led[1] = new LED("w", 17, false, 0, 0, 0);
     led[2] = new LED("r", 18, true, 0, 0, 0);
     led[3] = new LED("g", 22, true, 0, 0, 0);
@@ -176,7 +176,7 @@ struct ledTest : testing::Test
 
 TEST_F(ledClassConstructorTest, ledConstructor)
 {
-  LED ledObject("w", 25, 0, 0, 0, 0);
+  LED ledObject("w", 25, false, 0, 0, 0);
   EXPECT_EQ(25,ledObject.getPin());
   EXPECT_EQ("w",ledObject.getColorCode());
   EXPECT_EQ(false, ledObject.IsColor());
@@ -261,11 +261,20 @@ TEST_F(ledMapTest, ledMapfadeSimultaneous)
 
 TEST_F(ledTest, setTargetBrightnessTest)
 {
-  for (size_t ledNumber = 0; ledNumber < 1; ledNumber++)
+  for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
   {
     //set targetBrightness to a valid value ( the maximum possible value)
-    led[ledNumber]->setTargetBrightness( led[ledNumber]->getPwmSteps() );
-    EXPECT_EQ(led[ledNumber]->getPwmSteps(), led[ledNumber]->getTargetBrightness()) << "normal assignment doesn't work";
+    led[ledNumber]->setTrueColorMultipier(0);
+    led[ledNumber]->setTargetBrightness(1000);
+    EXPECT_EQ(1000, led[ledNumber]->getTargetBrightness()) << "normal assignment doesn't work";
+    //test the trueColorMultiplier
+    led[ledNumber]->setTrueColorMultipier(20);
+    led[ledNumber]->setTargetBrightness(500);
+    EXPECT_EQ(500, led[ledNumber]->getTargetBrightness()) << "trueColorMultiplier doesn't work";
+    led[ledNumber]->setTargetBrightness(200);
+    EXPECT_EQ(200, led[ledNumber]->getTargetBrightness()) << "trueColorMultiplier doesn't work";
+    led[ledNumber]->setTargetBrightness(1000);
+    EXPECT_EQ(1000, led[ledNumber]->getTargetBrightness()) << "trueColorMultiplier doesn't work";
     //set it to a negative value
     led[ledNumber]->setTargetBrightness( -100 );
     EXPECT_EQ(0, led[ledNumber]->getTargetBrightness()) << "negative values produce an error";
@@ -302,9 +311,10 @@ TEST_F(ledTest, fadeFunctionTest)
     led[ledNumber]->setTargetBrightness(0);
     led[ledNumber]->fade();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
-    led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+    led[ledNumber]->setTargetBrightness(1000);
     led[ledNumber]->fade();
-    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    int expectedBrightnessTrueColor = led[ledNumber]->getTargetBrightness() - (led[ledNumber]->getTargetBrightness() * led[ledNumber]->getTrueColorMultipier())/ 100;
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), expectedBrightnessTrueColor );
     led[ledNumber]->setTargetBrightness(0);
     led[ledNumber]->fade();
     EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
@@ -325,7 +335,8 @@ TEST_F(ledTest, fadeThreadsTest)
     //wait until thread is finished
     EXPECT_EQ(true, led[ledNumber]->isFading());
     led[ledNumber]->fadeWait();
-    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    int expectedBrightnessTrueColor = led[ledNumber]->getTargetBrightness() - (led[ledNumber]->getTargetBrightness() * led[ledNumber]->getTrueColorMultipier())/ 100;
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), expectedBrightnessTrueColor);
     EXPECT_EQ(false, led[ledNumber]->isFading());
     //now check if fade down works
     led[ledNumber]->setTargetBrightness(0);
@@ -364,7 +375,8 @@ TEST_F(ledTest, fadeThreadsSimultaneous)
   {
     //wait until thread is finished
     led[ledNumber]->fadeWait();
-    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), led[ledNumber]->getTargetBrightness());
+    int expectedBrightnessTrueColor = led[ledNumber]->getTargetBrightness() - (led[ledNumber]->getTargetBrightness() * led[ledNumber]->getTrueColorMultipier())/ 100;
+    EXPECT_EQ(led[ledNumber]->getCurrentBrightness(), expectedBrightnessTrueColor);
     EXPECT_EQ(false, led[ledNumber]->isFading());
   }
     //now check if fade down works

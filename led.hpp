@@ -23,6 +23,7 @@ namespace led {
       bool isRandomlyFading();
       int getCurrentBrightness();
       int getTargetBrightness();
+      int getTrueColorMultipier();
       static int getPwmSteps();
       static int getFadeTime();
       pthread_t getFadeThread();
