@@ -110,6 +110,7 @@ void LED::setCurrentBrightness(int new_cBrightness)
   this->currentBrightness = new_cBrightness;
   }
   //set pin to the new brightness
+  //std::cout << "new brightness: " << this->currentBrightness << std::endl;
   gpioPWM(this->pin, this->currentBrightness);
 }
 void LED::setTargetBrightness(int new_tBrightness)
@@ -247,8 +248,8 @@ void LED::fadeWait(void)
 
 void * LED::fade(void)
 {
-  //this->fading = true;
-  //#define DEBUG
+  //stepsize for the fade
+  int stepsize = 1;
   //calculate the real target brightness it will have (after the trueColorAdjust)
   int trueTargetBrightness;
   if (trueColorMultiplier > 0 && trueColorMultiplier < 100 && this->targetBrightness > 0)
@@ -273,7 +274,15 @@ void * LED::fade(void)
   }
   if (totalSteps > 0)
   {
-    int delayUs = (LED::fadeTime) * 1000 / (totalSteps); //calculate delay in us
+    //calculate delay in us
+    int delayUs = ((LED::fadeTime) * 1000 / (totalSteps)) / stepsize;
+    //to avoid flickering we'll increase the steosize if the delay is smaller than 6us #
+    //(as the pwm duty time gets updated every 5us at 200Hz)
+    while (delayUs <= 15)
+    {
+      stepsize++;
+      delayUs = ((LED::fadeTime) * 1000 / (totalSteps)) / stepsize; //calculate delay in us
+    }
     #ifdef DEBUG
       uint32_t startTime = 0; //time to check if there's any overhead
       uint32_t endTime = 0; //time to check if there's any overhead
@@ -283,13 +292,13 @@ void * LED::fade(void)
   	for (int current = this->currentBrightness; current < trueTargetBrightness; current++)
   	{
   				//increase currentBRIGHTNESS of that color and write it to the pin
-  				this->setCurrentBrightness(current + 1); //we use +1 so it will actually reach the targetBrightness
+  				this->setCurrentBrightness(current + stepsize); //we use +1 so it will actually reach the targetBrightness
           gpioDelay(delayUs); 		//make a delay
   	}
     for (int current = this->currentBrightness; current > trueTargetBrightness; current--)
     {
           //decrease currentBRIGHTNESS of that color and write it to the pin
-          this->setCurrentBrightness(current - 1); //we use -1 so it will actually reach the targetBrightness
+          this->setCurrentBrightness(current - stepsize); //we use -1 so it will actually reach the targetBrightness
           gpioDelay(delayUs); 		//make a delay
     }
 
