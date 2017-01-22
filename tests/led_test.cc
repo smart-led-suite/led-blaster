@@ -207,7 +207,7 @@ TEST_F(ledMapTest, ledMapGeneral)
   EXPECT_EQ(LED::getPwmSteps(), LED::ledMap.find(25)->second->getPwmSteps());
 
   //check fading
-  LED::setFadeTime(200);
+  LED::setFadeTime(400);
       //turn leds off at the beginning
   LED::ledMap.find(25)->second->setCurrentBrightness(0);
   //now fade to max brightness in a separate thread
@@ -543,42 +543,20 @@ TEST_F(ledTest, fadeRandomly)
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //check if threads are closed after fading
 TEST_F(ledTest, threadErrorNumber11MaxThreads)
 {
-  for (size_t repetitions = 0; repetitions <= 1000; repetitions++)
+  printf("huhu \n");
+  for (int repetitions = 0; repetitions <= 1000; repetitions++)
   {
     //we'll start 4 threads and wait for them to finish (close)
     //we hope this won't cause errno 11 in thread creating because of too
     //many threads
+    printf("FADING multiple TIMES: %d \n ", repetitions);
     for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
     {
       LED::setFadeTime(10);
+      printf("FADING multiple leds: %d \n ", ledNumber);
       //turn leds off at the beginning
       led[ledNumber]->setCurrentBrightness(0);
       //now fade to max brightness in a separate thread
@@ -587,7 +565,9 @@ TEST_F(ledTest, threadErrorNumber11MaxThreads)
     }
     for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
     {
+      printf("waiting for multiple leds: %d \n ", ledNumber);
       led[ledNumber]->fadeWait();
+      printf("waiting finished for leds: %d \n ", ledNumber);
       //pthread_join(led[ledNumber]->getFadeThread(), NULL);
     }
   }

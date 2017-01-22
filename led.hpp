@@ -44,7 +44,7 @@ namespace led {
       static void fadeAllLedsOff(void);
       static bool initGeneral(void); //initializes the libary
       //call this function to fade in a thread
-      void fadeInThread(void); //fades via threads
+      void fadeInThread(void); //also cancels running threads
       //internal fade function. NOT in a thread
       void * fade(void);
       //cancel fade
@@ -71,6 +71,7 @@ namespace led {
       int currentBrightness;
       int targetBrightness;
       static int pwmSteps;
+      static int naturalSteps[1000];
   };
 }
 #endif //EOF

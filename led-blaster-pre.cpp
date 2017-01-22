@@ -74,8 +74,6 @@ int main() {
   {
     std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
   }
-
-
 	//read brightness
 	readTargetBrightness();
   //iterate through all leds and fade to the targetBrightness from brightness.csv
@@ -115,87 +113,44 @@ int main() {
   }
   cout << "led-blaster has successfully started." << endl;
 	//*********** LOOP *************************************
+
 	while(true) {
 		//blocking read from fifo
 		readFifo(&config);
-		//if we're in mode0 we want to fade the pins to their brightness
-		if (config.waitCounter == 0 && config.mode == 0) {
-      //kill mode1 if active
-      if (mode1ThreadActive)
-      {
-        //iterate through all leds
-        for(auto const &iterator : LED::ledMap)
-        {
-          while (iterator.second->isRandomlyFading())
-          {
-            iterator.second->fadeCancel();
-          }
-        }
-        #ifdef DEBUG
-          std::cout << "mode 1 canceled" << std::endl;
-        #endif
-        mode1ThreadActive = false; 	//make it possible to start mode 1 again
-      }
-      //fade
-      cout << "stop previous fade and start fading leds simultaneous..." << endl;
-      for(auto const &iterator : LED::ledMap)
-      {
-        iterator.second->fadeCancel();
-        iterator.second->fadeInThread();
-      }
-      //write to file (so you can see it in the GUI)
-			writeCurrentBrightness();
-      #ifdef DEBUG
-  			for(auto const &iterator : LED::ledMap)
-        {
-  				cout << iterator.second->getColorCode() << " ";
-  				cout << iterator.second->getPin() << " ";
-  				cout << iterator.second->IsColor() << " ";
-  				cout << iterator.second->getCurrentBrightness() << " ";
-  				cout << iterator.second->getTargetBrightness() << endl;
-  			}
-  			cout << "mode: " << config.mode << endl;
-  			cout << "waitCounter: " << config.waitCounter << endl;
-      #endif
-		}
-		//if mode=1 we want to start continious fading as long at this hasn't happened before
-		else if (config.mode == 1)
-		{
-      //fade leds which are white (no color)
-      bool whiteBrightnessChanged = false;
-      for(auto const &iterator : LED::ledMap)
-      {
-        if (iterator.second->IsColor() == false)
-        {
-          iterator.second->fadeCancel();
-          iterator.second->fadeInThread();
-          whiteBrightnessChanged = true;
-        }
-      }
-      //if there was a fade we want to save the brightness
-      if (whiteBrightnessChanged)
-      {
-        writeCurrentBrightness();
-      }
-      //if no thread is active we'll want to start one
-      if (mode1ThreadActive == false)
-      {
-        for(auto const &iterator : LED::ledMap)
-        {
-          //exept white because that doesn't look nice.
-          if (iterator.second->IsColor() == true)
-          {
-            iterator.second->fadeRandomInThread();
-          }
-        }
-        #ifdef DEBUG
-          std::cout << "start random fade." << std::endl;
-        #endif
-        mode1ThreadActive = true;
-		  }
-    }
-	}
+	} 
  //INVALID CODE
+ ledBlasterTerminate(0);
+}
+
+// ********************************* APPLY ****************************
+//this function is being used by the fifo read to apply values before the FIFO was closed (js-webclient & nodejs)
+//it applys everything with exeption to fademode 1 which is not supported.
+//for live manipulation, this function is not called, instead a faster direct setter is used
+void applyNewValues(configInformationStruct * config) {
+  //if we're in mode0 we want to fade the pins to their brightness
+  if (config->waitCounter == 0 && config->mode == 0 && LED::getFadeTime() > 1) {
+    //fade
+    cout << "stop previous fade and start fading leds simultaneous..." << endl;
+    for(auto const &iterator : LED::ledMap)
+    {
+      iterator.second->fadeCancel();
+      iterator.second->fadeInThread();
+    }
+    //write to file (so you can see it in the GUI)
+    //writeCurrentBrightness();
+    #ifdef DEBUG
+      for(auto const &iterator : LED::ledMap)
+      {
+        cout << iterator.second->getColorCode() << " ";
+        cout << iterator.second->getPin() << " ";
+        cout << iterator.second->IsColor() << " ";
+        cout << iterator.second->getCurrentBrightness() << " ";
+        cout << iterator.second->getTargetBrightness() << endl;
+      }
+      cout << "mode: " << config->mode << endl;
+      cout << "waitCounter: " << config->waitCounter << endl;
+    #endif
+  }
 }
 
 

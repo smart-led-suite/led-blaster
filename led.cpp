@@ -9,13 +9,14 @@
 #include <string>
 #include <pthread.h>
 #include <time.h>       /* for the random function :time */
-
+#include <cmath>
 
 using namespace std;
 using namespace led;
 //init of static variables
 int LED::pwmSteps = 1000;
 int LED::fadeTime = 1000;
+int LED::naturalSteps[1000];
 std::map<int, led::LED*> LED::ledMap;
 //********++getter*****************
 std::string LED::getColorCode()
@@ -111,7 +112,7 @@ void LED::setCurrentBrightness(int new_cBrightness)
   }
   //set pin to the new brightness
   //std::cout << "new brightness: " << this->currentBrightness << std::endl;
-  gpioPWM(this->pin, this->currentBrightness);
+  gpioPWM(this->pin, naturalSteps[this->currentBrightness]);
 }
 void LED::setTargetBrightness(int new_tBrightness)
 {
@@ -138,7 +139,11 @@ void LED::setTargetBrightness(int new_tBrightness)
 bool LED::initGeneral(void)
 {
 	gpioTerminate(); //shut down all DMA channels and stuff so we can start fresh and easy ;-)
-
+  // generate natural steps array
+  for (int inputval = 0; inputval <= 1000; inputval++) {
+    naturalSteps[inputval] = ceil(0.001 * pow(inputval, 2));
+    // std::cout << "curve values: " << inputval << " results in: " << naturalSteps[inputval] << '\n';
+  }
 	if (gpioInitialise() < 0) //initializes the gpio libary
 	{
 	   cout << "pigpio initialisation failed." << endl;
@@ -151,6 +156,7 @@ bool LED::initGeneral(void)
      #endif
 	   return 0;
 	}
+  //INVALID CODE
 }
 
 //************************FADE***************************************************
@@ -289,16 +295,16 @@ void * LED::fade(void)
       startTime = gpioTick();
     #endif
     //fading to target brightness
-  	for (int current = this->currentBrightness; current < trueTargetBrightness; current++)
+  	for (int current = this->currentBrightness; current <= trueTargetBrightness; current = current + stepsize)
   	{
   				//increase currentBRIGHTNESS of that color and write it to the pin
-  				this->setCurrentBrightness(current + stepsize); //we use +1 so it will actually reach the targetBrightness
+  				this->setCurrentBrightness(current); //we use +1 so it will actually reach the targetBrightness
           gpioDelay(delayUs); 		//make a delay
   	}
-    for (int current = this->currentBrightness; current > trueTargetBrightness; current--)
+    for (int current = this->currentBrightness; current >= trueTargetBrightness; current = current - stepsize)
     {
           //decrease currentBRIGHTNESS of that color and write it to the pin
-          this->setCurrentBrightness(current - stepsize); //we use -1 so it will actually reach the targetBrightness
+          this->setCurrentBrightness(current); //we use -1 so it will actually reach the targetBrightness
           gpioDelay(delayUs); 		//make a delay
     }
 

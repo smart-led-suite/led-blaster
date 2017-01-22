@@ -60,7 +60,15 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
         //value needs to be greater than 0 and mustn't be larger than the number of steps
         if (valueAsInt >= 0 && valueAsInt <= LED::getPwmSteps())
         {
-          iterator.second->setTargetBrightness(valueAsInt);
+          if (config->waitCounter == 0 && LED::getFadeTime() <= 1)
+          {
+            // if above conditions apply, we can fade directly
+            iterator.second->setCurrentBrightness(valueAsInt);
+          }
+          else
+          {
+            iterator.second->setTargetBrightness(valueAsInt);
+          }
         }
         else
         {
@@ -72,7 +80,6 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
 					config->waitCounter = config->waitCounter - 1;
 				}
 				commandFound = true;
-
 			}
 		}
 		if (commandFound == false) {
@@ -87,41 +94,41 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
 //*********************************************************************************************
 
 void readFifo (configInformationStruct * config)
- {
-		//open file
-		//this blocks the function until Something can be read from the FIFO
-		ifstream fifo (FIFO_FILE , ios::in);
-
-		if(fifo.is_open())
-	    {
-	    //FILE IS OPEN
-	    //read it line by line
-			//var to store a single line
-			std::string line;
-	    while( std::getline(fifo, line) )
-	    {
-				//convert to stream again
-	      std::istringstream this_line(line);
-				//exit is ok if there's no =
-				if (line.compare("exit") == 0)
-				{
-					exit(0); //kill ledblaster
-				}
-
-	      //now we'll save the key
-	      std::string key;
-	      //values are seperated by '=' in the file
-	      if( std::getline(this_line, key, '=') )
-	      {
-					//and save the value
-	        std::string value;
-	        if( std::getline(this_line, value) )
-	          std::cout << "key/value recieved " << key << " " << value << std::endl;
-	          if (assignValues(key, value, config))
-	          {
-	            std::cerr << "configFile read error at" << line << std::endl;
-	          }
-				}
+{
+	//open file
+	//this blocks the function until Something can be read from the FIFO
+	ifstream fifo (FIFO_FILE , ios::in);
+	if(fifo.is_open())
+  {
+    //FILE IS OPEN
+    //read it line by line
+		//var to store a single line
+		std::string line;
+    while( std::getline(fifo, line) )
+    {
+			//convert to stream again
+      std::istringstream this_line(line);
+			//exit is ok if there's no =
+			if (line.compare("exit") == 0)
+			{
+				exit(0); //kill ledblaster
 			}
-	}
+      //now we'll save the key
+      std::string key;
+      //values are seperated by '=' in the file
+      if( std::getline(this_line, key, '=') )
+      {
+				//and save the value
+        std::string value;
+        if( std::getline(this_line, value) )
+          std::cout << "key/value recieved " << key << " " << value << std::endl;
+          if (assignValues(key, value, config))
+          {
+            std::cerr << "fifo read error at" << line << std::endl;
+          }
+			}
+      std::cout << "apply values" << '\n';
+      applyNewValues(config);
+		}
+  }
 }

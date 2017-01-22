@@ -33,4 +33,5 @@ struct configInformationStruct {
 //**************** FUNCTIONS ********************************
 void ledBlasterTerminate(int dummy); //function which terminates the program safely. needs the dummy variable to be called by the sigHandler!
 void ledBlasterTerminateFast(int dummy); //same but FASTER
+void applyNewValues(configInformationStruct * config);
 #endif
