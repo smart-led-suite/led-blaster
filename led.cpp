@@ -234,7 +234,9 @@ void LED::fadeWait(void)
 {
   if (this->randomlyFading == false)
   {
+    printf("joining thread\n");
     int err = pthread_join(this->fadeThread, NULL);
+    printf("thread joined\n");
     if (err)
     {
       std::cerr << "error while joining thread. errno: " << err << std::endl;
@@ -267,7 +269,7 @@ void * LED::fade(void)
   {
     trueTargetBrightness = this->targetBrightness;
   }
-  std::cout << "true brightness: " << trueTargetBrightness << std::endl;
+  //std::cout << "true brightness: " << trueTargetBrightness << std::endl;
   //calculate the delayUs needed to archieve the specified fadeTime
   //steps * delayUs * 1000 = fadeTime [in ms]
   //fadeTime is the variable which sets the Time needed to fade

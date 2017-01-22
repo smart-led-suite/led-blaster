@@ -56,6 +56,8 @@ using namespace std;
 //*********************************************************************************************
 
 int main() {
+  //launch the nodejs forward program
+  system("forever start /var/www/serverstuff/forward.js");
   struct configInformationStruct config;
   //set mode to 0 at the beginning
   config.mode = 0;
@@ -117,7 +119,7 @@ int main() {
 	while(true) {
 		//blocking read from fifo
 		readFifo(&config);
-	} 
+	}
  //INVALID CODE
  ledBlasterTerminate(0);
 }

@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <sys/time.h> //get time
 
 #include "config.h"
 #include "fifo.hpp"
@@ -13,7 +14,7 @@
 using namespace std;
 
 
-bool assignValues (std::string key, std::string value, configInformationStruct * config)
+bool assignValues (std::string key, std::string value, configInformationStruct * config, long int * beginTime)
 {
   int valueAsInt = stoi(value);
   if (key.compare("time") == 0) {
@@ -60,14 +61,31 @@ bool assignValues (std::string key, std::string value, configInformationStruct *
         //value needs to be greater than 0 and mustn't be larger than the number of steps
         if (valueAsInt >= 0 && valueAsInt <= LED::getPwmSteps())
         {
-          if (config->waitCounter == 0 && LED::getFadeTime() <= 1)
+          //apply directly but not more often than 10x a second
+          struct timeval tp;
+          gettimeofday(&tp, NULL);
+          long int endTime = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+          if ((endTime - *beginTime) >= 50)
           {
-            // if above conditions apply, we can fade directly
-            iterator.second->setCurrentBrightness(valueAsInt);
-          }
-          else
-          {
-            iterator.second->setTargetBrightness(valueAsInt);
+            *beginTime = endTime;
+            if (config->waitCounter == 0 && LED::getFadeTime() <= 1)
+            {
+              // if above conditions apply, we can fade directly or with short fadetime
+              int difference = abs(iterator.second->getCurrentBrightness() - valueAsInt);
+              //decide wether to fade or to set the brightness
+              if (difference >= FADE_SET_THRESHOLD) {
+                iterator.second->fadeCancel();
+                LED::setFadeTime(SHORT_FADE_TIME);
+                iterator.second->setTargetBrightness(valueAsInt);
+                iterator.second->fadeInThread();
+              } else {
+                iterator.second->setCurrentBrightness(valueAsInt);
+              }
+            }
+            else
+            {
+              iterator.second->setTargetBrightness(valueAsInt);
+            }
           }
         }
         else
@@ -100,6 +118,10 @@ void readFifo (configInformationStruct * config)
 	ifstream fifo (FIFO_FILE , ios::in);
 	if(fifo.is_open())
   {
+    //stave begin time
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
     //FILE IS OPEN
     //read it line by line
 		//var to store a single line
@@ -122,13 +144,13 @@ void readFifo (configInformationStruct * config)
         std::string value;
         if( std::getline(this_line, value) )
           std::cout << "key/value recieved " << key << " " << value << std::endl;
-          if (assignValues(key, value, config))
+          if (assignValues(key, value, config, &ms))
           {
             std::cerr << "fifo read error at" << line << std::endl;
           }
 			}
-      std::cout << "apply values" << '\n';
-      applyNewValues(config);
+      //std::cout << "apply values" << '\n';
+      //applyNewValues(config);
 		}
   }
 }

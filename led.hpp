@@ -63,8 +63,8 @@ namespace led {
       int trueColorMultiplier;
       pthread_t fadeThread;
       static int fadeTime;
-      bool fading;
-      bool randomlyFading;
+      volatile bool fading;
+      volatile bool randomlyFading;
       std::string colorcode;
       uint16_t pin;
       bool isColor;

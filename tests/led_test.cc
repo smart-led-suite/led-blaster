@@ -400,6 +400,42 @@ TEST_F(ledTest, fadeThreadsSimultaneous)
       EXPECT_EQ(false, led[ledNumber]->isFading());
     }
 }
+
+//check if threads are closed after fading
+TEST_F(ledTest, threadErrorNumber11MaxThreads)
+{
+  printf("huhu \n");
+  for (int repetitions = 0; repetitions <= 1000; repetitions++)
+  {
+    //we'll start 4 threads and wait for them to finish (close)
+    //we hope this won't cause errno 11 in thread creating because of too
+    //many threads
+    //printf("FADING multiple TIMES: %d \n ", repetitions);
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+      LED::setFadeTime(50);
+      //printf("FADING multiple leds: %d \n ", ledNumber);
+      //turn leds off at the beginning
+      led[ledNumber]->setCurrentBrightness(0);
+      //now fade to max brightness in a separate thread
+      led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
+      led[ledNumber]->fadeInThread();
+      //check if thread exists
+      EXPECT_EQ(true, led[ledNumber]->isFading());
+      //printf("waiting for multiple leds: %d \n ", ledNumber);
+      led[ledNumber]->fadeWait();
+      //check if thread exists
+      EXPECT_EQ(false, led[ledNumber]->isFading());
+      //printf("waiting finished for leds: %d \n ", ledNumber);
+    }
+    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
+    {
+
+      //pthread_join(led[ledNumber]->getFadeThread(), NULL);
+    }
+  }
+}
+
 //check they are fading for the same amount of time
 TEST_F(ledTest, fadeThreadsSimultaneousToDifferentBrightness)
 {
@@ -543,35 +579,7 @@ TEST_F(ledTest, fadeRandomly)
   }
 }
 
-//check if threads are closed after fading
-TEST_F(ledTest, threadErrorNumber11MaxThreads)
-{
-  printf("huhu \n");
-  for (int repetitions = 0; repetitions <= 1000; repetitions++)
-  {
-    //we'll start 4 threads and wait for them to finish (close)
-    //we hope this won't cause errno 11 in thread creating because of too
-    //many threads
-    printf("FADING multiple TIMES: %d \n ", repetitions);
-    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
-    {
-      LED::setFadeTime(10);
-      printf("FADING multiple leds: %d \n ", ledNumber);
-      //turn leds off at the beginning
-      led[ledNumber]->setCurrentBrightness(0);
-      //now fade to max brightness in a separate thread
-      led[ledNumber]->setTargetBrightness(led[ledNumber]->getPwmSteps());
-      led[ledNumber]->fadeInThread();
-    }
-    for (size_t ledNumber = 0; ledNumber < 4; ledNumber++)
-    {
-      printf("waiting for multiple leds: %d \n ", ledNumber);
-      led[ledNumber]->fadeWait();
-      printf("waiting finished for leds: %d \n ", ledNumber);
-      //pthread_join(led[ledNumber]->getFadeThread(), NULL);
-    }
-  }
-}
+
 // Step 3. Call RUN_ALL_TESTS() in main().
 //
 // We do this by linking in src/gtest_main.cc file, which consists of
