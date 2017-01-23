@@ -14,11 +14,16 @@
 using namespace std;
 using namespace led;
 //init of static variables
+int LED::numLeds = 0;
 int LED::pwmSteps = 1000;
 int LED::fadeTime = 1000;
 int LED::naturalSteps[1000];
 std::map<int, led::LED*> LED::ledMap;
 //********++getter*****************
+int LED::getNumLeds()
+{
+  return LED::numLeds;
+}
 std::string LED::getColorCode()
 {
   return this->colorcode;
@@ -64,6 +69,11 @@ int LED::getFadeTime(void)
   return LED::fadeTime;
 }
 //************************setter************************************************
+void LED::increaseNumLeds()
+{
+  LED::numLeds++;
+  std::cout << "increase num leds to " << LED::numLeds << " bzw " << LED::getNumLeds() << '\n';
+}
 void LED::setFadeTime(int newFadeTime)
 {
   //we won't accept smaller numbers because we dont want to waste too much cpu power
@@ -234,9 +244,9 @@ void LED::fadeWait(void)
 {
   if (this->randomlyFading == false)
   {
-    printf("joining thread\n");
+    //printf("joining thread\n");
     int err = pthread_join(this->fadeThread, NULL);
-    printf("thread joined\n");
+    //printf("thread joined\n");
     if (err)
     {
       std::cerr << "error while joining thread. errno: " << err << std::endl;
@@ -456,6 +466,9 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
   this->fading = false;
   this->randomlyFading = false;
   setTrueColorMultipier(led_trueColorMultiplier);
+  //increase numLeds
+  std::cout << "contstruct led object" << '\n';
+  LED::increaseNumLeds();
   //initializes each pin. returns 0 if everything went ok
   //std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   //pwmSteps is static and should have the same value for every pin

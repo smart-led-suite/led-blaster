@@ -24,10 +24,12 @@ namespace led {
       int getCurrentBrightness();
       int getTargetBrightness();
       int getTrueColorMultipier();
+      static int getNumLeds();
       static int getPwmSteps();
       static int getFadeTime();
       pthread_t getFadeThread();
-      //************setter*********************+
+      //************setter*********************
+      static void increaseNumLeds();
       static void setFadeTime(int newFadeTime);
       void setColorCode(std::string new_colorcode);
       void setPin(uint16_t newpin);
@@ -63,6 +65,7 @@ namespace led {
       int trueColorMultiplier;
       pthread_t fadeThread;
       static int fadeTime;
+      static int numLeds; //number of leds
       volatile bool fading;
       volatile bool randomlyFading;
       std::string colorcode;

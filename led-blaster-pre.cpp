@@ -61,7 +61,6 @@ int main() {
   struct configInformationStruct config;
   //set mode to 0 at the beginning
   config.mode = 0;
-	bool mode1ThreadActive = false; //default is: no thread (obviusly)
 	//reading global config
 	readConfig(&config);
 	//init pwm
@@ -76,6 +75,7 @@ int main() {
   {
     std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
   }
+  std::cout << "num leds: " << LED::getNumLeds() << '\n';
 	//read brightness
 	readTargetBrightness();
   //iterate through all leds and fade to the targetBrightness from brightness.csv

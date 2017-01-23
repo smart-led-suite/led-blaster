@@ -29,6 +29,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 //values used by realtime mode to make operation smoother
 #define FADE_SET_THRESHOLD 100 //diff where it will use fade
 #define SHORT_FADE_TIME 100 //fadetime for this fade
+#define LONG_FADE_TIME 1000 // fadetime for normal fade CONFIGURABLE IN FUTURE
 //#define DETAILED_PIN_INIT_INFORMATION //detailed info in pin init
 //blue is normally the brightest color so we'll decrease its brightness in software by this amount
 #define BLUE_ADJUSTMENT 40 //20 = 20%
