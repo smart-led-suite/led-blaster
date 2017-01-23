@@ -69,10 +69,10 @@ int LED::getFadeTime(void)
   return LED::fadeTime;
 }
 //************************setter************************************************
-void LED::increaseNumLeds()
+void LED::setNumLeds(int newValue)
 {
-  LED::numLeds++;
-  std::cout << "increase num leds to " << LED::numLeds << " bzw " << LED::getNumLeds() << '\n';
+  LED::numLeds = newValue;
+  //std::cout << "increase num leds to " << LED::numLeds << " bzw " << LED::getNumLeds() << '\n';
 }
 void LED::setFadeTime(int newFadeTime)
 {
@@ -467,8 +467,9 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
   this->randomlyFading = false;
   setTrueColorMultipier(led_trueColorMultiplier);
   //increase numLeds
-  std::cout << "contstruct led object" << '\n';
-  LED::increaseNumLeds();
+  std::cout << "construct led object" << '\n';
+  //increase leds count
+  LED::setNumLeds(LED::getNumLeds() + 1);
   //initializes each pin. returns 0 if everything went ok
   //std::cout << "initializes color  \"" << colorcode << "\"" << std::endl;
   //pwmSteps is static and should have the same value for every pin
@@ -484,6 +485,8 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
 
 LED::~LED(void)
 {
+  //decrease led count
+  LED::setNumLeds(LED::getNumLeds() - 1);
   //std::cout << "destroy led object" << std::endl;
   //this->setCurrentBrightness(0);
 }

@@ -34,6 +34,7 @@ namespace led {
       void setColorCode(std::string new_colorcode);
       void setPin(uint16_t newpin);
       void setIsColor(bool newisColor);
+      void setNumLeds(int newValue);
       void setTrueColorMultipier(int new_Multiplier);
       //this also writes the brightness to the pin
       void setCurrentBrightness(int new_cBrightness);

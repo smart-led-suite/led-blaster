@@ -30,6 +30,7 @@ void readFifo (configInformationStruct * config)
 		std::string line;
     while( std::getline(fifo, line) )
     {
+    //  std::cout << "new line recieved:" << line << '\n';
 			//exit is ok if there's no =
 			if (line.compare("exit") == 0)
 			{
@@ -61,17 +62,20 @@ void readFifo (configInformationStruct * config)
       //key is the pin, value the new value
       int key[LED::getNumLeds()], value[LED::getNumLeds()];
       for (int pairNo = 0; pairNo < LED::getNumLeds(); pairNo++) {
-        string keyValueString, keyString, valueString;
-        getline(this_line, keyValueString, ';');
-        std::cout << keyValueString << '\n';
-        istringstream keyOrValueStream(keyValueString);
-        getline(keyOrValueStream, keyString, ':');
-        getline(keyOrValueStream, valueString, ':');
-        key[pairNo] = stoi(keyString);
-        value[pairNo] = stoi(valueString);
-        std::cout << "key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+        if (!this_line.eof())
+        {
+          string keyValueString, keyString, valueString;
+          getline(this_line, keyValueString, ';');
+          //std::cout << keyValueString << '\n';
+          istringstream keyOrValueStream(keyValueString);
+          getline(keyOrValueStream, keyString, ':');
+          getline(keyOrValueStream, valueString, ':');
+          key[pairNo] = stoi(keyString);
+          value[pairNo] = stoi(valueString);
+          //std::cout << "key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+        }
       }
-      std::cout << "applymode: " << applyMode << '\n';
+      //std::cout << "applymode: " << applyMode << '\n';
       // now we can use key and value to do stuff
       // iterate through all leds possible
       for(auto const &iterator : LED::ledMap)
@@ -83,7 +87,7 @@ void readFifo (configInformationStruct * config)
           if (iterator.first == key[newData])
           {
             //we're in for some change!!
-            std::cout << "changing pin " << key[newData] << '\n';
+            //std::cout << "changing pin " << key[newData] << '\n';
             // now apply changes based on mode.
             if (applyMode == 0)
             {
@@ -96,6 +100,7 @@ void readFifo (configInformationStruct * config)
                 iterator.second->setTargetBrightness(value[newData]);
                 iterator.second->fadeInThread();
               } else {
+                iterator.second->fadeCancel();
                 iterator.second->setCurrentBrightness(value[newData]);
               }
             }
