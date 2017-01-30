@@ -36,7 +36,12 @@ this should be enough
    the char is 'i'.
    this creates LED objects and fades them to the set brightness.
    
-commands for defining fadetime etc. are yet to come.   
+commands for defining fadetime etc. are yet to come.
+   
+##example
+
+if you have pins 18,19 and 20 defined and want to set all of them to brightness 1000 you have to write 
+`s18:1000;19:1000;20:1000;` to `/dev/led-blaster` 
    
 #Installation of a Release
 
