@@ -456,12 +456,10 @@ int LED::initPin(void)
 }
 
 
-LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_targetBrightness, int led_trueColorMultiplier)
+LED::LED(uint16_t led_pin, int led_targetBrightness, int led_trueColorMultiplier)
 {
-  this->colorcode = led_colorcode;
   this->pin = led_pin;
-  this->isColor = led_isColor;
-  this->currentBrightness = led_currentBrightness;
+  this->currentBrightness = 0; // while initializing the brightness should be 0
   this->targetBrightness = led_targetBrightness;
   this->fading = false;
   this->randomlyFading = false;
@@ -481,6 +479,7 @@ LED::LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_
     //and exit the program
     exit(EXIT_FAILURE);
   }
+  this->fadeInThread();
 }
 
 LED::~LED(void)

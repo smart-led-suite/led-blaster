@@ -16,6 +16,7 @@ using namespace std;
 //***********************************************************************************************
 //********************************************** MAIN *********************************************
 //*********************************************************************************************
+void doNothing (){}
 
 void readFifo (configInformationStruct * config)
 {
@@ -40,6 +41,7 @@ void readFifo (configInformationStruct * config)
       int applyMode = 0;
       if (line.compare(0, 1, "s") == 0)
       {
+				//set color
         applyMode = 0;
         line.erase(0,1);
       }
@@ -49,73 +51,124 @@ void readFifo (configInformationStruct * config)
         applyMode = 1;
         line.erase(0,1);
       }
+			else if (line.compare(0, 1, "i") == 0)
+      {
+        //initialize led objects
+        applyMode = 2;
+        line.erase(0,1);
+      }
       else
       {
         std::cout << "not yet defined behavior" << '\n';
-        applyMode = 2;
-        ledBlasterTerminate(0);
+        applyMode = 3;
+        //ledBlasterTerminate(0);
+				break;
       }
-      //**************analyze incoming string ******************************
-      //convert to stream again
-      std::istringstream this_line(line);
-      //after reading, store it in key[] and value[] arrays
-      //key is the pin, value the new value
-      int key[LED::getNumLeds()], value[LED::getNumLeds()];
-      for (int pairNo = 0; pairNo < LED::getNumLeds(); pairNo++) {
-        if (!this_line.eof())
-        {
-          string keyValueString, keyString, valueString;
-          getline(this_line, keyValueString, ';');
-          //std::cout << keyValueString << '\n';
-          istringstream keyOrValueStream(keyValueString);
-          getline(keyOrValueStream, keyString, ':');
-          getline(keyOrValueStream, valueString, ':');
-          key[pairNo] = stoi(keyString);
-          value[pairNo] = stoi(valueString);
-          //std::cout << "key/value: " << key[pairNo] << " " << value[pairNo] << endl;
-        }
-      }
-      //std::cout << "applymode: " << applyMode << '\n';
-      // now we can use key and value to do stuff
-      // iterate through all leds possible
-      for(auto const &iterator : LED::ledMap)
-      {
-        //now iterate through our gathered data
-        for (int newData = 0; newData < LED::getNumLeds(); newData++)
-        {
-          //iterator fist is the pin of the LED map. check if it matches
-          if (iterator.first == key[newData])
-          {
-            //we're in for some change!!
-            //std::cout << "changing pin " << key[newData] << '\n';
-            // now apply changes based on mode.
-            if (applyMode == 0)
-            {
-              // if above conditions apply, we can fade directly or with short fadetime
-              int difference = abs(iterator.second->getCurrentBrightness() - value[newData]);
-              //decide wether to fade or to set the brightness
-              if (difference >= FADE_SET_THRESHOLD) {
-                iterator.second->fadeCancel();
-                LED::setFadeTime(SHORT_FADE_TIME);
-                iterator.second->setTargetBrightness(value[newData]);
-                iterator.second->fadeInThread();
-              } else {
-                iterator.second->fadeCancel();
-                iterator.second->setCurrentBrightness(value[newData]);
-              }
-            }
-            else if (applyMode == 1)
-            {
-              //cancel previous fade and fade to targetBrightness
-              LED::setFadeTime(LONG_FADE_TIME);
-              iterator.second->fadeCancel();
-              iterator.second->setTargetBrightness(value[newData]);
-              iterator.second->fadeInThread();
-            }
-          }
-        }
 
-      }
-		}
-  }
+			//do this only if there's no config
+			if (applyMode == 0 || applyMode == 1)
+			{
+				//**************analyze incoming string ******************************
+				//convert to stream again
+				std::istringstream this_line(line);
+				//after reading, store it in key[] and value[] arrays
+				//key is the pin, value the new value
+				int key[LED::getNumLeds()], value[LED::getNumLeds()];
+				for (int pairNo = 0; pairNo < LED::getNumLeds(); pairNo++) {
+					string keyValueString, keyString, valueString;
+					getline(this_line, keyValueString, ';');
+					if (!this_line.eof())
+					{
+						//std::cout << keyValueString << '\n';
+						istringstream keyOrValueStream(keyValueString);
+						getline(keyOrValueStream, keyString, ':');
+						getline(keyOrValueStream, valueString, ':');
+						key[pairNo] = stoi(keyString);
+						value[pairNo] = stoi(valueString);
+						//std::cout << "key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+					}
+				}
+				//std::cout << "applymode: " << applyMode << '\n';
+				// now we can use key and value to do stuff
+				// iterate through all leds possible
+				for(auto const &iterator : LED::ledMap)
+				{
+					//now iterate through our gathered data
+					for (int newData = 0; newData < LED::getNumLeds(); newData++)
+					{
+						//iterator fist is the pin of the LED map. check if it matches
+						if (iterator.first == key[newData])
+						{
+							//we're in for some change!!
+							//std::cout << "changing pin " << key[newData] << '\n';
+							// now apply changes based on mode.
+							if (applyMode == 0)
+							{
+								// if above conditions apply, we can fade directly or with short fadetime
+								int difference = abs(iterator.second->getCurrentBrightness() - value[newData]);
+								//decide wether to fade or to set the brightness
+								if (difference >= FADE_SET_THRESHOLD) {
+									iterator.second->fadeCancel();
+									LED::setFadeTime(SHORT_FADE_TIME);
+									iterator.second->setTargetBrightness(value[newData]);
+									iterator.second->fadeInThread();
+								} else {
+									iterator.second->fadeCancel();
+									iterator.second->setCurrentBrightness(value[newData]);
+								}
+							}
+							else if (applyMode == 1)
+							{
+								//cancel previous fade and fade to targetBrightness
+								LED::setFadeTime(LONG_FADE_TIME);
+								iterator.second->fadeCancel();
+								iterator.second->setTargetBrightness(value[newData]);
+								iterator.second->fadeInThread();
+							}
+						}
+					}
+				} //end of LED iterator
+			}
+			else if (applyMode == 2)
+			{
+				//initialize new LED objects
+				//**************analyze incoming string ******************************
+				//convert to stream again
+				std::istringstream this_line(line);
+				//after reading, store it in key[] and value[] arrays
+				//key is the pin, value the new value
+				//the generation of led objects is limited to 10 per line
+				int key[100], value[100];
+				int pairNo = 0;
+				std::cout << "is empty? " << this_line.str().empty() << '\n';
+				//init variables
+				string keyValueString, keyString, valueString;
+				//read from line for the first time
+				getline(this_line, keyValueString, ';');
+					while (!this_line.eof())
+					{
+						std::cout << keyValueString << '\n';
+						istringstream keyOrValueStream(keyValueString);
+						getline(keyOrValueStream, keyString, ':');
+						getline(keyOrValueStream, valueString, ':');
+						try
+						{
+							key[pairNo] = stoi(keyString);
+							value[pairNo] = stoi(valueString);
+							//doNothing();
+							//true color adjust is ignored for now
+							LED::ledMap[key[pairNo]] = new LED(key[pairNo], value[pairNo], 0);
+							std::cout << "just created LED object with key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+							pairNo++;
+						}
+						catch (const std::invalid_argument& ia)
+						{
+							std::cerr << "Invalid argument: " << ia.what() << '\n';
+						}
+						//read nextline at the end so eof() check works correctly
+						getline(this_line, keyValueString, ';');
+				}
+			}//end of fade block
+		} // end of reading this line
+  } // end of file is open
 }

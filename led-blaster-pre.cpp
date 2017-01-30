@@ -57,12 +57,12 @@ using namespace std;
 
 int main() {
   //launch the nodejs forward program
-  system("forever start /var/www/serverstuff/forward.js");
+  //system("forever start /var/www/serverstuff/forward.js");
   struct configInformationStruct config;
   //set mode to 0 at the beginning
   config.mode = 0;
 	//reading global config
-	readConfig(&config);
+	//readConfig(&config);
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(LED::initGeneral()) {
@@ -71,7 +71,7 @@ int main() {
 		return 1;
 	}
 	//now read the colors.csv and create led.objects based on that
-	if(readColorConfig())
+	/*if(readColorConfig())
   {
     std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
   }
@@ -94,7 +94,7 @@ int main() {
 	    cout << iterator.second->getTargetBrightness() << endl;
 	  }
 	#endif
-
+*/
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user

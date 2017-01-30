@@ -10,7 +10,7 @@ namespace led {
   {
     public:
       //constructor
-      LED(std::string led_colorcode, uint16_t led_pin, bool led_isColor, int led_currentBrightness, int led_argetBrightness, int led_trueColorMultiplier);
+      LED(uint16_t led_pin, int led_targetBrightness, int led_trueColorMultiplier);
       //destructor
       ~LED(void);
       //static led map for every led

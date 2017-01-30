@@ -166,7 +166,7 @@ bool readColorConfig(void)
       //add this as a new element in leds vector element
     //  leds.push_back(LED(variables[0], stoi(variables[1],nullptr), ledIsColor, 0, 0));
       int pin = stoi(variables[1]);
-      LED::ledMap[pin] = new LED(variables[0], pin, ledIsColor, 0, 0, trueColorAdjust);
+      LED::ledMap[pin] = new LED(pin, 0, trueColorAdjust);
       #ifdef DEBUG
       cout << variables[0] << endl;
       std::cout << "is color: " << ledIsColor << std::endl;
@@ -199,10 +199,10 @@ bool readColorConfig(void)
       leds.push_back(LED("r", 17, 0, 0, 0));
       leds.push_back(LED("g", 18, 0, 0, 0));
       leds.push_back(LED("b", 22, 0, 0, 0));*/
-      LED::ledMap[25] = new LED("w", 25, 0, 0, 0, 0);
-      LED::ledMap[17] = new LED("r", 17, 0, 0, 0, 0);
-      LED::ledMap[18] = new LED("g", 18, 0, 0, 0, 0);
-      LED::ledMap[22] = new LED("b", 22, 0, 0, 0, 0);
+      LED::ledMap[25] = new LED(25, 0, 0);
+      LED::ledMap[17] = new LED(17, 0, 0);
+      LED::ledMap[18] = new LED(18, 0, 0);
+      LED::ledMap[22] = new LED(22, 0, 0);
 
       return 1;
  	}
