@@ -2,7 +2,10 @@
 #include <stdint.h> //libary which includes uint16_t etc.
 #include "config.h"
 #include "led.hpp"
+#ifndef DESKTOP
 #include <pigpio.h>
+#endif
+#include <unistd.h> // usleep
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -121,14 +124,17 @@ void LED::setCurrentBrightness(int new_cBrightness)
   this->currentBrightness = new_cBrightness;
   }
   //set pin to the new brightness
-  //std::cout << "new brightness: " << this->currentBrightness << std::endl;
+  #ifndef DESKTOP
   gpioPWM(this->pin, naturalSteps[this->currentBrightness]);
+  #else
+  std::cout << "new brightness: " << this->currentBrightness << std::endl;
+  #endif
 }
 void LED::setTargetBrightness(int new_tBrightness)
 {
   //new exception for blue, other treatment for blue colored strips as they are
   //brighter than other leds
-  if (new_tBrightness > LED::getPwmSteps())
+  if (new_tBrightness >= LED::getPwmSteps())
   {
     this->targetBrightness = LED::getPwmSteps();
   }
@@ -148,6 +154,7 @@ void LED::setTargetBrightness(int new_tBrightness)
 //*********************************general INIT*******************************************
 bool LED::initGeneral(void)
 {
+  #ifndef DESKTOP
 	gpioTerminate(); //shut down all DMA channels and stuff so we can start fresh and easy ;-)
   // generate natural steps array
   for (int inputval = 0; inputval <= 1000; inputval++) {
@@ -166,6 +173,9 @@ bool LED::initGeneral(void)
      #endif
 	   return 0;
 	}
+  #else
+  std::cout << "init simulation run." << '\n';
+  #endif
   //INVALID CODE
 }
 
@@ -224,8 +234,10 @@ void * LED::fadeLauncher(void *context)
   //convert the context pointer into a struct pointer to get the fadeTime
   //then convert it back into a void pointer
   //call fade() and return the value to pthread
+  std::cout << "hey from fadeLauncher of " << ((LED *)context)->getPin() << '\n';
   void * returnValue = ((LED *)context)->fade();
   ((LED *)context)->fading = false;
+  std::cout << "fade finished in fadeLauncher " << ((LED *)context)->getPin() << '\n';
   pthread_exit(NULL);
   return returnValue;
 }
@@ -301,31 +313,19 @@ void * LED::fade(void)
       stepsize++;
       delayUs = ((LED::fadeTime) * 1000 / (totalSteps)) / stepsize; //calculate delay in us
     }
-    #ifdef DEBUG
-      uint32_t startTime = 0; //time to check if there's any overhead
-      uint32_t endTime = 0; //time to check if there's any overhead
-      startTime = gpioTick();
-    #endif
     //fading to target brightness
   	for (int current = this->currentBrightness; current <= trueTargetBrightness; current = current + stepsize)
   	{
   				//increase currentBRIGHTNESS of that color and write it to the pin
   				this->setCurrentBrightness(current); //we use +1 so it will actually reach the targetBrightness
-          gpioDelay(delayUs); 		//make a delay
+          usleep(delayUs); 		//make a delay
   	}
     for (int current = this->currentBrightness; current >= trueTargetBrightness; current = current - stepsize)
     {
           //decrease currentBRIGHTNESS of that color and write it to the pin
           this->setCurrentBrightness(current); //we use -1 so it will actually reach the targetBrightness
-          gpioDelay(delayUs); 		//make a delay
+          usleep(delayUs); 		//make a delay
     }
-
-  	#ifdef DEBUG
-      endTime = gpioTick(); //time needed for the fade
-  		printf("time variable for fade: %d \n", LED::fadeTime);
-      //end-start gives elapsed time in micros; divided by 1000 we have it in millis to compare
-  		cout << "real time needed for fade: " << ((endTime - startTime) / 1000) << endl;
-  	#endif
   }
   //this->fading = false;
   return 0;
@@ -371,88 +371,93 @@ void * LED::fadeRandom(void *context)
 //***************************PINS INIT******************************************************
 int LED::initPin(void)
 {
-  int PWMrange = 0; //variable to check the pwm range against the realpwm range
-  int pwmSteps;
-	#if PWM_CONFIG
-		int realRange = 0;
-		int setRange = 0;
-		int targetRange = 0;
+  #ifndef DESKTOP
+    int PWMrange = 0; //variable to check the pwm range against the realpwm range
+    int pwmSteps;
+  	#if PWM_CONFIG
+  		int realRange = 0;
+  		int setRange = 0;
+  		int targetRange = 0;
 
-		int targetFrequency = 0;
-		int frequency = 0;
+  		int targetFrequency = 0;
+  		int frequency = 0;
 
-		cout << "enter target frequency :" << endl;
-		cin >> targetFrequency;
-		cout << "set frequency to: " << targetFrequency << endl;
-		frequency = gpioSetPWMfrequency(pin, targetFrequency);
-		cout << "range was set to closest frequency: " << frequency << endl;
-		cout << "check frequency: " << gpioGetPWMfrequency(pin) << endl;
+  		cout << "enter target frequency :" << endl;
+  		cin >> targetFrequency;
+  		cout << "set frequency to: " << targetFrequency << endl;
+  		frequency = gpioSetPWMfrequency(pin, targetFrequency);
+  		cout << "range was set to closest frequency: " << frequency << endl;
+  		cout << "check frequency: " << gpioGetPWMfrequency(pin) << endl;
 
-		cout << "enter target range :" << endl;
-		cin >> targetRange;
-		cout << "set range to: " << targetRange << endl;
-		realRange = gpioSetPWMrange(pin, targetRange);
-		cout << "range was set to real range: " << realRange << endl;
-		cout << "check range: " << gpioGetPWMrange(pin) << endl;
-	#endif
+  		cout << "enter target range :" << endl;
+  		cin >> targetRange;
+  		cout << "set range to: " << targetRange << endl;
+  		realRange = gpioSetPWMrange(pin, targetRange);
+  		cout << "range was set to real range: " << realRange << endl;
+  		cout << "check range: " << gpioGetPWMrange(pin) << endl;
+  	#endif
 
 
-	if (gpioSetMode(this->pin, 1)) //set pin to output (1), returns 0 if it went ok
-	{
-		cout << "error while setting " << this->pin << " to output" << endl;
-		return 0;
-	}
+  	if (gpioSetMode(this->pin, 1)) //set pin to output (1), returns 0 if it went ok
+  	{
+  		cout << "error while setting " << this->pin << " to output" << endl;
+  		return 0;
+  	}
 
-	/**************INFOS ABOUT PWM FREQUENCY AND RANGE*******************************
-	some infos for setting the pwm range of each pin
-	a sample rate of 5 (default) means that one step can be at least 5us "long"
-	so if you use a frequency of 200Hz there will be 1000 real steps
-	Calculations:
-		1/200s is one cycle = 0,005s which is 5ms (Millis)
-		1ms equals 1000us (Microseconeds)
-		so within 5ms there are 1000 5us steps possible
-		-> if you increase the frequency you have to decrease the range
-	as far as I understand its realized like that in the pigpio libary:
-	you set the frequency to whatever you like (w/ SetPWMFrequency)
-	you set the pwm_range to whatever you like (w/ SetPWMRange)
-	now you can check the pwmSteps to see how many steps you actually have
-	(i.e. if you set your frequency to 200Hz and the range to 5000 this will
-	return 1000 (see calculations above))
-	BUT if I understand it correctly it uses the range you set (5000 in this example)
-	so 5000 is the maximum brightness BUT between 0 and 4 there's no real step!
-	this is the difference between the realRange and the range. In my opinion
-	it's good if both have the same value (which is true for 200Hz and 1000steps)
-	********************************************************************************
-	*/
+  	/**************INFOS ABOUT PWM FREQUENCY AND RANGE*******************************
+  	some infos for setting the pwm range of each pin
+  	a sample rate of 5 (default) means that one step can be at least 5us "long"
+  	so if you use a frequency of 200Hz there will be 1000 real steps
+  	Calculations:
+  		1/200s is one cycle = 0,005s which is 5ms (Millis)
+  		1ms equals 1000us (Microseconeds)
+  		so within 5ms there are 1000 5us steps possible
+  		-> if you increase the frequency you have to decrease the range
+  	as far as I understand its realized like that in the pigpio libary:
+  	you set the frequency to whatever you like (w/ SetPWMFrequency)
+  	you set the pwm_range to whatever you like (w/ SetPWMRange)
+  	now you can check the pwmSteps to see how many steps you actually have
+  	(i.e. if you set your frequency to 200Hz and the range to 5000 this will
+  	return 1000 (see calculations above))
+  	BUT if I understand it correctly it uses the range you set (5000 in this example)
+  	so 5000 is the maximum brightness BUT between 0 and 4 there's no real step!
+  	this is the difference between the realRange and the range. In my opinion
+  	it's good if both have the same value (which is true for 200Hz and 1000steps)
+  	********************************************************************************
+  	*/
 
-	#ifdef DETAILED_PIN_INIT_INFORMATION
-		cout << "set " << this->pin << " to output" << endl;
-	#endif
-	gpioSetPWMfrequency(this->pin, PWM_FREQUENCY);
-	#ifdef DETAILED_PIN_INIT_INFORMATION
-		cout << "check frequency: " << gpioGetPWMfrequency(this->pin) << endl;
-	#endif
-	gpioSetPWMrange(this->pin, PWM_RANGE);
-	pwmSteps = gpioGetPWMrealRange(this->pin);
-	#ifdef DETAILED_PIN_INIT_INFORMATION
-		cout << "check real pwm range: " << pwmSteps << endl;
-	#endif
-	PWMrange = gpioGetPWMrange(this->pin);
-	#ifdef DETAILED_PIN_INIT_INFORMATION
-		cout << "check pwm range: " << PWMrange << endl;
-	#endif
-  if (PWMrange != pwmSteps)
-  {
-    std::cout << "warning: set pwm range and real pwm range don't match." << std::endl;
-    std::cout << "pwmrange: " << PWMrange << " pwmSteps: " << pwmSteps << std::endl;
-  }
+  	#ifdef DETAILED_PIN_INIT_INFORMATION
+  		cout << "set " << this->pin << " to output" << endl;
+  	#endif
+  	gpioSetPWMfrequency(this->pin, PWM_FREQUENCY);
+  	#ifdef DETAILED_PIN_INIT_INFORMATION
+  		cout << "check frequency: " << gpioGetPWMfrequency(this->pin) << endl;
+  	#endif
+  	gpioSetPWMrange(this->pin, PWM_RANGE);
+  	pwmSteps = gpioGetPWMrealRange(this->pin);
+  	#ifdef DETAILED_PIN_INIT_INFORMATION
+  		cout << "check real pwm range: " << pwmSteps << endl;
+  	#endif
+  	PWMrange = gpioGetPWMrange(this->pin);
+  	#ifdef DETAILED_PIN_INIT_INFORMATION
+  		cout << "check pwm range: " << PWMrange << endl;
+  	#endif
+    if (PWMrange != pwmSteps)
+    {
+      std::cout << "warning: set pwm range and real pwm range don't match." << std::endl;
+      std::cout << "pwmrange: " << PWMrange << " pwmSteps: " << pwmSteps << std::endl;
+    }
 
-	gpioPWM(this->pin, 0); //set brightness to 0
-	//cout << "pwm set to 0 correctly" << endl;
-  #ifdef DEBUG
-	cout << "init of pin " << this->pin << " finished successfully." << endl;
+  	gpioPWM(this->pin, 0); //set brightness to 0
+  	//cout << "pwm set to 0 correctly" << endl;
+    #ifdef DEBUG
+  	cout << "init of pin " << this->pin << " finished successfully." << endl;
+    #endif
+  	return pwmSteps;
+  #else
+    std::cout << "desktop version of pin init running. set range to 1000." << '\n';
+    return 1000;
   #endif
-	return pwmSteps;
 }
 
 

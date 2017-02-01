@@ -23,7 +23,9 @@
 
 #include <iostream>
 #include <cstdlib>
+#ifndef DESKTOP
 #include <pigpio.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -118,7 +120,9 @@ int main() {
 
 	while(true) {
 		//blocking read from fifo
-		readFifo(&config);
+		readFifo();
+    std::cout << "fifo read done" << '\n';
+    usleep(1000 * 1000); //sleep 1s
 	}
  //INVALID CODE
  ledBlasterTerminate(0);
@@ -171,7 +175,9 @@ void ledBlasterTerminate(int dummy)
     delete iterator.second;
   }
 	printf("terminate gpio \n");
-	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+  #ifndef DESKTOP
+	 gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+  #endif
 	printf("close all threads \n");
 	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");
@@ -190,7 +196,9 @@ void ledBlasterTerminateFast(int dummy)
     delete iterator.second;
   }
 	printf("terminate gpio \n");
-	gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+  #ifndef DESKTOP
+   gpioTerminate(); //terminates GPIO (but doesn't necessarily turn all gpios off
+  #endif
 	printf("close all threads \n");
 	//pthread_exit(NULL);
 	printf("exit program. thank you. \n");

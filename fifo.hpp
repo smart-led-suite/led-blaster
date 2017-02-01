@@ -2,7 +2,7 @@
 #define _fifo_hpp
 #include "led-blaster-pre.hpp"
 
-void readFifo(configInformationStruct * config);
+void readFifo();
 //bool assignConfigValues (std::string key, std::string value);
 
 #endif

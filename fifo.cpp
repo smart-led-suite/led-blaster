@@ -18,7 +18,7 @@ using namespace std;
 //*********************************************************************************************
 void doNothing (){}
 
-void readFifo (configInformationStruct * config)
+void readFifo ()
 {
 	//open file
 	//this blocks the function until Something can be read from the FIFO
@@ -88,6 +88,7 @@ void readFifo (configInformationStruct * config)
 						//std::cout << "key/value: " << key[pairNo] << " " << value[pairNo] << endl;
 					}
 				}
+				std::cout << "line: " << line << '\n';
 				//std::cout << "applymode: " << applyMode << '\n';
 				// now we can use key and value to do stuff
 				// iterate through all leds possible
@@ -107,15 +108,16 @@ void readFifo (configInformationStruct * config)
 								// if above conditions apply, we can fade directly or with short fadetime
 								int difference = abs(iterator.second->getCurrentBrightness() - value[newData]);
 								//decide wether to fade or to set the brightness
+								/*
 								if (difference >= FADE_SET_THRESHOLD) {
 									iterator.second->fadeCancel();
 									LED::setFadeTime(SHORT_FADE_TIME);
 									iterator.second->setTargetBrightness(value[newData]);
 									iterator.second->fadeInThread();
-								} else {
+								} else {*/
 									iterator.second->fadeCancel();
 									iterator.second->setCurrentBrightness(value[newData]);
-								}
+							/*	}*/
 							}
 							else if (applyMode == 1)
 							{
@@ -124,6 +126,7 @@ void readFifo (configInformationStruct * config)
 								iterator.second->fadeCancel();
 								iterator.second->setTargetBrightness(value[newData]);
 								iterator.second->fadeInThread();
+								std::cout << "current for  " << iterator.first << " is " << iterator.second->getCurrentBrightness() << '\n';
 							}
 						}
 					}
@@ -140,7 +143,6 @@ void readFifo (configInformationStruct * config)
 				//the generation of led objects is limited to 10 per line
 				int key[100], value[100];
 				int pairNo = 0;
-				std::cout << "is empty? " << this_line.str().empty() << '\n';
 				//init variables
 				string keyValueString, keyString, valueString;
 				//read from line for the first time
@@ -157,8 +159,11 @@ void readFifo (configInformationStruct * config)
 							value[pairNo] = stoi(valueString);
 							//doNothing();
 							//true color adjust is ignored for now
-							LED::ledMap[key[pairNo]] = new LED(key[pairNo], value[pairNo], 0);
-							std::cout << "just created LED object with key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+							// only add if there is no value for that key
+							if ( LED::ledMap.find(key[pairNo]) == LED::ledMap.end() ) {
+								LED::ledMap[key[pairNo]] = new LED(key[pairNo], value[pairNo], 0);
+								std::cout << "just created LED object with key/value: " << key[pairNo] << " " << value[pairNo] << endl;
+							}
 							pairNo++;
 						}
 						catch (const std::invalid_argument& ia)
