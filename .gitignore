@@ -1,0 +1,5 @@
+*.gch
+*.o
+*.a
+test-data/
+test-files/
