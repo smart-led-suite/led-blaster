@@ -1,9 +1,7 @@
 #ifndef _led_h
 #define _led_h
-#include <stdint.h> //libary which includes uint8_t etc.
-#include <string>
+
 #include <map>
-#include <memory> //shared pointer
 
 namespace led {
   class LED

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdint.h> //libary which includes uint16_t etc.
 #include "config.h"
-#include "led.hpp"
+
 #ifndef DESKTOP
 #include <pigpio.h>
 #endif
@@ -13,6 +13,9 @@
 #include <pthread.h>
 #include <time.h>       /* for the random function :time */
 #include <cmath>
+#include <map>
+
+#include "led.hpp"
 
 using namespace std;
 using namespace led;
@@ -127,7 +130,7 @@ void LED::setCurrentBrightness(int new_cBrightness)
   #ifndef DESKTOP
   gpioPWM(this->pin, naturalSteps[this->currentBrightness]);
   #else
-  std::cout << "new brightness: " << this->currentBrightness << std::endl;
+  // std::cout << "new brightness: " << this->currentBrightness << std::endl;
   #endif
 }
 void LED::setTargetBrightness(int new_tBrightness)
@@ -175,6 +178,7 @@ bool LED::initGeneral(void)
 	}
   #else
   std::cout << "init simulation run." << '\n';
+  return 0;
   #endif
   //INVALID CODE
 }

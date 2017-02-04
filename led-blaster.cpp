@@ -21,6 +21,8 @@
 //	(done)		 - introduce fading in seperate threads
 //============================================================================
 
+#include "config.h"
+
 #include <iostream>
 #include <cstdlib>
 #ifndef DESKTOP
@@ -43,10 +45,10 @@
 #include <linux/stat.h>
 
 #include "led.hpp"
-#include "config.h"
+
 //#include "file.hpp"
 //#include "init.hpp"
-#include "led-blaster-pre.hpp"
+#include "led-blaster.hpp"
 #include "fifo.hpp"
 
 

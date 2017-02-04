@@ -24,8 +24,7 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 #define FIFO_FILE	"/dev/led-blaster"
 
-//CLI fade is the only possible option now and is always active!!!
-#define CLI_FADE //set variables via cli (if ndef its made via input file inputData.txt
+#define DESKTOP
 //values used by realtime mode to make operation smoother
 #define FADE_SET_THRESHOLD 1000 //diff where it will use fade
 #define SHORT_FADE_TIME 100 //fadetime for this fade
@@ -35,12 +34,6 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 #define BLUE_ADJUSTMENT 40 //20 = 20%
 #define FADE_TIME_MS 1000 //default value of fadeDelayMs
 #define FADE_DELAY_US 0 //default value of fadeDelayUs
-#define SIMULTANEOUS_DELAY_FACTOR 3 //factor to multiply the delay in simultaneous fade mode (useful?)
-
-#define COLORS 4 //number of different leds, currently wrgb, maybe soon w/ autodetect
-
-//if activated, you can i.e. adjust the speed variable without restarting mode 1 etc.
-#define MODE_LIVE_MANIPULATING  //according to the pthread documentation this is NOT recommended. we may delete this option in the future if it causes problems.
 
 #define SIGINT_PIBLASTER_TERMINATE_TIME_VALUE 1000 //time value which is send to fade function if sigint is detected (i.e. because of ctrl+c)
 #define SIGTERM_PIBLASTER_TERMINATE_FAST_TIME_VALUE 100 //time value which is send to fade function if sigterm is detected (i.e. because of kill or killall command)

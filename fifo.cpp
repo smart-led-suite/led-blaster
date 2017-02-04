@@ -7,7 +7,7 @@
 
 #include "config.h"
 #include "fifo.hpp"
-#include "led-blaster-pre.hpp"
+#include "led-blaster.hpp"
 #include "led.hpp"
 
 
@@ -105,19 +105,11 @@ void readFifo ()
 							// now apply changes based on mode.
 							if (applyMode == 0)
 							{
-								// if above conditions apply, we can fade directly or with short fadetime
-								int difference = abs(iterator.second->getCurrentBrightness() - value[newData]);
-								//decide wether to fade or to set the brightness
-								/*
-								if (difference >= FADE_SET_THRESHOLD) {
-									iterator.second->fadeCancel();
-									LED::setFadeTime(SHORT_FADE_TIME);
-									iterator.second->setTargetBrightness(value[newData]);
-									iterator.second->fadeInThread();
-								} else {*/
-									iterator.second->fadeCancel();
-									iterator.second->setCurrentBrightness(value[newData]);
-							/*	}*/
+								#ifdef DESKTOP
+								std::cout << "set led brightness" << '\n';
+								#endif
+								iterator.second->fadeCancel();
+								iterator.second->setCurrentBrightness(value[newData]);
 							}
 							else if (applyMode == 1)
 							{
@@ -126,7 +118,7 @@ void readFifo ()
 								iterator.second->fadeCancel();
 								iterator.second->setTargetBrightness(value[newData]);
 								iterator.second->fadeInThread();
-								std::cout << "current for  " << iterator.first << " is " << iterator.second->getCurrentBrightness() << '\n';
+								//std::cout << "current for  " << iterator.first << " is " << iterator.second->getCurrentBrightness() << '\n';
 							}
 						}
 					}
@@ -175,5 +167,8 @@ void readFifo ()
 				}
 			}//end of fade block
 		} // end of reading this line
+		std::cout << "next line please\n\n" ;
   } // end of file is open
+	fifo.close();
+	std::cout << "file closed." << '\n';
 }
