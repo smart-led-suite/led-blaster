@@ -22,7 +22,7 @@
 //============================================================================
 
 #include "config.h"
-
+#include "desktop-config.h"
 #include <iostream>
 #include <cstdlib>
 #ifndef DESKTOP

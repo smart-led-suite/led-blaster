@@ -24,7 +24,6 @@ A client program should ALWAYS change mode to 0 if it wants to adjust the indivi
 
 #define FIFO_FILE	"/dev/led-blaster"
 
-#define DESKTOP
 //values used by realtime mode to make operation smoother
 #define FADE_SET_THRESHOLD 1000 //diff where it will use fade
 #define SHORT_FADE_TIME 100 //fadetime for this fade

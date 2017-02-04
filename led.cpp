@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdint.h> //libary which includes uint16_t etc.
 #include "config.h"
-
+#include "desktop-config.h"
 #ifndef DESKTOP
 #include <pigpio.h>
 #endif
