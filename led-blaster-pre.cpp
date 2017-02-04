@@ -44,7 +44,7 @@
 
 #include "led.hpp"
 #include "config.h"
-#include "file.hpp"
+//#include "file.hpp"
 //#include "init.hpp"
 #include "led-blaster-pre.hpp"
 #include "fifo.hpp"
@@ -58,13 +58,6 @@ using namespace std;
 //*********************************************************************************************
 
 int main() {
-  //launch the nodejs forward program
-  //system("forever start /var/www/serverstuff/forward.js");
-  struct configInformationStruct config;
-  //set mode to 0 at the beginning
-  config.mode = 0;
-	//reading global config
-	//readConfig(&config);
 	//init pwm
 	//initializes the pigpio libary. returns 0 if there was no problem
 	if(LED::initGeneral()) {
@@ -72,31 +65,6 @@ int main() {
 		cout << "initGeneral failed!" << endl;
 		return 1;
 	}
-	//now read the colors.csv and create led.objects based on that
-	/*if(readColorConfig())
-  {
-    std::cerr << "there was a problem while reading your color/pin configuration" << std::endl;
-  }
-  std::cout << "num leds: " << LED::getNumLeds() << '\n';
-	//read brightness
-	readTargetBrightness();
-  //iterate through all leds and fade to the targetBrightness from brightness.csv
-  for(auto const &iterator : LED::ledMap)
-  {
-    iterator.second->fadeInThread();
-  }
-  #ifdef DEBUG
-		//print all led objects
-    for(auto const &iterator : LED::ledMap)
-    {
-	    cout << iterator.second->getColorCode() << " ";
-	    cout << iterator.second->getPin() << " ";
-	    cout << iterator.second->IsColor() << " ";
-	    cout << iterator.second->getCurrentBrightness() << " ";
-	    cout << iterator.second->getTargetBrightness() << endl;
-	  }
-	#endif
-*/
 	//************ SETUP TERMINATION HANDLING ******************
 	//if ctrl+c is pressed we want to terminate the gpios and close all open threads.
 	//therefore we'll want to catch the ctrl+c by the user
@@ -110,12 +78,7 @@ int main() {
   umask(0);
   mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
-  //wait until fade is finished
-  for(auto const &iterator : LED::ledMap)
-  {
-    iterator.second->fadeWait();
-  }
-  cout << "led-blaster has successfully started." << endl;
+  cout << "led-blaster has  started." << endl;
 	//*********** LOOP *************************************
 
 	while(true) {
@@ -127,38 +90,6 @@ int main() {
  //INVALID CODE
  ledBlasterTerminate(0);
 }
-
-// ********************************* APPLY ****************************
-//this function is being used by the fifo read to apply values before the FIFO was closed (js-webclient & nodejs)
-//it applys everything with exeption to fademode 1 which is not supported.
-//for live manipulation, this function is not called, instead a faster direct setter is used
-void applyNewValues(configInformationStruct * config) {
-  //if we're in mode0 we want to fade the pins to their brightness
-  if (config->waitCounter == 0 && config->mode == 0 && LED::getFadeTime() > 1) {
-    //fade
-    cout << "stop previous fade and start fading leds simultaneous..." << endl;
-    for(auto const &iterator : LED::ledMap)
-    {
-      iterator.second->fadeCancel();
-      iterator.second->fadeInThread();
-    }
-    //write to file (so you can see it in the GUI)
-    //writeCurrentBrightness();
-    #ifdef DEBUG
-      for(auto const &iterator : LED::ledMap)
-      {
-        cout << iterator.second->getColorCode() << " ";
-        cout << iterator.second->getPin() << " ";
-        cout << iterator.second->IsColor() << " ";
-        cout << iterator.second->getCurrentBrightness() << " ";
-        cout << iterator.second->getTargetBrightness() << endl;
-      }
-      cout << "mode: " << config->mode << endl;
-      cout << "waitCounter: " << config->waitCounter << endl;
-    #endif
-  }
-}
-
 
 //***************************************TERMINATING FUNCTIONS***************************************
 

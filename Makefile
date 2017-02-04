@@ -8,11 +8,11 @@ CXXFLAGS += -g -std=c++0x -Wall -Wextra -pthread -lpigpio -lrt
 # Where to find user code.
 USER_DIR = /opt/led-blaster
 
-led-blaster : led.o file.o led-blaster-pre.o fifo.o
+led-blaster : led.o led-blaster-pre.o fifo.o
 	$(CXX) $(CXXFLAGS) -lpthread $^ -o $@
 
-file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
-			$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/file.cpp
+#file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
+#			$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/file.cpp
 
 led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/config.h
 			$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led.cpp
