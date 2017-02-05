@@ -26,6 +26,7 @@ void readFifo ()
 	if(fifo.is_open())
   {
     //FILE IS OPEN
+		std::cout << "file open" << '\n';
     //read it line by line
 		//var to store a single line
 		std::string line;
@@ -130,6 +131,7 @@ void readFifo ()
 				//**************analyze incoming string ******************************
 				//convert to stream again
 				std::istringstream this_line(line);
+				std::cout << "init line found: " << line << '\n';
 				//after reading, store it in key[] and value[] arrays
 				//key is the pin, value the new value
 				//the generation of led objects is limited to 10 per line
