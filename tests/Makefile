@@ -29,7 +29,7 @@ CXXFLAGS += -g -std=c++0x -Wall -Wextra -pthread -lpigpio -lrt
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = led_test file_test all_tests
+TESTS = led_test all_tests
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -71,44 +71,18 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-#led-blaster-test.o :  $(USER_DIR)/led-blaster-testing.cpp $(USER_DIR)/led-blaster-pre.hpp $(USER_DIR)/fade.cpp $(USER_DIR)/fade.hpp $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp $(USER_DIR)/modes.cpp $(USER_DIR)/modes.hpp $(GTEST_HEADERS)
-#	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/led-blaster-testing.cpp $(USER_DIR)/fade.cpp $(USER_DIR)/fifo.cpp $(USER_DIR)/file.cpp $(USER_DIR)/init.cpp $(USER_DIR)/led.cpp $(USER_DIR)/modes.cpp
-
-file.o :  $(USER_DIR)/file.cpp $(USER_DIR)/file.hpp  $(USER_DIR)/led-blaster-pre.hpp
-		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/file.cpp
-
-led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp
+led.o :  $(USER_DIR)/led.cpp $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster.hpp
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led.cpp
 
-#init.o :  $(USER_DIR)/init.cpp $(USER_DIR)/init.hpp  $(USER_DIR)/led-blaster-pre.hpp
-#				$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/init.cpp
-
-#led-blaster-pre.o :  $(USER_DIR)/led-blaster-pre.cpp $(USER_DIR)/led-blaster-pre.hpp
-#					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/led-blaster-pre.cpp
-
-fade.o :  $(USER_DIR)/fade.cpp $(USER_DIR)/fade.hpp  $(USER_DIR)/led-blaster-pre.hpp
-					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fade.cpp
-
-fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster-pre.hpp
+fifo.o :  $(USER_DIR)/fifo.cpp $(USER_DIR)/fifo.hpp  $(USER_DIR)/led-blaster.hpp
 					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/fifo.cpp
 
-#modes.o :  $(USER_DIR)/modes.cpp $(USER_DIR)/modes.hpp  $(USER_DIR)/led-blaster-pre.hpp
-#					$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c  $(USER_DIR)/modes.cpp
-
-
-file_test.o : $(USER_DIR)/tests/file_test.cc \
-							$(USER_DIR)/file.hpp $(USER_DIR)/led.hpp $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
-							$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/file_test.cc
-
 led_test.o : $(USER_DIR)/tests/led_test.cc \
-						 $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster-pre.hpp $(GTEST_HEADERS)
+						 $(USER_DIR)/led.hpp  $(USER_DIR)/led-blaster.hpp $(GTEST_HEADERS)
 						 $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/led_test.cc
-
-file_test : led.o file.o file_test.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 led_test : led.o  led_test.o gtest_main.a
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-all_tests: led.o led_test.o file.o file_test.o gtest_main.a
+all_tests: led.o led_test.o gtest_main.a
 		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

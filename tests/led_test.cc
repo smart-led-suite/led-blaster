@@ -68,7 +68,7 @@
 #include <limits.h>
 #include "gtest/gtest.h"
 
-#include "pigpio.h"
+//#include "pigpio.h"
 #include "../led.hpp"
 
 //#include "../file.hpp"
@@ -84,7 +84,7 @@
 
 #include "../fifo.hpp"
 */
-#include "../led-blaster-pre.hpp"
+#include "../led-blaster.hpp"
 
 using namespace led;
 // Step 2. Use the TEST macro to define your tests.
@@ -156,16 +156,19 @@ struct ledTest : testing::Test
     {
       std::cout << "usage of pigpio is not possible. the led_test cannot be executed" << std::endl;
       exit(0);
+
     }
-    led[0] = new LED("b", 26, true, 0, 0, 20);
-    led[1] = new LED("w", 17, false, 0, 0, 0);
-    led[2] = new LED("r", 18, true, 0, 0, 0);
-    led[3] = new LED("g", 22, true, 0, 0, 0);
+    exit(1);
+    led[0] = new LED(26, 0, 0);
+    led[1] = new LED(17, 0, 0);
+    led[2] = new LED(18, 0, 0);
+    led[3] = new LED(22, 0, 0);
   }
   ~ledTest()
   {
     for (size_t i = 0; i < 4; i++) {
       led[i]->setCurrentBrightness(0);
+      delete led[i];
     }
     //delete[] led;
     gpioTerminate();
@@ -176,10 +179,8 @@ struct ledTest : testing::Test
 
 TEST_F(ledClassConstructorTest, ledConstructor)
 {
-  LED ledObject("w", 25, false, 0, 0, 0);
+  LED ledObject(25, 0, 0);
   EXPECT_EQ(25,ledObject.getPin());
-  EXPECT_EQ("w",ledObject.getColorCode());
-  EXPECT_EQ(false, ledObject.IsColor());
   EXPECT_EQ(0, ledObject.getCurrentBrightness());
   EXPECT_EQ(0, ledObject.getTargetBrightness());
   EXPECT_EQ(PWM_RANGE, ledObject.getPwmSteps());
@@ -188,20 +189,16 @@ TEST_F(ledClassConstructorTest, ledConstructor)
 TEST_F(ledMapTest, ledMapGeneral)
 {
   //LED ledObject("w", 25, 0, 0, 0);
-  LED::ledMap[25] = new LED("w", 25, false, 0, 0, 0);
-  LED::ledMap[17] = new LED("r", 17, true, 0, 0, 0);
+  LED::ledMap[25] = new LED(25, 0, 0);
+  LED::ledMap[17] = new LED(17, 0, 0);
 
   EXPECT_EQ(2, LED::ledMap.size());
   EXPECT_EQ(17,LED::ledMap.find(17)->second->getPin());
-  EXPECT_EQ("r",LED::ledMap.find(17)->second->getColorCode());
-  EXPECT_EQ(true, LED::ledMap.find(17)->second->IsColor());
   EXPECT_EQ(0, LED::ledMap.find(17)->second->getCurrentBrightness());
   EXPECT_EQ(0, LED::ledMap.find(17)->second->getTargetBrightness());
   EXPECT_EQ(LED::getPwmSteps(), LED::ledMap.find(17)->second->getPwmSteps());
 
   EXPECT_EQ(25,LED::ledMap.find(25)->second->getPin());
-  EXPECT_EQ("w",LED::ledMap.find(25)->second->getColorCode());
-  EXPECT_EQ(false, LED::ledMap.find(25)->second->IsColor());
   EXPECT_EQ(0, LED::ledMap.find(25)->second->getCurrentBrightness());
   EXPECT_EQ(0, LED::ledMap.find(25)->second->getTargetBrightness());
   EXPECT_EQ(LED::getPwmSteps(), LED::ledMap.find(25)->second->getPwmSteps());
@@ -237,8 +234,8 @@ TEST_F(ledMapTest, ledMapGeneral)
 TEST_F(ledMapTest, ledMapfadeSimultaneous)
 {
   //LED ledObject("w", 25, 0, 0, 0);
-  LED::ledMap[25] = new LED("w", 25, false, 0, 0, 0);
-  LED::ledMap[17] = new LED("r", 17, true, 0, 0, 0);
+  LED::ledMap[25] = new LED(25, 0, 0);
+  LED::ledMap[17] = new LED(17, 0, 0);
   //iterate through all leds
   for(auto const &iterator : LED::ledMap) {
     //turn leds off at the beginning
