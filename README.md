@@ -13,7 +13,7 @@ the following things are on our toDo-list:
 6. an alarm clock which fades on all/some leds slowly at a given time (sunrise simulation to wake up easily) (in coordination with some PHP code...)
 7. more to come...
 
-#Commands
+# Commands
 
 echo them into /dev/led-blaster  
 e.g. `echo w=1000 > /dev/led-blaster`
@@ -36,7 +36,7 @@ e.g. `echo w=1000 > /dev/led-blaster`
   time = value
   select the time (in ms) needed until fade is completed
 
-#Installation of a Release
+# Installation of a Release
 
 1. create a new folder: `sudo mkdir /opt/led-blaster`
 2. move the downloaded binaries to this folder `mv led-blaster-pre /opt/led-blaster`
@@ -48,9 +48,9 @@ sudo update-rc.d led-blaster defaults #update
 ```
 You have successfully added led-blaster to your autostart!
 
-#Compiling led-blaster
+# Compiling led-blaster
 
-##Install pipio libary
+## Install pipio libary
 led-blaster needs the [pigpio libary](http://abyz.co.uk/rpi/pigpio/)
 to install it, go to your home directory with `cd ` (or wherever you want to install it) and run:
 ```
@@ -60,7 +60,7 @@ cd PIGPIO
 make
 sudo make install
 ```
-##Install webserver (apache) and led-smarthome
+## Install webserver (apache) and led-smarthome
 led-blaster assumes you have a webeserver running and the led-smarthome php files stored there.
 e.g. the information which pins are actually used is stored there.
 so please install the webserver and [led-smarthome](https://github.com/smart-led-suite/led-smarthome) first.
@@ -86,12 +86,12 @@ sudo mv DAEMON_INITFILE /etc/init.d/led-blaster #move initfile
 sudo chmod +x /etc/init.d/led-blaster #make it executable
 sudo update-rc.d led-blaster defaults #update
 ```
-##Check if it is working
+## Check if it is working
 now reboot your pi and check with
 `ps -C led-blaster-pre` if led-blaster ist actually running.
-##Deinstallation
+## Uninstall
 if you delete `/etc/init.d/led-blaster` led-blaster is removed from autostart. you can then remove all the files and uninstall the pigpio_libary
-#Configuration
+# Configuration
 you can configure led-blaster in various ways:
 
 1. the global config file:  
